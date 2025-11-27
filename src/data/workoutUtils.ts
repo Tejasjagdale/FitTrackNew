@@ -1,7 +1,23 @@
 import { getData } from './dataService'
 
-export type Variant = any
-export type ExerciseOrder = any
+export interface ExerciseOrder {
+  step: number
+  name: string
+  set: number
+  reps: string
+  restSeconds: number
+  equipment: string[]
+}
+
+export interface Variant {
+  variantName: string
+  exerciseOrder: ExerciseOrder[]
+}
+
+export interface WorkoutData {
+  variants: Variant[]
+  weeklyOrder: string[]
+}
 
 export interface WorkoutState {
   currentDayIndex: number
@@ -10,57 +26,58 @@ export interface WorkoutState {
   completedVariants: string[]
 }
 
+const WORKOUT_STATE_KEY = 'workoutState'
+const WORKOUT_DATE_KEY = 'workoutDate'
+
 export const getWorkoutState = (): WorkoutState => {
   try {
-    const stored = localStorage.getItem('workoutState')
+    const stored = localStorage.getItem(WORKOUT_STATE_KEY)
     if (stored) {
-      const parsed = JSON.parse(stored)
-      // check if we need to reset (new day)
-      const lastDate = localStorage.getItem('workoutDate')
+      const parsed: WorkoutState = JSON.parse(stored)
+      const lastDate = localStorage.getItem(WORKOUT_DATE_KEY)
       const today = new Date().toDateString()
       if (lastDate !== today) {
-        // new day, check if current variant is done
-        const state = { ...parsed, workoutInProgress: false, currentStepIndex: 0 }
-        localStorage.setItem('workoutDate', today)
+        // new day, reset step but keep completed variants
+        const state: WorkoutState = { ...parsed, workoutInProgress: false, currentStepIndex: 0 }
+        localStorage.setItem(WORKOUT_DATE_KEY, today)
         return state
       }
       return parsed
     }
-  } catch {}
+  } catch (err) {
+    console.warn('Failed to parse workout state', err)
+  }
 
-  // initialize
   const initial: WorkoutState = {
     currentDayIndex: 0,
     currentStepIndex: 0,
     workoutInProgress: false,
     completedVariants: []
   }
-  localStorage.setItem('workoutState', JSON.stringify(initial))
-  localStorage.setItem('workoutDate', new Date().toDateString())
+  localStorage.setItem(WORKOUT_STATE_KEY, JSON.stringify(initial))
+  localStorage.setItem(WORKOUT_DATE_KEY, new Date().toDateString())
   return initial
 }
 
 export const saveWorkoutState = (state: WorkoutState) => {
-  localStorage.setItem('workoutState', JSON.stringify(state))
+  localStorage.setItem(WORKOUT_STATE_KEY, JSON.stringify(state))
 }
 
 export const getTodayVariant = (): Variant | null => {
   const state = getWorkoutState()
-  const workoutData = getData()
+  const workoutData: WorkoutData = getData()
   const allVariants = workoutData.variants
   const weeklyOrder = workoutData.weeklyOrder
 
-  // find next incomplete variant
-  let dayIdx = state.currentDayIndex
-  for (let i = dayIdx; i < weeklyOrder.length; i++) {
+  for (let i = state.currentDayIndex; i < weeklyOrder.length; i++) {
     const variantName = weeklyOrder[i]
     if (!state.completedVariants.includes(variantName)) {
-      return allVariants.find((v) => v.variantName === variantName) || null
+      return allVariants.find(v => v.variantName === variantName) || null
     }
   }
 
-  // if all 6 are completed, restart from day 0
-  return allVariants.find((v) => v.variantName === weeklyOrder[0]) || null
+  // all completed, restart from day 0
+  return allVariants.find(v => v.variantName === weeklyOrder[0]) || null
 }
 
 export const getCurrentStep = (): ExerciseOrder | null => {
@@ -76,14 +93,16 @@ export const advanceStep = () => {
   const variant = getTodayVariant()
   if (!variant) return
 
+  const workoutData: WorkoutData = getData()
   state.currentStepIndex += 1
 
-  // check if workout is complete
   if (state.currentStepIndex >= variant.exerciseOrder.length) {
     state.workoutInProgress = false
-    state.completedVariants.push(variant.variantName)
+    if (!state.completedVariants.includes(variant.variantName)) {
+      state.completedVariants.push(variant.variantName)
+    }
 
-    // advance to next variant index
+    // advance to next variant
     state.currentDayIndex = (state.currentDayIndex + 1) % workoutData.weeklyOrder.length
     state.currentStepIndex = 0
   }
@@ -109,13 +128,12 @@ export const startWorkout = () => {
 export const finishWorkout = () => {
   const state = getWorkoutState()
   const variant = getTodayVariant()
-  if (variant) {
+  const workoutData: WorkoutData = getData()
+  if (variant && !state.completedVariants.includes(variant.variantName)) {
     state.completedVariants.push(variant.variantName)
   }
   state.workoutInProgress = false
-  const workoutData = getData()
   state.currentDayIndex = (state.currentDayIndex + 1) % workoutData.weeklyOrder.length
   state.currentStepIndex = 0
   saveWorkoutState(state)
 }
-

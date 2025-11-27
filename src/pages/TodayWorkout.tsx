@@ -49,8 +49,7 @@ export default function TodayWorkout() {
 
   const handleStartWorkout = () => {
     startWorkout()
-    const newState = getWorkoutState()
-    setState(newState)
+    setState(getWorkoutState())
     setCurrentStep(getCurrentStep())
   }
 
@@ -63,24 +62,19 @@ export default function TodayWorkout() {
 
   const handleNext = () => {
     advanceStep()
-    const newState = getWorkoutState()
-    const nextStep = getCurrentStep()
-
-    setState(newState)
-    setCurrentStep(nextStep)
+    setState(getWorkoutState())
+    setCurrentStep(getCurrentStep())
     setIsResting(false)
     setTimeLeft(0)
 
-    // if workout complete, refresh
-    if (!newState.workoutInProgress) {
+    if (!getWorkoutState().workoutInProgress) {
       setVariant(getTodayVariant())
     }
   }
 
   const handleUndo = () => {
     undoStep()
-    const newState = getWorkoutState()
-    setState(newState)
+    setState(getWorkoutState())
     setCurrentStep(getCurrentStep())
     setIsResting(false)
     setTimeLeft(0)
@@ -88,8 +82,7 @@ export default function TodayWorkout() {
 
   const handleFinish = () => {
     finishWorkout()
-    const newState = getWorkoutState()
-    setState(newState)
+    setState(getWorkoutState())
     setVariant(getTodayVariant())
     setCurrentStep(null)
     setIsResting(false)
@@ -99,7 +92,18 @@ export default function TodayWorkout() {
   if (!variant) return <Typography>Loading...</Typography>
 
   const isWorkoutDone = !state.workoutInProgress && currentStep === null
-  const progress = state.workoutInProgress ? ((state.currentStepIndex + 1) / variant.exerciseOrder.length) * 100 : 0
+  const progress =
+    state.workoutInProgress && currentStep
+      ? ((state.currentStepIndex + 1) / variant.exerciseOrder.length) * 100
+      : 0
+
+  // derive exercisesList for display
+  const exercisesList = variant.exerciseOrder.reduce<{ name: string; sets: number }[]>((acc, ex) => {
+    const existing = acc.find((e) => e.name === ex.name)
+    if (existing) existing.sets += 1
+    else acc.push({ name: ex.name, sets: 1 })
+    return acc
+  }, [])
 
   return (
     <Container>
@@ -115,11 +119,11 @@ export default function TodayWorkout() {
               {variant.variantName}
             </Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-              {variant.exercisesList.length} exercises • {variant.exerciseOrder.length} sets total
+              {exercisesList.length} exercises • {variant.exerciseOrder.length} sets total
             </Typography>
 
             <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 3, flexWrap: 'wrap' }}>
-              {variant.exercisesList.map((ex) => (
+              {exercisesList.map((ex) => (
                 <Chip key={ex.name} label={`${ex.name} (${ex.sets}x)`} color="primary" variant="outlined" />
               ))}
             </Stack>
@@ -147,11 +151,7 @@ export default function TodayWorkout() {
         {/* Active Exercise Card */}
         {state.workoutInProgress && currentStep && !isResting && (
           <Card className="glass" sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
-            <LinearProgress
-              variant="determinate"
-              value={progress}
-              sx={{ mb: 3, borderRadius: 2, height: 6 }}
-            />
+            <LinearProgress variant="determinate" value={progress} sx={{ mb: 3, borderRadius: 2, height: 6 }} />
 
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Step {state.currentStepIndex + 1} of {variant.exerciseOrder.length}
@@ -215,11 +215,7 @@ export default function TodayWorkout() {
               sx={{ mb: 3, borderRadius: 2, height: 6 }}
             />
 
-            <Button
-              variant="outlined"
-              onClick={handleNext}
-              sx={{ borderRadius: 2, textTransform: 'none' }}
-            >
+            <Button variant="outlined" onClick={handleNext} sx={{ borderRadius: 2, textTransform: 'none' }}>
               Skip Rest
             </Button>
 
