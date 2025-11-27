@@ -1,12 +1,23 @@
 import React from 'react'
-import { AppBar, Toolbar, Typography, Container, Button, IconButton, Tooltip } from '@mui/material'
+import { AppBar, Toolbar, Typography, Container, Button, IconButton, Tooltip, Menu, MenuItem } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import SettingsIcon from '@mui/icons-material/Settings'
 import { useThemeMode } from '../ThemeModeProvider'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { mode, toggleMode } = useThemeMode()
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
 
   return (
     <>
@@ -32,7 +43,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             }}
           >
             <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
-            fitTrack
+              fitTrack
             </RouterLink>
           </Typography>
           <Button color="inherit" component={RouterLink} to="/today">
@@ -47,6 +58,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
             </IconButton>
           </Tooltip>
+
+          <Tooltip title="More options">
+            <IconButton color="inherit" onClick={handleMenuOpen} aria-label="more">
+              <MoreVertIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem component={RouterLink} to="/settings" onClick={handleMenuClose}>
+              <SettingsIcon sx={{ mr: 1, fontSize: 20 }} />
+              Settings
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 
