@@ -1,0 +1,203 @@
+{
+  "weeklyOrder": [
+    "Arms Variant 1",
+    "Chest Variant 1",
+    "Arms Variant 2",
+    "Chest Variant 2",
+    "Arms Variant 3",
+    "Chest Variant 3"
+  ],
+  "variants": [
+    {
+      "variantName": "Arms Variant 1",
+      "exercisesList": [
+        { "name": "Standing Dumbbell Curl (15kg)", "sets": 4, "reps": "8-12" },
+        { "name": "Hammer Curl (15kg)", "sets": 3, "reps": "10" },
+        { "name": "Overhead Tricep Extension (15kg)", "sets": 3, "reps": "10-12" },
+        { "name": "Close-Grip Push-ups", "sets": 3, "reps": "max" },
+        { "name": "Reverse Curl (10kg)", "sets": 3, "reps": "12" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Standing Dumbbell Curl (15kg)", "set": 1, "reps": "8-12", "restSeconds": 60 },
+        { "step": 2, "name": "Standing Dumbbell Curl (15kg)", "set": 2, "reps": "8-12", "restSeconds": 60 },
+        { "step": 3, "name": "Standing Dumbbell Curl (15kg)", "set": 3, "reps": "8-12", "restSeconds": 60 },
+        { "step": 4, "name": "Standing Dumbbell Curl (15kg)", "set": 4, "reps": "8-12", "restSeconds": 90 },
+
+        { "step": 5, "name": "Hammer Curl (15kg)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 6, "name": "Hammer Curl (15kg)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 7, "name": "Hammer Curl (15kg)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 8, "name": "Overhead Tricep Extension (15kg)", "set": 1, "reps": "10-12", "restSeconds": 60 },
+        { "step": 9, "name": "Overhead Tricep Extension (15kg)", "set": 2, "reps": "10-12", "restSeconds": 60 },
+        { "step": 10, "name": "Overhead Tricep Extension (15kg)", "set": 3, "reps": "10-12", "restSeconds": 90 },
+
+        { "step": 11, "name": "Close-Grip Push-ups", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 12, "name": "Close-Grip Push-ups", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 13, "name": "Close-Grip Push-ups", "set": 3, "reps": "max", "restSeconds": 120 },
+
+        { "step": 14, "name": "Reverse Curl (10kg)", "set": 1, "reps": "12", "restSeconds": 60 },
+        { "step": 15, "name": "Reverse Curl (10kg)", "set": 2, "reps": "12", "restSeconds": 60 },
+        { "step": 16, "name": "Reverse Curl (10kg)", "set": 3, "reps": "12", "restSeconds": 90 }
+      ]
+    },
+
+    {
+      "variantName": "Arms Variant 2",
+      "exercisesList": [
+        { "name": "Incline-style Floor Curl (stretch curl)", "sets": 3, "reps": "10" },
+        { "name": "Cross-Body Hammer Curl", "sets": 3, "reps": "12 each" },
+        { "name": "Dumbbell Kickback", "sets": 3, "reps": "12-15" },
+        { "name": "Diamond Push-ups", "sets": 3, "reps": "max" },
+        { "name": "Wrist Curl + Reverse Wrist Curl", "sets": 2, "reps": "12 each" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Incline-style Floor Curl (stretch curl)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 2, "name": "Incline-style Floor Curl (stretch curl)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 3, "name": "Incline-style Floor Curl (stretch curl)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 4, "name": "Cross-Body Hammer Curl", "set": 1, "reps": "12 each", "restSeconds": 60 },
+        { "step": 5, "name": "Cross-Body Hammer Curl", "set": 2, "reps": "12 each", "restSeconds": 60 },
+        { "step": 6, "name": "Cross-Body Hammer Curl", "set": 3, "reps": "12 each", "restSeconds": 90 },
+
+        { "step": 7, "name": "Dumbbell Kickback", "set": 1, "reps": "12-15", "restSeconds": 60 },
+        { "step": 8, "name": "Dumbbell Kickback", "set": 2, "reps": "12-15", "restSeconds": 60 },
+        { "step": 9, "name": "Dumbbell Kickback", "set": 3, "reps": "12-15", "restSeconds": 90 },
+
+        { "step": 10, "name": "Diamond Push-ups", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 11, "name": "Diamond Push-ups", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 12, "name": "Diamond Push-ups", "set": 3, "reps": "max", "restSeconds": 120 },
+
+        { "step": 13, "name": "Wrist Curl + Reverse Wrist Curl", "set": 1, "reps": "12 each", "restSeconds": 60 },
+        { "step": 14, "name": "Wrist Curl + Reverse Wrist Curl", "set": 2, "reps": "12 each", "restSeconds": 90 }
+      ]
+    },
+
+    {
+      "variantName": "Arms Variant 3",
+      "exercisesList": [
+        { "name": "Alternating Dumbbell Curl (15kg)", "sets": 4, "reps": "8-10" },
+        { "name": "Zottman Curl (10kg)", "sets": 3, "reps": "10" },
+        { "name": "Tricep Floor Press (close grip)", "sets": 4, "reps": "10-12" },
+        { "name": "Overhead Dumbbell Tricep Extension (10–15kg)", "sets": 3, "reps": "10" },
+        { "name": "Hammer Curl Burnout (10kg)", "sets": 1, "reps": "20 rapid reps" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Alternating Dumbbell Curl (15kg)", "set": 1, "reps": "8-10", "restSeconds": 60 },
+        { "step": 2, "name": "Alternating Dumbbell Curl (15kg)", "set": 2, "reps": "8-10", "restSeconds": 60 },
+        { "step": 3, "name": "Alternating Dumbbell Curl (15kg)", "set": 3, "reps": "8-10", "restSeconds": 60 },
+        { "step": 4, "name": "Alternating Dumbbell Curl (15kg)", "set": 4, "reps": "8-10", "restSeconds": 90 },
+
+        { "step": 5, "name": "Zottman Curl (10kg)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 6, "name": "Zottman Curl (10kg)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 7, "name": "Zottman Curl (10kg)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 8, "name": "Tricep Floor Press (close grip)", "set": 1, "reps": "10-12", "restSeconds": 60 },
+        { "step": 9, "name": "Tricep Floor Press (close grip)", "set": 2, "reps": "10-12", "restSeconds": 60 },
+        { "step": 10, "name": "Tricep Floor Press (close grip)", "set": 3, "reps": "10-12", "restSeconds": 60 },
+        { "step": 11, "name": "Tricep Floor Press (close grip)", "set": 4, "reps": "10-12", "restSeconds": 90 },
+
+        { "step": 12, "name": "Overhead Dumbbell Tricep Extension (10–15kg)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 13, "name": "Overhead Dumbbell Tricep Extension (10–15kg)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 14, "name": "Overhead Dumbbell Tricep Extension (10–15kg)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 15, "name": "Hammer Curl Burnout (10kg)", "set": 1, "reps": "20 rapid reps", "restSeconds": 120 }
+      ]
+    },
+
+    {
+      "variantName": "Chest Variant 1",
+      "exercisesList": [
+        { "name": "Deep Push-ups", "sets": 4, "reps": "max" },
+        { "name": "Dumbbell Floor Press (15kg)", "sets": 4, "reps": "8-12" },
+        { "name": "Dumbbell Fly (10kg)", "sets": 3, "reps": "10-12" },
+        { "name": "Dumbbell Pullover (10–15kg)", "sets": 3, "reps": "10" },
+        { "name": "Close-Grip Push-ups or Dips", "sets": 3, "reps": "max" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Deep Push-ups", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 2, "name": "Deep Push-ups", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 3, "name": "Deep Push-ups", "set": 3, "reps": "max", "restSeconds": 90 },
+        { "step": 4, "name": "Deep Push-ups", "set": 4, "reps": "max", "restSeconds": 120 },
+
+        { "step": 5, "name": "Dumbbell Floor Press (15kg)", "set": 1, "reps": "8-12", "restSeconds": 60 },
+        { "step": 6, "name": "Dumbbell Floor Press (15kg)", "set": 2, "reps": "8-12", "restSeconds": 60 },
+        { "step": 7, "name": "Dumbbell Floor Press (15kg)", "set": 3, "reps": "8-12", "restSeconds": 60 },
+        { "step": 8, "name": "Dumbbell Floor Press (15kg)", "set": 4, "reps": "8-12", "restSeconds": 90 },
+
+        { "step": 9, "name": "Dumbbell Fly (10kg)", "set": 1, "reps": "10-12", "restSeconds": 60 },
+        { "step": 10, "name": "Dumbbell Fly (10kg)", "set": 2, "reps": "10-12", "restSeconds": 60 },
+        { "step": 11, "name": "Dumbbell Fly (10kg)", "set": 3, "reps": "10-12", "restSeconds": 90 },
+
+        { "step": 12, "name": "Dumbbell Pullover (10–15kg)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 13, "name": "Dumbbell Pullover (10–15kg)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 14, "name": "Dumbbell Pullover (10–15kg)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 15, "name": "Close-Grip Push-ups or Dips", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 16, "name": "Close-Grip Push-ups or Dips", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 17, "name": "Close-Grip Push-ups or Dips", "set": 3, "reps": "max", "restSeconds": 120 }
+      ]
+    },
+
+    {
+      "variantName": "Chest Variant 2",
+      "exercisesList": [
+        { "name": "Decline Push-ups (feet elevated)", "sets": 4, "reps": "max" },
+        { "name": "Dumbbell Squeeze Press (10–15kg)", "sets": 3, "reps": "12" },
+        { "name": "Wide Push-ups", "sets": 3, "reps": "max" },
+        { "name": "One-Arm Assisted Fly (slow)", "sets": 3, "reps": "8 each" },
+        { "name": "Slow Negative Push-ups", "sets": 2, "reps": "6-8" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Decline Push-ups (feet elevated)", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 2, "name": "Decline Push-ups (feet elevated)", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 3, "name": "Decline Push-ups (feet elevated)", "set": 3, "reps": "max", "restSeconds": 90 },
+        { "step": 4, "name": "Decline Push-ups (feet elevated)", "set": 4, "reps": "max", "restSeconds": 120 },
+
+        { "step": 5, "name": "Dumbbell Squeeze Press (10–15kg)", "set": 1, "reps": "12", "restSeconds": 60 },
+        { "step": 6, "name": "Dumbbell Squeeze Press (10–15kg)", "set": 2, "reps": "12", "restSeconds": 60 },
+        { "step": 7, "name": "Dumbbell Squeeze Press (10–15kg)", "set": 3, "reps": "12", "restSeconds": 90 },
+
+        { "step": 8, "name": "Wide Push-ups", "set": 1, "reps": "max", "restSeconds": 90 },
+        { "step": 9, "name": "Wide Push-ups", "set": 2, "reps": "max", "restSeconds": 90 },
+        { "step": 10, "name": "Wide Push-ups", "set": 3, "reps": "max", "restSeconds": 120 },
+
+        { "step": 11, "name": "One-Arm Assisted Fly (slow)", "set": 1, "reps": "8 each", "restSeconds": 60 },
+        { "step": 12, "name": "One-Arm Assisted Fly (slow)", "set": 2, "reps": "8 each", "restSeconds": 60 },
+        { "step": 13, "name": "One-Arm Assisted Fly (slow)", "set": 3, "reps": "8 each", "restSeconds": 90 },
+
+        { "step": 14, "name": "Slow Negative Push-ups", "set": 1, "reps": "6-8", "restSeconds": 90 },
+        { "step": 15, "name": "Slow Negative Push-ups", "set": 2, "reps": "6-8", "restSeconds": 120 }
+      ]
+    },
+
+    {
+      "variantName": "Chest Variant 3",
+      "exercisesList": [
+        { "name": "Archer Push-ups or Wide Push-ups", "sets": 3, "reps": "8 each" },
+        { "name": "Floor Press (15kg)", "sets": 3, "reps": "10" },
+        { "name": "Fly (10kg, slow stretch)", "sets": 3, "reps": "10" },
+        { "name": "Pullover (light, full range)", "sets": 3, "reps": "12" },
+        { "name": "Push-up Drop Set", "sets": 1, "reps": "failure" }
+      ],
+      "exerciseOrder": [
+        { "step": 1, "name": "Archer Push-ups or Wide Push-ups", "set": 1, "reps": "8 each", "restSeconds": 90 },
+        { "step": 2, "name": "Archer Push-ups or Wide Push-ups", "set": 2, "reps": "8 each", "restSeconds": 90 },
+        { "step": 3, "name": "Archer Push-ups or Wide Push-ups", "set": 3, "reps": "8 each", "restSeconds": 120 },
+
+        { "step": 4, "name": "Floor Press (15kg)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 5, "name": "Floor Press (15kg)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 6, "name": "Floor Press (15kg)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 7, "name": "Fly (10kg, slow stretch)", "set": 1, "reps": "10", "restSeconds": 60 },
+        { "step": 8, "name": "Fly (10kg, slow stretch)", "set": 2, "reps": "10", "restSeconds": 60 },
+        { "step": 9, "name": "Fly (10kg, slow stretch)", "set": 3, "reps": "10", "restSeconds": 90 },
+
+        { "step": 10, "name": "Pullover (light, full range)", "set": 1, "reps": "12", "restSeconds": 60 },
+        { "step": 11, "name": "Pullover (light, full range)", "set": 2, "reps": "12", "restSeconds": 60 },
+        { "step": 12, "name": "Pullover (light, full range)", "set": 3, "reps": "12", "restSeconds": 90 },
+
+        { "step": 13, "name": "Push-up Drop Set", "set": 1, "reps": "failure", "restSeconds": 120 }
+      ]
+    }
+  ]
+}
