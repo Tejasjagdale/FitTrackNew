@@ -21,16 +21,18 @@ FitTrack now supports GitHub as a cloud storage backend for your workout data. Y
 5. **Copy the token** (you won't be able to see it again!)
    - It will look like: `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
-### Step 2: Add Token to FitTrack App
+### Step 2: Add Token to Environment Variables
 
-1. Open FitTrack in your browser
-2. Click the **menu icon** (⋮) in the top-right corner
-3. Select **"Settings"**
-4. Click **"Set GitHub Token"**
-5. Paste your GitHub Personal Access Token
-6. Click **"Save Token"**
-
-You should see: ✓ GitHub token is configured
+1. Open the `.env` file in your project root
+2. Replace the placeholder with your actual GitHub token:
+   ```
+   VITE_GITHUB_TOKEN=ghp_your_token_here
+   VITE_GITHUB_OWNER=Tejasjagdale
+   VITE_GITHUB_REPO=github-db
+   VITE_GITHUB_FILE_PATH=workoutData.json
+   ```
+3. **Save the file** (the app will use this token when you rebuild/restart)
+4. **Never commit this file** — it's already in `.gitignore`
 
 ### Step 3: Initialize GitHub Repository
 
@@ -44,7 +46,7 @@ First, you need to populate your GitHub repository with the initial workout data
 5. Commit the changes
 
 **Option B: Using the App**
-1. Make sure your token is configured (Step 2)
+1. Make sure your `.env` file is configured with your token (Step 2)
 2. Go to **Variant** page
 3. Click **"Sync to GitHub"**
 4. This will push your current workout data to the repository
@@ -90,11 +92,14 @@ To refresh data from GitHub:
 
 ## Settings
 
-### View/Update Token
-- Go to **Settings**
-- You'll see: ✓ GitHub token is configured
-- Click **"Update Token"** to change it
-- Click **"Remove Token"** to disconnect
+### Environment Variables
+Your GitHub token and repository configuration are stored in the `.env` file (not displayed in the UI):
+- **VITE_GITHUB_TOKEN**: Your GitHub Personal Access Token
+- **VITE_GITHUB_OWNER**: `Tejasjagdale`
+- **VITE_GITHUB_REPO**: `github-db`
+- **VITE_GITHUB_FILE_PATH**: `workoutData.json`
+
+**Important**: `.env` is added to `.gitignore` and will never be committed to version control.
 
 ### Repository Configuration
 - **Owner**: `Tejasjagdale`
@@ -103,35 +108,41 @@ To refresh data from GitHub:
 
 ## Security Notes
 
-✓ **Your token is stored securely in your browser's local storage**
+✓ **Your token is stored only in `.env` file (not in the browser)**
+- The `.env` file is never committed to Git (protected by `.gitignore`)
+- It's only read by Vite during build time as environment variables
 - It's never sent anywhere except to GitHub's official API
 - It's not sent to any third-party servers
-- It stays on your device
 
 ⚠ **Important**: 
-- Don't share your token with anyone
+- Don't share your `.env` file with anyone
 - If you accidentally expose your token, regenerate it on GitHub
 - The token has full access to your repositories
+- Each device that runs the app needs its own `.env` file with the token
 
 ## Troubleshooting
 
 ### "Invalid token" Error
-- Make sure you copied the full token correctly
+- Make sure you copied the full token correctly into `.env`
 - Check that you created a token with `repo` scope
-- Regenerate a new token and try again
+- Regenerate a new token and update your `.env` file
+- Restart the dev server or rebuild the app for changes to take effect
 
 ### "Failed to update file" Error
 - Ensure the file exists at `workoutData.json` in your repository
 - Check your GitHub repository settings (make sure it's not archived)
-- Try removing and re-adding your token
+- Try regenerating and updating your token in `.env`
+- Restart the app
 
-### "Could not get file SHA" Error
-- The file might not exist in your repository
-- Create an empty `workoutData.json` file in your GitHub repository first
-- Then try syncing again
+### "GitHub token not configured" Error
+- Your `.env` file is missing the `VITE_GITHUB_TOKEN` variable
+- Add your token to `.env` file
+- Restart the dev server or rebuild the app
+- The app will only show "Sync to GitHub" button if token is configured
 
 ### Data Not Syncing
-- Verify your token is configured in Settings
+- Verify your `.env` file has `VITE_GITHUB_TOKEN` set
+- Restart the dev server or rebuild the app after changing `.env`
 - Check your internet connection
 - Look at the browser console (F12) for error messages
 

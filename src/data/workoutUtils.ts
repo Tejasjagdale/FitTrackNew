@@ -1,7 +1,7 @@
-import workoutData from './workoutData.json'
+import { getData } from './dataService'
 
-export type Variant = (typeof workoutData.variants)[0]
-export type ExerciseOrder = Variant['exerciseOrder'][0]
+export type Variant = any
+export type ExerciseOrder = any
 
 export interface WorkoutState {
   currentDayIndex: number
@@ -46,6 +46,7 @@ export const saveWorkoutState = (state: WorkoutState) => {
 
 export const getTodayVariant = (): Variant | null => {
   const state = getWorkoutState()
+  const workoutData = getData()
   const allVariants = workoutData.variants
   const weeklyOrder = workoutData.weeklyOrder
 
@@ -112,9 +113,9 @@ export const finishWorkout = () => {
     state.completedVariants.push(variant.variantName)
   }
   state.workoutInProgress = false
+  const workoutData = getData()
   state.currentDayIndex = (state.currentDayIndex + 1) % workoutData.weeklyOrder.length
   state.currentStepIndex = 0
   saveWorkoutState(state)
 }
 
-export default workoutData

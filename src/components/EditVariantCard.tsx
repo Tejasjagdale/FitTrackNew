@@ -15,35 +15,30 @@ import {
   Typography,
   Chip,
   Grid,
-  useTheme
+  useTheme,
+  Select,
+  MenuItem
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import AddIcon from '@mui/icons-material/Add'
+import { getData } from '../data/dataService'
 import type { Variant, ExerciseOrder } from '../data/workoutUtils'
-
-const EQUIPMENT_OPTIONS = [
-  "10Kg dumble",
-  "15Kg dumble",
-  "pull up bar",
-  "chair",
-  "table",
-  "yoga mat"
-]
 
 interface EditExerciseRowProps {
   exercise: ExerciseOrder
+  equipmentOptions: string[]
   onUpdate: (updated: ExerciseOrder) => void
   onDelete: () => void
 }
 
-export function EditExerciseRow({ exercise, onUpdate, onDelete }: EditExerciseRowProps) {
+export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete }: EditExerciseRowProps) {
   const theme = useTheme()
   const [editDialog, setEditDialog] = useState(false)
   const [reps, setReps] = useState(exercise.reps)
   const [rest, setRest] = useState(exercise.restSeconds.toString())
-  const [equipment, setEquipment] = useState(exercise.equipment || '')
+  const [equipment, setEquipment] = useState<string[]>(Array.isArray(exercise.equipment) ? exercise.equipment : [])
 
   const handleSave = () => {
     onUpdate({
@@ -53,6 +48,12 @@ export function EditExerciseRow({ exercise, onUpdate, onDelete }: EditExerciseRo
       equipment
     })
     setEditDialog(false)
+  }
+
+  const toggleEquipment = (item: string) => {
+    setEquipment((prev) =>
+      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]
+    )
   }
 
   return (
@@ -80,10 +81,16 @@ export function EditExerciseRow({ exercise, onUpdate, onDelete }: EditExerciseRo
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
           <Chip label={`${exercise.reps} reps`} size="small" color="primary" />
           <Chip label={`${exercise.restSeconds}s rest`} size="small" variant="outlined" />
-          {exercise.equipment && <Chip label={exercise.equipment} size="small" variant="outlined" color="default" />}
+          {exercise.equipment && exercise.equipment.length > 0 && (
+            <Stack direction="row" spacing={0.5}>
+              {exercise.equipment.map((eq: string) => (
+                <Chip key={eq} label={eq} size="small" variant="outlined" color="default" />
+              ))}
+            </Stack>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={0.5}>
@@ -116,21 +123,20 @@ export function EditExerciseRow({ exercise, onUpdate, onDelete }: EditExerciseRo
             inputProps={{ min: 10 }}
             sx={{ mb: 2 }}
           />
-          <TextField
-            select
-            fullWidth
-            label="Equipment"
-            value={equipment}
-            onChange={(e) => setEquipment(e.target.value)}
-            SelectProps={{ native: true }}
-          >
-            <option value="">Select equipment</option>
-            {EQUIPMENT_OPTIONS.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Equipment (select multiple)
+          </Typography>
+          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+            {equipmentOptions.map((opt) => (
+              <Chip
+                key={opt}
+                label={opt}
+                onClick={() => toggleEquipment(opt)}
+                color={equipment.includes(opt) ? 'primary' : 'default'}
+                variant={equipment.includes(opt) ? 'filled' : 'outlined'}
+              />
             ))}
-          </TextField>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialog(false)}>Cancel</Button>
@@ -150,6 +156,7 @@ interface EditVariantCardProps {
 
 export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
   const theme = useTheme()
+  const equipmentOptions = (getData() as any).equipments || []
   const [isEditing, setIsEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [variantName, setVariantName] = useState(variant.variantName)
@@ -158,7 +165,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
   const [newExerciseName, setNewExerciseName] = useState('')
   const [newSetReps, setNewSetReps] = useState('8-12')
   const [newSetRest, setNewSetRest] = useState('60')
-  const [newSetEquipment, setNewSetEquipment] = useState('')
+  const [newSetEquipment, setNewSetEquipment] = useState<string[]>([])
 
   const handleUpdateVariantName = () => {
     if (variantName && variantName !== variant.variantName) {
@@ -175,9 +182,9 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
 
   const handleDeleteSet = (index: number) => {
     const deleted = variant.exerciseOrder[index]
-    const newOrder = variant.exerciseOrder
-      .filter((_, i) => i !== index)
-      .map((ex, i) => ({ ...ex, step: i + 1 }))
+    const newOrder = (variant.exerciseOrder as any[])
+      .filter((_: any, i: number) => i !== index)
+      .map((ex: any, i: number) => ({ ...ex, step: i + 1 }))
 
     onUpdate({ ...variant, exerciseOrder: newOrder })
   }
@@ -186,8 +193,8 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
     if (!newExerciseName) return
 
     const newStep = variant.exerciseOrder.length + 1
-    const lastSet = variant.exerciseOrder
-      .filter((ex) => ex.name === newExerciseName)
+    const lastSet = (variant.exerciseOrder as any[])
+      .filter((ex: any) => ex.name === newExerciseName)
       .pop()
 
     const newSet: ExerciseOrder = {
@@ -208,7 +215,13 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
     setNewExerciseName('')
     setNewSetReps('8-12')
     setNewSetRest('60')
-    setNewSetEquipment('')
+    setNewSetEquipment([])
+  }
+
+  const toggleNewSetEquipment = (item: string) => {
+    setNewSetEquipment((prev) =>
+      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]
+    )
   }
 
   return (
@@ -284,41 +297,41 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                 inputProps={{ min: 10 }}
                 sx={{ minWidth: '100px' }}
               />
-              <TextField
-                select
-                label="Equipment"
-                value={newSetEquipment}
-                onChange={(e) => setNewSetEquipment(e.target.value)}
-                SelectProps={{ native: true }}
-                sx={{ minWidth: '150px' }}
-              >
-                <option value="">Select equipment</option>
-                {EQUIPMENT_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </TextField>
               <Button startIcon={<AddIcon />} onClick={handleAddSet} variant="contained">
                 Add Set
               </Button>
+            </Stack>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, mt: 2, color: theme.palette.primary.main }}>
+              Equipment (select multiple)
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+              {equipmentOptions.map((opt: string) => (
+                <Chip
+                  key={opt}
+                  label={opt}
+                  onClick={() => toggleNewSetEquipment(opt)}
+                  color={newSetEquipment.includes(opt) ? 'primary' : 'default'}
+                  variant={newSetEquipment.includes(opt) ? 'filled' : 'outlined'}
+                />
+              ))}
             </Stack>
           </Box>
         )}
 
         <Box>
-          {Array.from(new Set(variant.exerciseOrder.map((ex) => ex.name))).map((exerciseName) => (
+          {Array.from(new Set((variant.exerciseOrder as any[]).map((ex: any) => ex.name))).map((exerciseName: string) => (
             <Box key={exerciseName} sx={{ mb: 3 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}>
                 {exerciseName}
               </Typography>
               {variant.exerciseOrder
-                .map((ex, idx) => ({ ex, idx }))
-                .filter(({ ex }) => ex.name === exerciseName)
-                .map(({ ex, idx }) => (
+                .map((ex: any, idx: number) => ({ ex, idx }))
+                .filter(({ ex }: { ex: any }) => ex.name === exerciseName)
+                .map(({ ex, idx }: { ex: any; idx: number }) => (
                   <EditExerciseRow
                     key={idx}
                     exercise={ex}
+                    equipmentOptions={equipmentOptions}
                     onUpdate={(updated) => handleUpdateSet(idx, updated)}
                     onDelete={() => handleDeleteSet(idx)}
                   />
