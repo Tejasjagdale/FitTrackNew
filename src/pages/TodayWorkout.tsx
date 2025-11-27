@@ -8,49 +8,77 @@ import {
   Chip,
   LinearProgress,
   Stack,
+  IconButton,
   useTheme
 } from '@mui/material'
-import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
-  getTodayVariant,
-  getCurrentStep,
-  getWorkoutState,
-  startWorkout,
-  advanceStep,
-  undoStep,
-  finishWorkout
-} from '../data/workoutUtils'
+  getData,
+} from '../data/dataService'
 import type { Variant, ExerciseOrder } from '../data/workoutUtils'
 
 export default function TodayWorkout() {
   const theme = useTheme()
-  const [variant, setVariant] = useState<Variant | null>(null)
+  const [variants, setVariants] = useState<Variant[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null)
+
+  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [isWorkoutInProgress, setIsWorkoutInProgress] = useState(false)
   const [currentStep, setCurrentStep] = useState<ExerciseOrder | null>(null)
-  const [state, setState] = useState(getWorkoutState())
   const [timeLeft, setTimeLeft] = useState(0)
   const [isResting, setIsResting] = useState(false)
 
-  // Update states
   useEffect(() => {
-    setVariant(getTodayVariant())
-    setCurrentStep(getCurrentStep())
-    setState(getWorkoutState())
+    const data = getData()
+    setVariants(data.variants)
+    if (data.variants.length) {
+      setSelectedVariant(data.variants[0])
+      setCurrentStepIndex(0)
+      setCurrentStep(data.variants[0].exerciseOrder[0] || null)
+    }
   }, [])
 
-  // Timer logic for rest periods
+  // Timer logic for rest
   useEffect(() => {
     if (!isResting || timeLeft <= 0) return
-
     const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
     return () => clearTimeout(timer)
   }, [isResting, timeLeft])
 
+  // Carousel navigation
+  const handlePrevVariant = () => {
+    const newIndex = (currentIndex - 1 + variants.length) % variants.length
+    setCurrentIndex(newIndex)
+    setSelectedVariant(variants[newIndex])
+    setCurrentStepIndex(0)
+    setCurrentStep(variants[newIndex].exerciseOrder[0] || null)
+    setIsWorkoutInProgress(false)
+    setIsResting(false)
+    setTimeLeft(0)
+  }
+
+  const handleNextVariant = () => {
+    const newIndex = (currentIndex + 1) % variants.length
+    setCurrentIndex(newIndex)
+    setSelectedVariant(variants[newIndex])
+    setCurrentStepIndex(0)
+    setCurrentStep(variants[newIndex].exerciseOrder[0] || null)
+    setIsWorkoutInProgress(false)
+    setIsResting(false)
+    setTimeLeft(0)
+  }
+
+  // Start the workout
   const handleStartWorkout = () => {
-    startWorkout()
-    setState(getWorkoutState())
-    setCurrentStep(getCurrentStep())
+    setIsWorkoutInProgress(true)
+    setCurrentStepIndex(0)
+    if (selectedVariant) {
+      setCurrentStep(selectedVariant.exerciseOrder[0] || null)
+    }
   }
 
   const handleCompleteSet = () => {
@@ -60,108 +88,98 @@ export default function TodayWorkout() {
     }
   }
 
-  const handleNext = () => {
-    advanceStep()
-    setState(getWorkoutState())
-    setCurrentStep(getCurrentStep())
-    setIsResting(false)
-    setTimeLeft(0)
-
-    if (!getWorkoutState().workoutInProgress) {
-      setVariant(getTodayVariant())
+  const handleNextStep = () => {
+    if (!selectedVariant) return
+    const nextIndex = currentStepIndex + 1
+    if (nextIndex < selectedVariant.exerciseOrder.length) {
+      setCurrentStepIndex(nextIndex)
+      setCurrentStep(selectedVariant.exerciseOrder[nextIndex])
+    } else {
+      // Workout complete
+      setIsWorkoutInProgress(false)
+      setCurrentStep(null)
+      setCurrentStepIndex(0)
     }
-  }
-
-  const handleUndo = () => {
-    undoStep()
-    setState(getWorkoutState())
-    setCurrentStep(getCurrentStep())
     setIsResting(false)
     setTimeLeft(0)
   }
 
-  const handleFinish = () => {
-    finishWorkout()
-    setState(getWorkoutState())
-    setVariant(getTodayVariant())
-    setCurrentStep(null)
+  const handleUndoStep = () => {
+    if (currentStepIndex <= 0) return
+    const prevIndex = currentStepIndex - 1
+    setCurrentStepIndex(prevIndex)
+    if (selectedVariant) setCurrentStep(selectedVariant.exerciseOrder[prevIndex])
     setIsResting(false)
     setTimeLeft(0)
   }
 
-  if (!variant) return <Typography>Loading...</Typography>
+  if (!selectedVariant) return <Typography>Loading variants...</Typography>
 
-  const isWorkoutDone = !state.workoutInProgress && currentStep === null
-  const progress =
-    state.workoutInProgress && currentStep
-      ? ((state.currentStepIndex + 1) / variant.exerciseOrder.length) * 100
-      : 0
-
-  // derive exercisesList for display
-  const exercisesList = variant.exerciseOrder.reduce<{ name: string; sets: number }[]>((acc, ex) => {
+  // derive exercises list for display
+  const exercisesList = selectedVariant.exerciseOrder.reduce<{ name: string; sets: number }[]>((acc, ex) => {
     const existing = acc.find((e) => e.name === ex.name)
     if (existing) existing.sets += 1
     else acc.push({ name: ex.name, sets: 1 })
     return acc
   }, [])
 
+  const progress = isWorkoutInProgress && currentStep
+    ? ((currentStepIndex + 1) / selectedVariant.exerciseOrder.length) * 100
+    : 0
+
   return (
     <Container>
-      <Box sx={{ py: 4 }}>
-        {/* Workout Plan Card (pre-start) */}
-        {!state.workoutInProgress && (
-          <Card className="glass" sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <FitnessCenterIcon sx={{ fontSize: 48, color: theme.palette.primary.main }} />
-            </Box>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Choose a Workout
+        </Typography>
 
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+          <IconButton onClick={handlePrevVariant}><ArrowBackIosIcon /></IconButton>
+
+          <Card sx={{ p: 4, mx: 2, minWidth: 300, borderRadius: 3 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-              {variant.variantName}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-              {exercisesList.length} exercises • {variant.exerciseOrder.length} sets total
+              {selectedVariant.variantName}
             </Typography>
 
-            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mb: 3, flexWrap: 'wrap' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+              {exercisesList.length} exercises • {selectedVariant.exerciseOrder.length} sets total
+            </Typography>
+
+            <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: 'wrap' }}>
               {exercisesList.map((ex) => (
                 <Chip key={ex.name} label={`${ex.name} (${ex.sets}x)`} color="primary" variant="outlined" />
               ))}
             </Stack>
 
-            {!isWorkoutDone && (
+            {!isWorkoutInProgress && (
               <Button
                 variant="contained"
-                size="large"
                 startIcon={<PlayArrowIcon />}
                 onClick={handleStartWorkout}
-                sx={{ borderRadius: 2, textTransform: 'none', fontSize: 16, fontWeight: 600 }}
+                sx={{ mt: 2, borderRadius: 2, textTransform: 'none', fontSize: 16, fontWeight: 600 }}
               >
-                Let's Start
+                Start This Workout
               </Button>
             )}
-
-            {isWorkoutDone && (
-              <Typography variant="body1" sx={{ color: theme.palette.primary.main, fontWeight: 600 }}>
-                ✓ Workout Complete! Next variant scheduled for tomorrow.
-              </Typography>
-            )}
           </Card>
-        )}
+
+          <IconButton onClick={handleNextVariant}><ArrowForwardIosIcon /></IconButton>
+        </Box>
 
         {/* Active Exercise Card */}
-        {state.workoutInProgress && currentStep && !isResting && (
-          <Card className="glass" sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
-            <LinearProgress variant="determinate" value={progress} sx={{ mb: 3, borderRadius: 2, height: 6 }} />
-
+        {isWorkoutInProgress && currentStep && !isResting && (
+          <Card sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
+            <LinearProgress variant="determinate" value={progress} sx={{ mb: 2, borderRadius: 2, height: 6 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Step {state.currentStepIndex + 1} of {variant.exerciseOrder.length}
+              Step {currentStepIndex + 1} of {selectedVariant.exerciseOrder.length}
             </Typography>
 
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: theme.palette.primary.main }}>
               {currentStep.name}
             </Typography>
 
-            <Stack spacing={2} sx={{ mb: 4 }}>
+            <Stack spacing={2} sx={{ mb: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                 <Chip label={`Set ${currentStep.set}`} color="primary" variant="filled" />
                 <Chip label={`${currentStep.reps} reps`} variant="outlined" />
@@ -172,16 +190,16 @@ export default function TodayWorkout() {
               variant="contained"
               size="large"
               onClick={handleCompleteSet}
-              sx={{ borderRadius: 2, textTransform: 'none', fontSize: 16, fontWeight: 600 }}
+              sx={{ borderRadius: 2, textTransform: 'none', fontSize: 16, fontWeight: 600, mb: 1 }}
             >
-              Set Complete
+              Complete Set
             </Button>
 
-            {state.currentStepIndex > 0 && (
+            {currentStepIndex > 0 && (
               <Button
                 variant="outlined"
                 startIcon={<ArrowBackIcon />}
-                onClick={handleUndo}
+                onClick={handleUndoStep}
                 sx={{ borderRadius: 2, textTransform: 'none' }}
               >
                 Undo
@@ -191,61 +209,38 @@ export default function TodayWorkout() {
         )}
 
         {/* Rest Timer Card */}
-        {state.workoutInProgress && isResting && timeLeft > 0 && currentStep && (
-          <Card className="glass" sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
-            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3 }}>
+        {isWorkoutInProgress && isResting && timeLeft > 0 && currentStep && (
+          <Card sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2 }}>
               Rest before next set
             </Typography>
 
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 700,
-                mb: 4,
-                color: theme.palette.primary.main,
-                fontFamily: 'monospace'
-              }}
-            >
+            <Typography variant="h2" sx={{ fontWeight: 700, mb: 3, color: theme.palette.primary.main, fontFamily: 'monospace' }}>
               {timeLeft}s
             </Typography>
 
             <LinearProgress
               variant="determinate"
               value={(1 - timeLeft / currentStep.restSeconds) * 100}
-              sx={{ mb: 3, borderRadius: 2, height: 6 }}
+              sx={{ mb: 2, borderRadius: 2, height: 6 }}
             />
 
-            <Button variant="outlined" onClick={handleNext} sx={{ borderRadius: 2, textTransform: 'none' }}>
+            <Button variant="outlined" onClick={handleNextStep} sx={{ borderRadius: 2, textTransform: 'none', mb: 1 }}>
               Skip Rest
             </Button>
 
-            {state.currentStepIndex > 0 && (
+            {currentStepIndex > 0 && (
               <Button
                 variant="outlined"
                 color="warning"
                 startIcon={<ArrowBackIcon />}
-                onClick={handleUndo}
+                onClick={handleUndoStep}
                 sx={{ borderRadius: 2, textTransform: 'none' }}
               >
                 Undo
               </Button>
             )}
           </Card>
-        )}
-
-        {/* Finish Button */}
-        {state.workoutInProgress && (
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-            {currentStep && !isResting && <div />}
-            {isResting && timeLeft === 0 && (
-              <Button variant="contained" onClick={handleNext} sx={{ borderRadius: 2 }}>
-                Next Set
-              </Button>
-            )}
-            <Button variant="outlined" color="error" onClick={handleFinish} sx={{ borderRadius: 2 }}>
-              Finish Workout
-            </Button>
-          </Box>
         )}
       </Box>
     </Container>
