@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Box,
+  Typography,
   Stack,
   Chip,
   IconButton,
@@ -9,9 +10,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Typography,
-  useTheme,
-  Button
+  Button,
+  useTheme
 } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -24,18 +24,25 @@ interface EditExerciseRowProps {
   onDelete: () => void
 }
 
-export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete }: EditExerciseRowProps) {
+export function EditExerciseRow({
+  exercise,
+  equipmentOptions,
+  onUpdate,
+  onDelete
+}: EditExerciseRowProps) {
   const theme = useTheme()
   const [editDialog, setEditDialog] = useState(false)
   const [reps, setReps] = useState(exercise.reps)
   const [rest, setRest] = useState(exercise.restSeconds.toString())
-  const [equipment, setEquipment] = useState<string[]>(Array.isArray(exercise.equipment) ? exercise.equipment : [])
+  const [equipment, setEquipment] = useState<string[]>(
+    Array.isArray(exercise.equipment) ? exercise.equipment : []
+  )
 
   const handleSave = () => {
     onUpdate({
       ...exercise,
       reps,
-      restSeconds: parseInt(rest) || 60,
+      restSeconds: parseInt(rest, 10) || 60,
       equipment
     })
     setEditDialog(false)
@@ -55,30 +62,45 @@ export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete
           alignItems: 'center',
           justifyContent: 'space-between',
           p: 1.5,
-          mb: 1,
-          background: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,200,83,0.04)',
+          backgroundColor:
+            theme.palette.mode === 'dark'
+              ? 'rgba(255,255,255,0.03)'
+              : 'rgba(0,0,0,0.02)',
           borderRadius: 2,
-          border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,200,83,0.1)'}`,
-          flexWrap: 'wrap',
-          gap: 1
+          gap: 1,
+          flexWrap: 'wrap'
         }}
       >
-        <Box sx={{ flex: 1, minWidth: '150px' }}>
+        <Box sx={{ minWidth: 160 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {exercise.name} — Set {exercise.set}
+            {exercise.name}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Step {exercise.step}
+            Step {exercise.step} • Set {exercise.set}
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ alignItems: 'center', flexWrap: 'wrap', flexGrow: 1 }}
+        >
           <Chip label={`${exercise.reps} reps`} size="small" color="primary" />
-          <Chip label={`${exercise.restSeconds}s rest`} size="small" variant="outlined" />
+          <Chip
+            label={`${exercise.restSeconds}s rest`}
+            size="small"
+            variant="outlined"
+          />
           {exercise.equipment && exercise.equipment.length > 0 && (
             <Stack direction="row" spacing={0.5}>
               {exercise.equipment.map((eq: string) => (
-                <Chip key={eq} label={eq} size="small" variant="outlined" color="default" />
+                <Chip
+                  key={eq}
+                  label={eq}
+                  size="small"
+                  variant="outlined"
+                  sx={{ maxWidth: 120 }}
+                />
               ))}
             </Stack>
           )}
@@ -94,15 +116,16 @@ export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete
         </Stack>
       </Box>
 
+      {/* Edit dialog */}
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Edit Set {exercise.set}</DialogTitle>
+        <DialogTitle>Edit Set</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField
             fullWidth
             label="Reps"
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            placeholder="e.g., 8-12 or max or AMRAP"
+            placeholder="e.g., 8-12 or max"
             sx={{ mb: 2 }}
           />
           <TextField
@@ -117,7 +140,7 @@ export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
             Equipment (select multiple)
           </Typography>
-          <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
             {equipmentOptions.map((opt) => (
               <Chip
                 key={opt}
@@ -125,6 +148,7 @@ export function EditExerciseRow({ exercise, equipmentOptions, onUpdate, onDelete
                 onClick={() => toggleEquipment(opt)}
                 color={equipment.includes(opt) ? 'primary' : 'default'}
                 variant={equipment.includes(opt) ? 'filled' : 'outlined'}
+                sx={{ mb: 1 }}
               />
             ))}
           </Stack>
