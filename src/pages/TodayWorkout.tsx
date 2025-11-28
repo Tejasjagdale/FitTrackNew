@@ -1,6 +1,7 @@
+// src/pages/TodayWorkout.tsx
 import React, { useState, useEffect } from 'react'
 import { Container, Box, Typography } from '@mui/material'
-import { getData } from '../data/dataService'
+import { loadData, getData } from '../data/dataService'
 import type { Variant } from '../data/workoutUtils'
 import WorkoutPlayer from '../components/WorkoutPlayer'
 import VariantCarousel from '../components/VariantCarousel'
@@ -12,15 +13,48 @@ export default function TodayWorkout() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isWorkoutInProgress, setIsWorkoutInProgress] = useState(false)
 
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // -----------------------------
+  // Load workout data from GitHub
+  // -----------------------------
   useEffect(() => {
-    const data = getData()
-    setVariants(data.variants)
-    if (data.variants.length) {
-      setSelectedVariant(data.variants[0])
-      setCurrentStepIndex(0)
+    let cancelled = false
+
+    async function run() {
+      setLoading(true)
+      setError(null)
+
+      try {
+        await loadData() // WAIT for GitHub
+        if (cancelled) return
+
+        const data = getData()
+        setVariants(data.variants || [])
+
+        if (data.variants?.length > 0) {
+          setSelectedVariant(data.variants[0])
+          setCurrentStepIndex(0)
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load workout data.')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    run()
+    return () => {
+      cancelled = true
     }
   }, [])
 
+  // -----------------------------
+  // Navigation handlers
+  // -----------------------------
   const handlePrevVariant = () => {
     const newIndex = (currentIndex - 1 + variants.length) % variants.length
     setCurrentIndex(newIndex)
@@ -55,8 +89,45 @@ export default function TodayWorkout() {
     setCurrentStepIndex(0)
   }
 
-  if (!selectedVariant) return <Typography>Loading...</Typography>
+  // -----------------------------
+  // Loading & Error states
+  // -----------------------------
+  if (loading) {
+    return (
+      <Container>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography variant="h6">Loading workout data…</Typography>
+        </Box>
+      </Container>
+    )
+  }
 
+  if (error) {
+    return (
+      <Container>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="error">
+            Failed to load workouts
+          </Typography>
+          <Typography variant="body2">{error}</Typography>
+        </Box>
+      </Container>
+    )
+  }
+
+  if (!selectedVariant) {
+    return (
+      <Container>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography>No variants found.</Typography>
+        </Box>
+      </Container>
+    )
+  }
+
+  // -----------------------------
+  // Main UI
+  // -----------------------------
   return (
     <Container>
       <Box sx={{ py: 4, textAlign: 'center' }}>

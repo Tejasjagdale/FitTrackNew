@@ -1,10 +1,13 @@
+// src/data/githubService.ts
 import { Octokit } from "octokit"
 
 const OWNER = "Tejasjagdale"
 const REPO = "github-db"
-const FILE_PATH = "workoutData.json"
 
-// Initialize once
+// File paths in repo root
+const WORKOUT_FILE = "workoutData.json"
+const PROGRESS_FILE = "progressData.json"
+
 let octokit: Octokit | null = null
 
 export function isGitHubConfigured(): boolean {
@@ -19,65 +22,75 @@ export function getGitHubService() {
     octokit = new Octokit({ auth: token })
   }
 
-  const _octokit = octokit // capture in closure
+  const _octokit = octokit
 
-  return {
-    fetchWorkoutData: async () => {
+  // Helper: read any JSON file from GitHub
+  async function fetchJSON(path: string) {
+    try {
+      const res = await _octokit.rest.repos.getContent({
+        owner: OWNER,
+        repo: REPO,
+        path
+      })
+
+      if (Array.isArray(res.data)) {
+        throw new Error(`Expected file but got directory for path: ${path}`)
+      }
+
+      const raw = (res.data as any).content || ""
+      const decoded = decodeURIComponent(escape(atob(raw)))
+      return JSON.parse(decoded)
+    } catch (err) {
+      console.error("GitHub fetch failed:", err)
+      throw err
+    }
+  }
+
+  // Helper: update any JSON file in GitHub
+  async function updateJSON(path: string, data: any, commitMessage: string) {
+    try {
+      const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))))
+
+      // STEP 1: get SHA (needed for update)
+      let sha: string | undefined = undefined
       try {
         const res = await _octokit.rest.repos.getContent({
           owner: OWNER,
           repo: REPO,
-          path: FILE_PATH
+          path
         })
 
-        if (Array.isArray(res.data)) {
-          throw new Error('Expected file content but got directory')
+        if (!Array.isArray(res.data)) {
+          sha = res.data.sha
         }
-
-        const raw = (res.data as any).content || ''
-        // decode base64 -> UTF8
-        const decoded = decodeURIComponent(escape(atob(raw)))
-        return JSON.parse(decoded)
-      } catch (err) {
-        throw err
+      } catch {
+        console.warn(`File '${path}' not found — will create new one.`)
       }
-    },
 
-    updateWorkoutData: async (data: any, commitMessage: string) => {
-      try {
-        // Convert JSON → Base64
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))))
-
-        // STEP 1: Fetch existing file SHA (required for update)
-        let sha: string | undefined = undefined
-        try {
-          const res = await _octokit.rest.repos.getContent({
-            owner: OWNER,
-            repo: REPO,
-            path: FILE_PATH
-          })
-
-          if (!Array.isArray(res.data)) {
-            sha = res.data.sha
-          }
-        } catch (err) {
-          // If file is missing on repo, SHA stays undefined → GitHub will CREATE file instead of update
-          console.warn("File not found on GitHub, creating new file...")
-        }
-
-        // STEP 2: Create or update file
-        await _octokit.rest.repos.createOrUpdateFileContents({
-          owner: OWNER,
-          repo: REPO,
-          path: FILE_PATH,
-          message: commitMessage,
-          content,
-          sha // undefined = create, defined = update
-        })
-
-      } catch (err: any) {
-        throw new Error(err?.message || "Unknown GitHub update error")
-      }
+      // STEP 2: update or create
+      await _octokit.rest.repos.createOrUpdateFileContents({
+        owner: OWNER,
+        repo: REPO,
+        path,
+        message: commitMessage,
+        content,
+        sha
+      })
+    } catch (err: any) {
+      console.error("GitHub update failed:", err)
+      throw new Error(err?.message || "Unknown GitHub update error")
     }
+  }
+
+  return {
+    // -------- WORKOUT DATA --------
+    fetchWorkoutData: async () => fetchJSON(WORKOUT_FILE),
+    updateWorkoutData: async (data: any, message: string) =>
+      updateJSON(WORKOUT_FILE, data, message),
+
+    // -------- PROGRESS DATA --------
+    fetchProgressData: async () => fetchJSON(PROGRESS_FILE),
+    updateProgressData: async (data: any, message: string) =>
+      updateJSON(PROGRESS_FILE, data, message)
   }
 }
