@@ -10,6 +10,7 @@ export interface ExerciseOrder {
 }
 
 export interface Variant {
+  equipment: any
   variantName: string
   exerciseOrder: ExerciseOrder[]
 }
