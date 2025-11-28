@@ -16,7 +16,6 @@ export interface ExerciseList {
 }
 
 export interface Variant {
-  equipment: any;
   variantName: string;
   exercisesList: ExerciseList[];
   exerciseOrder: ExerciseOrder[];

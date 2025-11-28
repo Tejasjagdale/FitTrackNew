@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import {
   Container,
   Box,
@@ -9,29 +9,49 @@ import {
   CircularProgress,
   Stack
 } from '@mui/material'
-import SaveIcon from '@mui/icons-material/Save'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import AddIcon from '@mui/icons-material/Add'
 import { EditVariantCard } from '../components/EditVariantCard'
 import { getWorkoutState } from '../data/workoutUtils'
 import { getGitHubService, isGitHubConfigured } from '../data/githubService'
-import { getData, setData, syncToGitHub } from '../data/dataService'
+import { loadData, getData, setData, syncToGitHub } from '../data/dataService'
 import type { Variant } from '../data/workoutUtils'
 
 export default function VariantPage() {
-  const baseData = getData() as any
-
-  // If you want local overrides to survive reloads:
-  const storedCustom = localStorage.getItem('customVariants')
-  const initialVariants: Variant[] = storedCustom
-    ? JSON.parse(storedCustom)
-    : baseData.variants || []
-
-  const [variants, setVariants] = useState<Variant[]>(initialVariants)
-  const [saved, setSaved] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [variants, setVariants] = useState<Variant[]>([])
   const [syncMessage, setSyncMessage] = useState('')
-  const [isSyncing, setIsSyncing] = useState(false)
   const [syncError, setSyncError] = useState('')
+  const [isSyncing, setIsSyncing] = useState(false)
   const hasGitHubToken = isGitHubConfigured()
+
+  // load GitHub data on mount
+  useEffect(() => {
+    const load = async () => {
+      try {
+        await loadData()
+        const baseData = getData()
+        setVariants(baseData.variants || [])
+      } catch (err) {
+        console.error(err)
+        setSyncError('Failed to load data from GitHub.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  // detect unsaved changes
+  const unsavedChanges = useMemo(() => {
+    if (loading) return false
+    try {
+      const base = getData().variants || []
+      return JSON.stringify(base) !== JSON.stringify(variants)
+    } catch {
+      return false
+    }
+  }, [variants, loading])
 
   const handleVariantUpdate = (index: number, updated: Variant) => {
     const newVariants = [...variants]
@@ -39,10 +59,17 @@ export default function VariantPage() {
     setVariants(newVariants)
   }
 
-  const handleSaveLocal = () => {
-    localStorage.setItem('customVariants', JSON.stringify(variants))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
+  const handleAddVariant = () => {
+    const newVariant: Variant = {
+      variantName: `New Variant ${variants.length + 1}`,
+      exercisesList: [],
+      exerciseOrder: []
+    }
+    setVariants([...variants, newVariant])
+  }
+
+  const handleDeleteVariant = (index: number) => {
+    setVariants(variants.filter((_, i) => i !== index))
   }
 
   const handleSyncToGitHub = async () => {
@@ -52,13 +79,13 @@ export default function VariantPage() {
 
     try {
       const githubService = getGitHubService()
-
       if (!githubService) {
-        setSyncError('GitHub token not configured in .env file (VITE_GITHUB_TOKEN)')
+        setSyncError('GitHub token not configured in .env file')
         setIsSyncing(false)
         return
       }
 
+      // update in-memory JSON before push
       const current = getData()
       const newData = { ...current, variants }
       setData(newData)
@@ -74,6 +101,16 @@ export default function VariantPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <Container sx={{ py: 6, textAlign: 'center' }}>
+        <CircularProgress size={40} />
+        <Typography sx={{ mt: 2 }}>Loading workout variants from GitHub…</Typography>
+      </Container>
+    )
+  }
+
+  const baseData = getData()
   const state = getWorkoutState()
   const weeklyOrder = baseData.weeklyOrder || []
   const nextVariantIndex = weeklyOrder.findIndex(
@@ -83,7 +120,6 @@ export default function VariantPage() {
   return (
     <Container>
       <Box sx={{ py: 4 }}>
-        {/* Header / Actions */}
         <Box
           sx={{
             display: 'flex',
@@ -98,15 +134,28 @@ export default function VariantPage() {
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
               Workout Variants
             </Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Edit exercises, sets, reps, rest times and their order. Save locally or sync to GitHub.
-            </Typography>
+
+            {unsavedChanges ? (
+              <Typography variant="body2" sx={{ color: 'warning.main', fontWeight: 600 }}>
+                You have unsaved changes. Sync to GitHub to persist them.
+              </Typography>
+            ) : (
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Loaded from GitHub. Changes are temporary until synced.
+              </Typography>
+            )}
           </Box>
+
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button startIcon={<SaveIcon />} onClick={handleSaveLocal} variant="contained">
-              Save Locally
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={handleAddVariant}
+            >
+              Add Variant
             </Button>
-            {hasGitHubToken && (
+
+            {hasGitHubToken && unsavedChanges && (
               <Button
                 startIcon={isSyncing ? <CircularProgress size={20} /> : <CloudUploadIcon />}
                 onClick={handleSyncToGitHub}
@@ -114,13 +163,12 @@ export default function VariantPage() {
                 color="success"
                 disabled={isSyncing}
               >
-                {isSyncing ? 'Syncing...' : 'Sync to GitHub'}
+                {isSyncing ? 'Syncing…' : 'Sync to GitHub'}
               </Button>
             )}
           </Stack>
         </Box>
 
-        {/* Next in rotation */}
         {nextVariantIndex >= 0 && (
           <Box
             sx={{
@@ -140,25 +188,15 @@ export default function VariantPage() {
           </Box>
         )}
 
-        {/* Variant cards */}
         {variants.map((variant, idx) => (
           <EditVariantCard
             key={variant.variantName ?? idx}
             variant={variant}
             onUpdate={(updated) => handleVariantUpdate(idx, updated)}
+            onDelete={() => handleDeleteVariant(idx)}
           />
         ))}
       </Box>
-
-      {/* Snackbars */}
-      <Snackbar
-        open={saved}
-        autoHideDuration={3000}
-        onClose={() => setSaved(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="success">Changes saved locally!</Alert>
-      </Snackbar>
 
       {syncMessage && (
         <Snackbar

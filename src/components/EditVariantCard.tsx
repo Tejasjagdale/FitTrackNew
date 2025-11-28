@@ -21,6 +21,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import EditIcon from '@mui/icons-material/Edit'
 import AddIcon from '@mui/icons-material/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import { getData } from '../data/dataService'
 import type { Variant, ExerciseOrder } from '../data/workoutUtils'
@@ -29,6 +30,7 @@ import { EditExerciseRow } from './EditExerciseRow'
 interface EditVariantCardProps {
   variant: Variant
   onUpdate: (updated: Variant) => void
+  onDelete: () => void
 }
 
 // Normalize steps + set numbers per exercise name
@@ -61,7 +63,7 @@ const buildExercisesList = (
   return Object.values(map)
 }
 
-export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
+export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCardProps) {
   const theme = useTheme()
   const equipmentOptions = (getData() as any).equipments || []
 
@@ -75,19 +77,13 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
   const [newSetRest, setNewSetRest] = useState('60')
   const [newSetEquipment, setNewSetEquipment] = useState<string[]>([])
 
-  // DnD state
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
-  // Exercise name options for autocomplete
   const exerciseNameOptions = useMemo(() => {
     const names = new Set<string>()
-    if (variant.exercisesList) {
-      variant.exercisesList.forEach((ex: any) => names.add(ex.name))
-    }
-    if (variant.exerciseOrder) {
-      variant.exerciseOrder.forEach((ex: any) => names.add(ex.name))
-    }
+    if (variant.exercisesList) variant.exercisesList.forEach((ex: any) => names.add(ex.name))
+    if (variant.exerciseOrder) variant.exerciseOrder.forEach((ex: any) => names.add(ex.name))
     return Array.from(names)
   }, [variant])
 
@@ -127,7 +123,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
       .pop()
 
     const newSet: ExerciseOrder = {
-      step: variant.exerciseOrder.length + 1, // will be normalized anyway
+      step: variant.exerciseOrder.length + 1,
       name: newExerciseName.trim(),
       set: (lastSetForExercise?.set || 0) + 1,
       reps: newSetReps,
@@ -150,40 +146,35 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
     )
   }
 
-  // ---- DnD handlers (native HTML5) ----
-  const handleDragStart =
-    (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-      setDragIndex(index)
-      setHoverIndex(index)
-      e.dataTransfer.effectAllowed = 'move'
-      // Needed for Firefox
-      e.dataTransfer.setData('text/plain', String(index))
-    }
+  // ---- DnD handlers ----
+  const handleDragStart = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    setDragIndex(index)
+    setHoverIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(index))
+  }
 
-  const handleDragOver =
-    (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      e.dataTransfer.dropEffect = 'move'
-      setHoverIndex(index)
-    }
+  const handleDragOver = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setHoverIndex(index)
+  }
 
-  const handleDrop =
-    (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-      e.preventDefault()
-      if (dragIndex === null || dragIndex === index) {
-        setDragIndex(null)
-        setHoverIndex(null)
-        return
-      }
-
-      const newOrder = Array.from(variant.exerciseOrder)
-      const [moved] = newOrder.splice(dragIndex, 1)
-      newOrder.splice(index, 0, moved)
-
-      updateVariantWithOrder(newOrder)
+  const handleDrop = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) {
       setDragIndex(null)
       setHoverIndex(null)
+      return
     }
+
+    const newOrder = Array.from(variant.exerciseOrder)
+    const [moved] = newOrder.splice(dragIndex, 1)
+    newOrder.splice(index, 0, moved)
+
+    updateVariantWithOrder(newOrder)
+    setDragIndex(null)
+    setHoverIndex(null)
+  }
 
   const handleDragEnd = () => {
     setDragIndex(null)
@@ -220,6 +211,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
           >
             {variantName}
           </Typography>
+
           <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
             <IconButton
               onClick={(e) => {
@@ -227,10 +219,10 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                 setVariantNameDialog(true)
               }}
               size="small"
-              title="Edit variant name"
             >
               <EditIcon fontSize="small" />
             </IconButton>
+
             <IconButton
               onClick={(e) => {
                 e.stopPropagation()
@@ -238,9 +230,19 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
               }}
               color={isEditing ? 'primary' : 'default'}
               size="small"
-              title="Add/Edit exercises"
             >
               <AddIcon fontSize="small" />
+            </IconButton>
+
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete()
+              }}
+              color="error"
+              size="small"
+            >
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Stack>
         </Box>
@@ -270,12 +272,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                 onChange={(_, value) => setNewExerciseName(value ?? '')}
                 onInputChange={(_, value) => setNewExerciseName(value)}
                 renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Exercise Name"
-                    placeholder="e.g., Standing Dumbbell Curl"
-                    sx={{ minWidth: 220 }}
-                  />
+                  <TextField {...params} label="Exercise Name" sx={{ minWidth: 220 }} />
                 )}
               />
 
@@ -285,20 +282,16 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                 onChange={(e) => setNewSetReps(e.target.value)}
                 sx={{ minWidth: 120 }}
               />
+
               <TextField
                 label="Rest (s)"
                 type="number"
                 value={newSetRest}
                 onChange={(e) => setNewSetRest(e.target.value)}
-                inputProps={{ min: 10 }}
                 sx={{ minWidth: 100 }}
               />
-              <Button
-                startIcon={<AddIcon />}
-                onClick={handleAddSet}
-                variant="contained"
-                sx={{ whiteSpace: 'nowrap' }}
-              >
+
+              <Button startIcon={<AddIcon />} onClick={handleAddSet} variant="contained">
                 Add Set
               </Button>
             </Stack>
@@ -309,6 +302,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
             >
               Equipment (select multiple)
             </Typography>
+
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
               {equipmentOptions.map((opt: string) => (
                 <Chip
@@ -324,7 +318,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
           </Box>
         )}
 
-        {/* Exercise order with DnD */}
+        {/* Exercise order + DnD */}
         <Box>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
             Exercise Order (drag rows to reorder)
@@ -346,9 +340,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                   mb: 1.5,
                   borderRadius: 2,
                   border: `1px solid ${
-                    isDragging || isHover
-                      ? theme.palette.primary.main
-                      : theme.palette.divider
+                    isDragging || isHover ? theme.palette.primary.main : theme.palette.divider
                   }`,
                   backgroundColor: isDragging
                     ? theme.palette.action.selected
@@ -357,10 +349,9 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                     : theme.palette.background.default,
                   display: 'flex',
                   alignItems: 'stretch',
-                  transition: 'background-color 0.15s ease, border-color 0.15s ease'
+                  transition: '0.15s ease'
                 }}
               >
-                {/* Drag handle */}
                 <Box
                   sx={{
                     display: 'flex',
@@ -373,12 +364,11 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
                   <DragIndicatorIcon fontSize="small" />
                 </Box>
 
-                {/* Row content */}
                 <Box sx={{ flex: 1 }}>
                   <EditExerciseRow
                     exercise={exercise}
                     equipmentOptions={equipmentOptions}
-                    onUpdate={(updated) => handleUpdateSet(idx, updated)}
+                    onUpdate={(u) => handleUpdateSet(idx, u)}
                     onDelete={() => handleDeleteSet(idx)}
                   />
                 </Box>
@@ -389,12 +379,7 @@ export function EditVariantCard({ variant, onUpdate }: EditVariantCardProps) {
       </AccordionDetails>
 
       {/* Variant Name Dialog */}
-      <Dialog
-        open={variantNameDialog}
-        onClose={() => setVariantNameDialog(false)}
-        maxWidth="xs"
-        fullWidth
-      >
+      <Dialog open={variantNameDialog} onClose={() => setVariantNameDialog(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Edit Variant Name</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField

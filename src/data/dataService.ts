@@ -1,47 +1,53 @@
-import localData from './workoutData.json'
-import { getGitHubService, isGitHubConfigured } from './githubService'
+// src/data/dataService.ts
+import { getGitHubService } from './githubService'
 
 let inMemoryData: any = null
 
+/**
+ * Always load the workout JSON from the GitHub repo.
+ * No local storage, no static fallback.
+ */
 export async function loadData(): Promise<any> {
-  // If GitHub is configured, fetch remote file once
   const github = getGitHubService()
-  if (github) {
-    try {
-      const remote = await github.fetchWorkoutData()
-      inMemoryData = remote
-      return inMemoryData
-    } catch (err) {
-      console.warn('Failed to load data from GitHub, falling back to local data', err)
-    }
+  if (!github) {
+    throw new Error('GitHub is not configured. Cannot load data.')
   }
 
-  // Fallback to local static data
-  inMemoryData = localData
+  try {
+    const remote = await github.fetchWorkoutData()
+    inMemoryData = remote
+    return inMemoryData
+  } catch (err) {
+    console.error('Failed to load remote GitHub data:')
+    console.error(err)
+    throw new Error('Failed to load workout data from GitHub.')
+  }
+}
+
+/** Always return the in-memory GitHub data */
+export function getData(): any {
+  if (!inMemoryData) {
+    throw new Error('Data requested before loadData() finished.')
+  }
   return inMemoryData
 }
 
-export function getData(): any {
-  if (inMemoryData) return inMemoryData
-  // if not loaded yet, return local static data as fallback
-  return localData
-}
-
+/** Update in-memory data (NOT persisted) */
 export function setData(newData: any) {
   inMemoryData = newData
 }
 
+/** Push the in-memory JSON back to GitHub */
 export async function syncToGitHub(commitMessage = 'Update workout data') {
   const github = getGitHubService()
   if (!github) throw new Error('GitHub not configured')
-  if (!inMemoryData) throw new Error('No in-memory data to sync')
+  if (!inMemoryData) throw new Error('No data loaded to sync')
 
   await github.updateWorkoutData(inMemoryData, commitMessage)
 }
 
-export const isDataLoadedFromGitHub = (): boolean => {
-  return isGitHubConfigured() && inMemoryData !== null && inMemoryData !== localData
-}
+/** Since we always load from GitHub, this is always true */
+export const isDataLoadedFromGitHub = (): boolean => true
 
 export default {
   loadData,
