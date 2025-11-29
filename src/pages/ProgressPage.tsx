@@ -11,7 +11,6 @@ import {
   Grid
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 
 import {
   loadProgressData,
@@ -30,7 +29,6 @@ import {
 } from '../data/progressTypes'
 
 import {
-  getTodayIndia,
   sortedDates,
   computeBMI,
   computeTrendSlope
@@ -42,9 +40,20 @@ import { ProfileDialog } from '../components/progressComponents/ProfileDialog'
 import { MetricChartCard } from '../components/progressComponents/MetricChartCard'
 import { TrendStatsCards } from '../components/progressComponents/TrendStatsCards'
 import { GraphSelector } from '../components/progressComponents/GraphSelector'
-
-// ***** YOUR FINAL COMPONENT (NO CHANGES MADE) *****
 import WorkoutProgressTracking from '../components/progressComponents/WorkoutProgressTracking'
+import ProgressHistoryGrid from '../components/progressComponents/ProgressHistoryGrid'
+
+/* ------------------------------
+   HELPER FUNCTIONS
+------------------------------ */
+
+function getTodayDateString() {
+  return new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+}
+
+function daysBetween(d1: Date, d2: Date) {
+  return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+}
 
 export default function ProgressDashboardPage() {
   const [profile, setProfile] = useState<ProfileData>({})
@@ -57,7 +66,6 @@ export default function ProgressDashboardPage() {
   const [editingWeightDate, setEditingWeightDate] = useState<string | undefined>()
   const [measurementDialogOpen, setMeasurementDialogOpen] = useState(false)
   const [editingMeasurementDate, setEditingMeasurementDate] = useState<string | undefined>()
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false)
 
   const [selectedGraph, setSelectedGraph] = useState<string>('none')
 
@@ -72,7 +80,10 @@ export default function ProgressDashboardPage() {
 
   const hasGitHubToken = isGitHubConfigured()
 
-  // Load progress data
+  /* ------------------------------
+     LOAD PROGRESS DATA
+  ------------------------------ */
+
   useEffect(() => {
     let cancelled = false
     const run = async () => {
@@ -85,7 +96,7 @@ export default function ProgressDashboardPage() {
         setGoals(data.goals || {})
         setDailyWeight(data.dailyWeight || {})
         setMeasurements(data.measurements || {})
-        setWorkouts(data.workouts || []) // SUPPORT BOTH
+        setWorkouts(data.workouts || [])
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Failed to load progress data.')
@@ -98,7 +109,45 @@ export default function ProgressDashboardPage() {
     return () => { cancelled = true }
   }, [])
 
-  // Derived Values
+  /* ------------------------------
+     AUTO POP-UP REMINDERS
+  ------------------------------ */
+  useEffect(() => {
+    if (loading || popupInitialized) return;
+
+    const today = getTodayDateString();
+    const hasTodayWeight = dailyWeight[today] !== undefined;
+
+    // 1. Daily Weight
+    if (!hasTodayWeight) {
+      setWeightDialogOpen(true);
+      setPopupInitialized(true);
+      return;
+    }
+
+    // 2. Measurements every 15 days
+    const measurementDatesSorted = sortedDates(measurements);
+    const lastMeasurementDate = measurementDatesSorted[measurementDatesSorted.length - 1];
+
+    if (lastMeasurementDate) {
+      const daysSinceLast = daysBetween(new Date(lastMeasurementDate), new Date(today));
+      if (daysSinceLast >= 15) {
+        setMeasurementDialogOpen(true);
+        setPopupInitialized(true);
+        return;
+      }
+    } else {
+      // No measurements ever recorded
+      setMeasurementDialogOpen(true);
+      setPopupInitialized(true);
+      return;
+    }
+  }, [loading, dailyWeight, measurements, popupInitialized])
+
+  /* ------------------------------
+     DERIVED VALUES
+  ------------------------------ */
+
   const dailyPoints: DailyPoint[] = useMemo(() => {
     return sortedDates(dailyWeight).map(date => ({
       date,
@@ -133,11 +182,6 @@ export default function ProgressDashboardPage() {
       ? latestDaily.bmi - firstDaily.bmi
       : undefined
 
-  const buildMetricData = (key: keyof MeasurementsEntry) =>
-    measurementDates.map(date => ({
-      date,
-      value: measurements[date]?.[key]
-    }))
 
   const bmiTrendText = useMemo(() => {
     if (!goals.targetBMI || !profile.heightCm || dailyPoints.length < 2)
@@ -161,6 +205,10 @@ export default function ProgressDashboardPage() {
     return `At current trend, you may reach BMI ${goals.targetBMI} around ${etaStr}.`
   }, [dailyPoints, goals.targetBMI, profile.heightCm])
 
+  /* ------------------------------
+     LOADING / ERROR
+  ------------------------------ */
+
   if (loading) {
     return (
       <Container sx={{ py: 4 }}>
@@ -180,8 +228,13 @@ export default function ProgressDashboardPage() {
 
   const measurementKeys = Object.keys(sampleMeasurement || {})
 
+  /* ------------------------------
+     PAGE RENDER
+  ------------------------------ */
+
   return (
     <Container sx={{ py: 4 }}>
+
       {/* HEADER */}
       <Box
         sx={{
@@ -204,11 +257,6 @@ export default function ProgressDashboardPage() {
         </Box>
 
         <Stack direction="row" spacing={1}>
-          <Tooltip title="Edit Profile">
-            <IconButton onClick={() => setProfileDialogOpen(true)}>
-              <AccountCircleIcon fontSize="large" />
-            </IconButton>
-          </Tooltip>
 
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => setWeightDialogOpen(true)}>
             Add Weight
@@ -237,44 +285,14 @@ export default function ProgressDashboardPage() {
         </Stack>
       </Box>
 
-      {(syncMessage || syncError) && (
-        <Box sx={{ mb: 2 }}>
-          {syncMessage && <Typography color="success.main">{syncMessage}</Typography>}
-          {syncError && <Typography color="error.main">{syncError}</Typography>}
-        </Box>
-      )}
-
-      {/* 🚀 YOUR FINAL TRACKING COMPONENT */}
-      <WorkoutProgressTracking workoutLog={workouts} />
-
-      {/* STATS CARDS */}
-      <TrendStatsCards
-        latestDaily={latestDaily}
-        firstDaily={firstDaily}
-        latestBMI={latestBMI}
-        weightChange={weightChange}
-        bmiChange={bmiChange}
-        targetWeight={targetWeight}
-        goals={goals}
-        profile={profile}
-        measurementDates={measurementDates}
-        bmiTrendText={bmiTrendText}
-        onEditLatestWeight={() => {
-          setEditingWeightDate(latestDaily?.date)
-          setWeightDialogOpen(true)
-        }}
-        onEditLatestMeasurement={() => {
-          setEditingMeasurementDate(measurementDates[measurementDates.length - 1])
-          setMeasurementDialogOpen(true)
-        }}
-      />
-
+      {/* GRAPH SELECTOR */}
       <GraphSelector
         selectedGraph={selectedGraph}
         onChange={setSelectedGraph}
         measurementKeys={measurementKeys}
       />
 
+      {/* GRAPHS */}
       {selectedGraph !== 'none' && (
         <Box sx={{ mb: 4 }}>
           {selectedGraph === 'weight' && (
@@ -315,7 +333,7 @@ export default function ProgressDashboardPage() {
                 <Grid key={key} item xs={12} sm={6} md={4}>
                   <MetricChartCard
                     title={key}
-                    data={measurementDates?.map(date => ({
+                    data={measurementDates.map(date => ({
                       date,
                       value: measurements[date]?.[key as keyof MeasurementsEntry]
                     }))}
@@ -325,7 +343,6 @@ export default function ProgressDashboardPage() {
             </Grid>
           )}
 
-          {/* Single measurement chart */}
           {selectedGraph !== 'weight' &&
             selectedGraph !== 'bmi' &&
             selectedGraph !== 'seeAll' && (
@@ -340,6 +357,60 @@ export default function ProgressDashboardPage() {
         </Box>
       )}
 
+      {/* SYNC MESSAGE */}
+      {(syncMessage || syncError) && (
+        <Box sx={{ mb: 2 }}>
+          {syncMessage && <Typography color="success.main">{syncMessage}</Typography>}
+          {syncError && <Typography color="error.main">{syncError}</Typography>}
+        </Box>
+      )}
+
+      {/* WORKOUT COMPONENT */}
+      <WorkoutProgressTracking workoutLog={workouts} />
+
+      {/* STATS CARDS */}
+      <TrendStatsCards
+        latestDaily={latestDaily}
+        firstDaily={firstDaily}
+        latestBMI={latestBMI}
+        weightChange={weightChange}
+        bmiChange={bmiChange}
+        targetWeight={targetWeight}
+        goals={goals}
+        profile={profile}
+        measurementDates={measurementDates}
+        bmiTrendText={bmiTrendText}
+        onEditLatestWeight={() => {
+          setEditingWeightDate(latestDaily?.date)
+          setWeightDialogOpen(true)
+        }}
+        onEditLatestMeasurement={() => {
+          setEditingMeasurementDate(measurementDates[measurementDates.length - 1])
+          setMeasurementDialogOpen(true)
+        }}
+      />
+
+      {/* EDITABLE GRID */}
+      <ProgressHistoryGrid
+        dailyWeight={dailyWeight}
+        measurements={measurements}
+        workouts={workouts}
+        onUpdateWeight={(date, weight) => {
+          setDailyWeight(prev => ({ ...prev, [date]: weight }));
+        }}
+        onUpdateMeasurement={(date, updated) => {
+          setMeasurements(prev => ({ ...prev, [date]: updated }));
+        }}
+        onUpdateWorkout={(index, updated) => {
+          setWorkouts(prev => {
+            const arr = [...prev];
+            arr[index] = updated;
+            return arr;
+          });
+        }}
+      />
+
+      {/* DIALOGS */}
       <AddWeightDialog
         open={weightDialogOpen}
         initialDate={editingWeightDate}
@@ -366,12 +437,6 @@ export default function ProgressDashboardPage() {
         }}
       />
 
-      <ProfileDialog
-        open={profileDialogOpen}
-        initial={profile}
-        onClose={() => setProfileDialogOpen(false)}
-        onSave={setProfile}
-      />
     </Container>
   )
 }
