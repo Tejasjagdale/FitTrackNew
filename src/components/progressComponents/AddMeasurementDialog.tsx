@@ -1,5 +1,5 @@
 // src/components/progressComponents/AddMeasurementDialog.tsx
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -9,55 +9,52 @@ import {
   TextField,
   Button,
   Typography
-} from '@mui/material'
-import { MeasurementsEntry, ProfileData } from '../../data/progressTypes'
-import { getTodayIndia } from '../../data/progressUtils'
+} from '@mui/material';
 
-interface MeasurementDialogProps {
-  open: boolean
-  date?: string
-  initial?: MeasurementsEntry
-  onClose: () => void
-  onSave: (date: string, data: MeasurementsEntry) => void
+import { MeasurementsEntry, ProfileData } from '../../data/progressTypes';
+import { getTodayIndia } from '../../data/progressUtils';
 
-  // NEW
-  profile: ProfileData
-  latestWeight?: number
+/* -----------------------------------------
+   Utility: Convert inches → centimeters
+------------------------------------------ */
+const inToCm = (inch?: number) =>
+  inch === undefined ? undefined : inch * 2.54;
+
+/* -----------------------------------------
+   Male-Only US Navy Body Fat Formula
+   NOTE: expects measurements in CM
+------------------------------------------ */
+function calculateBodyFat(heightCm?: number, neckCm?: number, waistCm?: number) {
+  if (!heightCm || !neckCm || !waistCm) return undefined;
+  if (waistCm <= neckCm) return undefined;
+
+  return (
+    495 /
+      (1.0324 -
+        0.19077 * Math.log10(waistCm - neckCm) +
+        0.15456 * Math.log10(heightCm)) -
+    450
+  );
 }
 
-/* ----------------------------------------------------
-   BODY FAT FORMULAS (US NAVY)
----------------------------------------------------- */
-function calculateBodyFat(
-  gender: string | undefined,
-  heightCm: number | undefined,
-  neck: number | undefined,
-  waist: number | undefined,
-) {
-  if (!gender || !heightCm || !neck || !waist) return undefined;
-
-  const height = heightCm;
-
-  if (gender === "male") {
-    if (waist <= neck) return undefined; // avoid log10 error
-    return (
-      495 /
-        (1.0324 -
-          0.19077 * Math.log10(waist - neck) +
-          0.15456 * Math.log10(height)) -
-      450
-    );
-  }
+function calculateFatFreeMass(weightKg?: number, bfPercent?: number) {
+  if (!weightKg || !bfPercent) return undefined;
+  return weightKg * (1 - bfPercent / 100);
 }
 
-function calculateFatFreeMass(weightKg: number | undefined, bodyFatPercent: number | undefined) {
-  if (!weightKg || !bodyFatPercent) return undefined;
-  return weightKg * (1 - bodyFatPercent / 100);
-}
-
-/* ----------------------------------------------------
+/* -----------------------------------------
    MAIN COMPONENT
----------------------------------------------------- */
+------------------------------------------ */
+interface MeasurementDialogProps {
+  open: boolean;
+  date?: string;
+  initial?: MeasurementsEntry;
+  onClose: () => void;
+  onSave: (date: string, data: MeasurementsEntry) => void;
+  profile: ProfileData;
+  latestWeight?: number; // in KG
+}
+
 export function AddMeasurementDialog({
   open,
   date,
@@ -67,61 +64,72 @@ export function AddMeasurementDialog({
   profile,
   latestWeight
 }: MeasurementDialogProps) {
-
-  const [localDate, setLocalDate] = useState<string>('')
-  const [form, setForm] = useState<MeasurementsEntry>({})
+  const [localDate, setLocalDate] = useState('');
+  const [form, setForm] = useState<MeasurementsEntry>({});
 
   useEffect(() => {
     if (open) {
-      setLocalDate(date || getTodayIndia())
-      setForm(initial || {})
+      setLocalDate(date || getTodayIndia());
+      setForm(initial || {});
     }
-  }, [open, date, initial])
+  }, [open, date, initial]);
 
-  /* ----------------------------------------------------
-     HANDLE FIELD CHANGE + AUTO CALCULATIONS
-  ---------------------------------------------------- */
+  /* -----------------------------------------
+     HANDLE CHANGE (VALUES ENTERED IN INCHES)
+  ------------------------------------------ */
   const handleChange =
     (key: keyof MeasurementsEntry) =>
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const v = e.target.value
-      const num = v === '' ? undefined : Number(v)
+      const raw = e.target.value;
+      const numInches = raw === '' ? undefined : Number(raw);
 
-      setForm((prev) => {
-        const updated: MeasurementsEntry = { ...prev, [key]: num }
+      setForm(prev => {
+        const updated = { ...prev, [key]: numInches };
 
-        // AUTO-CALC BODY FAT %
-        const bf = calculateBodyFat(
-          profile.gender,
-          profile.heightCm,
-          updated.neck,
-          updated.waist,
-        );
+        // Convert neck/waist to cm for BF formula
+        const waistCm = inToCm(updated.waist);
+        const neckCm = inToCm(updated.neck);
+        const heightCm = profile.heightCm;
 
-        if (bf !== undefined && !isNaN(bf)) {
-          updated.bodyFat = Number(bf.toFixed(2))
+        // Auto Body Fat %
+        const bf = calculateBodyFat(heightCm, neckCm, waistCm);
+        if (bf && !isNaN(bf)) {
+          updated.bodyFat = Number(bf.toFixed(2));
+        } else {
+          updated.bodyFat = undefined;
         }
 
-        // AUTO-CALC FAT FREE MASS
+        // Auto Fat Free Mass
         if (latestWeight && updated.bodyFat !== undefined) {
-          const ffm = calculateFatFreeMass(latestWeight, updated.bodyFat)
-          if (ffm !== undefined) {
-            updated.fatFreeMass = Number(ffm.toFixed(2))
+          const ffm = calculateFatFreeMass(latestWeight, updated.bodyFat);
+          if (ffm && !isNaN(ffm)) {
+            updated.fatFreeMass = Number(ffm.toFixed(2));
+          } else {
+            updated.fatFreeMass = undefined;
           }
         }
 
-        return updated
-      })
-    }
+        return updated;
+      });
+    };
 
+  /* -----------------------------------------
+     SAVE
+  ------------------------------------------ */
   const handleSubmit = () => {
-    if (!localDate) return
-    onSave(localDate, form)
-  }
+    if (!localDate) return;
+    onSave(localDate, form);
+    onClose();
+  };
 
+  /* -----------------------------------------
+     RENDER
+  ------------------------------------------ */
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{initial ? 'Edit Measurements' : 'Add Measurements'}</DialogTitle>
+      <DialogTitle>
+        {initial ? 'Edit Measurements' : 'Add Measurements'}
+      </DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
         <Stack spacing={2}>
@@ -129,113 +137,112 @@ export function AddMeasurementDialog({
             label="Date"
             type="date"
             value={localDate}
-            onChange={(e) => setLocalDate(e.target.value)}
+            onChange={e => setLocalDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
           />
 
-          {/* ARMS */}
+          {/* Arms */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Unflexed Arms"
+              fullWidth
+              label="Unflexed Arms (in)"
               type="number"
               value={form.unflexedArms ?? ''}
               onChange={handleChange('unflexedArms')}
-              fullWidth
             />
             <TextField
-              label="Flexed Arms"
+              fullWidth
+              label="Flexed Arms (in)"
               type="number"
               value={form.flexedArms ?? ''}
               onChange={handleChange('flexedArms')}
-              fullWidth
             />
           </Stack>
 
-          {/* FOREARMS + THIGHS */}
+          {/* Forearms + Thighs */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Forearms"
+              fullWidth
+              label="Forearms (in)"
               type="number"
               value={form.forearms ?? ''}
               onChange={handleChange('forearms')}
-              fullWidth
             />
             <TextField
-              label="Thighs"
+              fullWidth
+              label="Thighs (in)"
               type="number"
               value={form.thighs ?? ''}
               onChange={handleChange('thighs')}
-              fullWidth
             />
           </Stack>
 
-          {/* CALF + CHEST */}
+          {/* Calf + Chest */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Calf"
+              fullWidth
+              label="Calf (in)"
               type="number"
               value={form.calf ?? ''}
               onChange={handleChange('calf')}
-              fullWidth
             />
             <TextField
-              label="Chest"
+              fullWidth
+              label="Chest (in)"
               type="number"
               value={form.chest ?? ''}
               onChange={handleChange('chest')}
-              fullWidth
             />
           </Stack>
 
-          {/* STOMACH + WAIST */}
+          {/* Stomach + Waist */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Stomach"
+              fullWidth
+              label="Stomach (in)"
               type="number"
               value={form.stomach ?? ''}
               onChange={handleChange('stomach')}
-              fullWidth
             />
             <TextField
-              label="Waist"
+              fullWidth
+              label="Waist (in)"
               type="number"
               value={form.waist ?? ''}
               onChange={handleChange('waist')}
-              fullWidth
             />
           </Stack>
 
-          {/* NECK + BODY FAT (auto) */}
+          {/* Neck + Body Fat */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
-              label="Neck"
+              fullWidth
+              label="Neck (in)"
               type="number"
               value={form.neck ?? ''}
               onChange={handleChange('neck')}
-              fullWidth
             />
             <TextField
+              fullWidth
               label="Body Fat (%)"
               type="number"
               value={form.bodyFat ?? ''}
-              onChange={handleChange('bodyFat')}
-              fullWidth
-              disabled // AUTO-CALCULATED
+              disabled // auto-calculated
             />
           </Stack>
 
-          {/* FAT FREE MASS (auto) */}
+          {/* FFM */}
           <TextField
-            label="Fat Free Mass"
+            fullWidth
+            label="Fat Free Mass (kg)"
             type="number"
             value={form.fatFreeMass ?? ''}
-            onChange={handleChange('fatFreeMass')}
-            fullWidth
-            disabled // AUTO-CALCULATED
+            disabled
           />
 
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            BodyFat% and Fat-Free Mass auto-calculate based on your height, weight, waist & neck.
+            All inputs are in inches. Body Fat % & Fat-Free Mass auto-calc from neck, waist,
+            height, and today's weight.
           </Typography>
         </Stack>
       </DialogContent>
@@ -247,5 +254,5 @@ export function AddMeasurementDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

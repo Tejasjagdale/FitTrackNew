@@ -6,8 +6,6 @@ import {
   Typography,
   Stack,
   Button,
-  IconButton,
-  Tooltip,
   Grid
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
@@ -31,12 +29,12 @@ import {
 import {
   sortedDates,
   computeBMI,
-  computeTrendSlope
+  computeTrendSlope,
+  getTodayIndia
 } from '../data/progressUtils'
 
 import { AddWeightDialog } from '../components/progressComponents/AddWeightDialog'
 import { AddMeasurementDialog } from '../components/progressComponents/AddMeasurementDialog'
-import { ProfileDialog } from '../components/progressComponents/ProfileDialog'
 import { MetricChartCard } from '../components/progressComponents/MetricChartCard'
 import { TrendStatsCards } from '../components/progressComponents/TrendStatsCards'
 import { GraphSelector } from '../components/progressComponents/GraphSelector'
@@ -72,7 +70,9 @@ export default function ProgressDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  const [popupInitialized, setPopupInitialized] = useState(false)
+  // Separate flags for each popup, per page load
+  const [weightPopupShown, setWeightPopupShown] = useState(false)
+  const [measurementPopupShown, setMeasurementPopupShown] = useState(false)
 
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
@@ -111,38 +111,57 @@ export default function ProgressDashboardPage() {
 
   /* ------------------------------
      AUTO POP-UP REMINDERS
+     - Weight popup: once per page load, if today's weight missing
+     - Measurement popup: once per page load, if 15+ days since last,
+       and ONLY after today's weight is present
   ------------------------------ */
-  useEffect(() => {
-    if (loading || popupInitialized) return;
 
-    const today = getTodayDateString();
-    const hasTodayWeight = dailyWeight[today] !== undefined;
+/* ------------------------------
+   AUTO POP-UP REMINDERS (IST safe)
+------------------------------ */
+useEffect(() => {
+  if (loading) return;
 
-    // 1. Daily Weight
-    if (!hasTodayWeight) {
-      setWeightDialogOpen(true);
-      setPopupInitialized(true);
-      return;
-    }
+  const today = getTodayIndia(); // FIXED
+  const hasTodayWeight = dailyWeight[today] !== undefined;
 
-    // 2. Measurements every 15 days
+  /* ------------------------------
+      STEP 1 — DAILY WEIGHT POPUP
+  ------------------------------ */
+  if (!hasTodayWeight && !weightPopupShown) {
+    setWeightDialogOpen(true);
+    setWeightPopupShown(true);
+    return;
+  }
+
+  /* ------------------------------
+      STEP 2 — MEASUREMENT POPUP
+         Only after weight is present
+  ------------------------------ */
+  if (hasTodayWeight && !measurementPopupShown) {
     const measurementDatesSorted = sortedDates(measurements);
     const lastMeasurementDate = measurementDatesSorted[measurementDatesSorted.length - 1];
 
-    if (lastMeasurementDate) {
-      const daysSinceLast = daysBetween(new Date(lastMeasurementDate), new Date(today));
-      if (daysSinceLast >= 15) {
-        setMeasurementDialogOpen(true);
-        setPopupInitialized(true);
-        return;
-      }
-    } else {
-      // No measurements ever recorded
+    if (!lastMeasurementDate) {
+      // No measurements ever recorded - show once
       setMeasurementDialogOpen(true);
-      setPopupInitialized(true);
+      setMeasurementPopupShown(true);
       return;
     }
-  }, [loading, dailyWeight, measurements, popupInitialized])
+
+    // Use IST date strings to avoid UTC issues
+    const diffDays = daysBetween(
+      new Date(lastMeasurementDate + "T00:00:00+05:30"),
+      new Date(today + "T00:00:00+05:30")
+    );
+
+    if (diffDays >= 10) {
+      setMeasurementDialogOpen(true);
+      setMeasurementPopupShown(true);
+      return;
+    }
+  }
+}, [loading, dailyWeight, measurements, weightPopupShown, measurementPopupShown]);
 
   /* ------------------------------
      DERIVED VALUES
@@ -181,7 +200,6 @@ export default function ProgressDashboardPage() {
     latestDaily?.bmi !== undefined && firstDaily?.bmi !== undefined
       ? latestDaily.bmi - firstDaily.bmi
       : undefined
-
 
   const bmiTrendText = useMemo(() => {
     if (!goals.targetBMI || !profile.heightCm || dailyPoints.length < 2)
@@ -258,11 +276,18 @@ export default function ProgressDashboardPage() {
 
         <Stack direction="row" spacing={1}>
 
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setWeightDialogOpen(true)}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setWeightDialogOpen(true)}
+          >
             Add Weight
           </Button>
 
-          <Button variant="outlined" onClick={() => setMeasurementDialogOpen(true)}>
+          <Button
+            variant="outlined"
+            onClick={() => setMeasurementDialogOpen(true)}
+          >
             Add Measurements
           </Button>
 
@@ -396,17 +421,17 @@ export default function ProgressDashboardPage() {
         measurements={measurements}
         workouts={workouts}
         onUpdateWeight={(date, weight) => {
-          setDailyWeight(prev => ({ ...prev, [date]: weight }));
+          setDailyWeight(prev => ({ ...prev, [date]: weight }))
         }}
         onUpdateMeasurement={(date, updated) => {
-          setMeasurements(prev => ({ ...prev, [date]: updated }));
+          setMeasurements(prev => ({ ...prev, [date]: updated }))
         }}
         onUpdateWorkout={(index, updated) => {
           setWorkouts(prev => {
-            const arr = [...prev];
-            arr[index] = updated;
-            return arr;
-          });
+            const arr = [...prev]
+            arr[index] = updated
+            return arr
+          })
         }}
       />
 
@@ -436,8 +461,8 @@ export default function ProgressDashboardPage() {
           setMeasurements(prev => ({ ...prev, [date]: data }))
         }}
         profile={profile}
+        latestWeight={latestDaily?.weight}
       />
-
     </Container>
   )
 }
