@@ -54,3 +54,11 @@ export const computeTrendSlope = (
 
 export const safeNum = (n: number | undefined, decimals = 1): string =>
   n === undefined || Number.isNaN(n) ? '-' : n.toFixed(decimals)
+
+export function getMondayOfWeek(date: Date): Date {
+  const d = new Date(date)
+  const day = d.getDay() || 7 // Sunday → 7
+  if (day !== 1) d.setHours(-24 * (day - 1))
+  d.setHours(0, 0, 0, 0)
+  return d
+}

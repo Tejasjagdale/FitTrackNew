@@ -64,11 +64,11 @@ export default function Home() {
               transition: '0.2s',
               '&:hover': { boxShadow: 4 }
             }}
-            onClick={() => navigate('/today')}
+            onClick={() => navigate('/workout-playlist')}
           >
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
               <TodayIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Today's Workout</Typography>
+              <Typography variant="h6">Checkout Playlist's</Typography>
               <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
                 Start your selected workout and track your steps.
               </Typography>

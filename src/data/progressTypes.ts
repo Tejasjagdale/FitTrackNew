@@ -30,6 +30,7 @@ export interface ProgressDataFile {
   goals?: Goals
   dailyWeight: Record<string, number>
   measurements: Record<string, MeasurementsEntry>
+  workouts: WorkoutLogEntry[]
 }
 
 export interface DailyPoint {
@@ -41,4 +42,11 @@ export interface DailyPoint {
 export interface MeasurementPoint {
   date: string
   value?: number
+}
+
+export interface WorkoutLogEntry {
+  date: string
+  variantId: string
+  variantName: string
+  completed: boolean
 }

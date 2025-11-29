@@ -10,7 +10,7 @@ import {
     useTheme
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import type { ExerciseOrder, Variant } from '../data/workoutUtils'
+import type { Variant } from '../data/workoutUtils'
 import TimerCircle from './TimerCircle'
 
 interface Props {
@@ -18,7 +18,7 @@ interface Props {
     currentStepIndex: number
     onStepComplete: (nextIndex: number) => void
     onUndo: (prevIndex: number) => void
-    onFinishWorkout: () => void
+    onFinishWorkout: (completedFully: boolean) => void
 }
 
 export default function WorkoutPlayer({
@@ -36,55 +36,63 @@ export default function WorkoutPlayer({
 
     useEffect(() => {
         if (!isResting || timeLeft <= 0) return
-        const timer = setTimeout(() => setTimeLeft((t) => t - 1), 1000)
+        const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000)
 
-        if (timeLeft === 1) handleNextStep()
+        // When timer hits zero → auto next step
+        if (timeLeft === 1) handleNextStep(true)
 
         return () => clearTimeout(timer)
     }, [isResting, timeLeft])
 
     if (!currentStep) return null
 
-    const handleCompleteSet = () => {
+    const startRest = () => {
         setIsResting(true)
         setTimeLeft(currentStep.restSeconds)
     }
 
-    const handleNextStep = () => {
+    const handleCompleteSet = () => startRest()
+
+    const handleNextStep = (fromRest = false) => {
         setIsResting(false)
         setTimeLeft(0)
+
         const nextIndex = currentStepIndex + 1
-        if (nextIndex < variant.exerciseOrder.length) {
+        const total = variant.exerciseOrder.length
+
+        if (nextIndex < total) {
             onStepComplete(nextIndex)
         } else {
-            onFinishWorkout()
+            // LAST STEP COMPLETED FULLY
+            onFinishWorkout(true)
         }
     }
 
     const handleUndoStep = () => {
         setIsResting(false)
         setTimeLeft(0)
+
         const prevIndex = currentStepIndex - 1
         if (prevIndex >= 0) onUndo(prevIndex)
     }
 
     const adjustTime = (delta: number) => {
-        setTimeLeft((t) => Math.max(0, t + delta))
+        setTimeLeft(t => Math.max(0, t + delta))
     }
 
-    const progress = ((currentStepIndex + 1) / variant.exerciseOrder.length) * 100
+    const progress =
+        ((currentStepIndex + 1) / variant.exerciseOrder.length) * 100
 
     return (
         <Card sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
-
-            {/* --- EQUIPMENT SECTION (Visible Always) --- */}
+            {/* --- EQUIPMENT SECTION --- */}
             <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
                     Equipment Needed:
                 </Typography>
 
                 <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: 'wrap' }}>
-                    {currentStep.equipment?.map((item: string) => (
+                    {currentStep.equipment?.map(item => (
                         <Chip
                             key={item}
                             label={item}
@@ -166,7 +174,7 @@ export default function WorkoutPlayer({
                     </Box>
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2, mb: 2 }}>
-                        <Button variant="outlined" onClick={handleNextStep} sx={{ borderRadius: 2 }}>
+                        <Button variant="outlined" onClick={() => handleNextStep(true)} sx={{ borderRadius: 2 }}>
                             Skip Rest
                         </Button>
 
@@ -185,11 +193,11 @@ export default function WorkoutPlayer({
                 </>
             )}
 
-            {/* FINISH WORKOUT */}
+            {/* FINISH WORKOUT EARLY → PARTIAL */}
             <Button
                 variant="contained"
                 color="error"
-                onClick={onFinishWorkout}
+                onClick={() => onFinishWorkout(false)}
                 sx={{ borderRadius: 2, textTransform: 'none', mt: 1 }}
             >
                 Finish Workout
