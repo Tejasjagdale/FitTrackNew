@@ -1,6 +1,6 @@
 // src/components/progress/GraphSelector.tsx
 import React from 'react'
-import { Box, TextField } from '@mui/material'
+import { Box, MenuItem, TextField } from '@mui/material'
 
 interface GraphSelectorProps {
   selectedGraph: string
@@ -20,17 +20,17 @@ export function GraphSelector({
         label="Select Graph"
         value={selectedGraph}
         onChange={(e) => onChange(e.target.value)}
-        SelectProps={{ native: true }}
         sx={{ minWidth: 240 }}
       >
-        <option value="none">None</option>
-        <option value="weight">Weight</option>
-        <option value="bmi">BMI</option>
-        <option value="seeAll">See All</option>
+        <MenuItem value="none">None</MenuItem>
+        <MenuItem value="weight">Weight</MenuItem>
+        <MenuItem value="bmi">BMI</MenuItem>
+        <MenuItem value="seeAll">See All</MenuItem>
+
         {measurementKeys.map((key) => (
-          <option key={key} value={key}>
+          <MenuItem key={key} value={key}>
             {key}
-          </option>
+          </MenuItem>
         ))}
       </TextField>
     </Box>
