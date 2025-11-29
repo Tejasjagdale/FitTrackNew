@@ -1,4 +1,3 @@
-// src/components/EditVariantCard.tsx
 import React, { useMemo, useState } from 'react'
 import {
   Accordion,
@@ -33,33 +32,27 @@ interface EditVariantCardProps {
   onDelete: () => void
 }
 
-// Normalize steps + set numbers per exercise name
 const normalizeOrder = (order: ExerciseOrder[]): ExerciseOrder[] => {
-  const setsPerName: Record<string, number> = {}
-  return order.map((ex, index) => {
-    const count = (setsPerName[ex.name] || 0) + 1
-    setsPerName[ex.name] = count
+  const setsPer: Record<string, number> = {}
+  return order.map((ex, idx) => {
+    const count = (setsPer[ex.name] || 0) + 1
+    setsPer[ex.name] = count
     return {
       ...ex,
-      step: index + 1,
+      step: idx + 1,
       set: count
     }
   })
 }
 
-// Rebuild exercisesList from exerciseOrder
-const buildExercisesList = (
-  exerciseOrder: ExerciseOrder[]
-): { name: string; sets: number; reps: string }[] => {
-  const map: Record<string, { name: string; sets: number; reps: string }> = {}
-
-  exerciseOrder.forEach((ex) => {
+const buildExercisesList = (order: ExerciseOrder[]) => {
+  const map: Record<string, any> = {}
+  order.forEach((ex) => {
     if (!map[ex.name]) {
       map[ex.name] = { name: ex.name, sets: 0, reps: ex.reps }
     }
     map[ex.name].sets += 1
   })
-
   return Object.values(map)
 }
 
@@ -82,62 +75,19 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
 
   const exerciseNameOptions = useMemo(() => {
     const names = new Set<string>()
-    if (variant.exercisesList) variant.exercisesList.forEach((ex: any) => names.add(ex.name))
-    if (variant.exerciseOrder) variant.exerciseOrder.forEach((ex: any) => names.add(ex.name))
+    variant.exercisesList?.forEach((ex) => names.add(ex.name))
+    variant.exerciseOrder?.forEach((ex) => names.add(ex.name))
     return Array.from(names)
   }, [variant])
 
-  const updateVariantWithOrder = (newOrder: ExerciseOrder[]) => {
-    const normalized = normalizeOrder(newOrder)
-    const newExercisesList = buildExercisesList(normalized)
+  const updateVariant = (order: ExerciseOrder[]) => {
+    const normalized = normalizeOrder(order)
     onUpdate({
       ...variant,
+      id: variant.id,
       exerciseOrder: normalized,
-      exercisesList: newExercisesList
+      exercisesList: buildExercisesList(normalized)
     })
-  }
-
-  const handleUpdateVariantName = () => {
-    if (variantName && variantName !== variant.variantName) {
-      onUpdate({ ...variant, variantName })
-    }
-    setVariantNameDialog(false)
-  }
-
-  const handleUpdateSet = (index: number, updated: ExerciseOrder) => {
-    const newOrder = [...variant.exerciseOrder]
-    newOrder[index] = updated
-    updateVariantWithOrder(newOrder)
-  }
-
-  const handleDeleteSet = (index: number) => {
-    const newOrder = variant.exerciseOrder.filter((_, i) => i !== index)
-    updateVariantWithOrder(newOrder)
-  }
-
-  const handleAddSet = () => {
-    if (!newExerciseName.trim()) return
-
-    const lastSetForExercise = variant.exerciseOrder
-      .filter((ex: ExerciseOrder) => ex.name === newExerciseName.trim())
-      .pop()
-
-    const newSet: ExerciseOrder = {
-      step: variant.exerciseOrder.length + 1,
-      name: newExerciseName.trim(),
-      set: (lastSetForExercise?.set || 0) + 1,
-      reps: newSetReps,
-      restSeconds: parseInt(newSetRest, 10) || 60,
-      equipment: newSetEquipment
-    }
-
-    const newOrder = [...variant.exerciseOrder, newSet]
-    updateVariantWithOrder(newOrder)
-
-    setNewExerciseName('')
-    setNewSetReps('8-12')
-    setNewSetRest('60')
-    setNewSetEquipment([])
   }
 
   const toggleNewSetEquipment = (item: string) => {
@@ -146,49 +96,47 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
     )
   }
 
-  // ---- DnD handlers ----
-  const handleDragStart = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    setDragIndex(index)
-    setHoverIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', String(index))
-  }
+  const handleAddSet = () => {
+    if (!newExerciseName.trim()) return
 
-  const handleDragOver = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setHoverIndex(index)
-  }
+    const lastSet = variant.exerciseOrder
+      .filter((ex) => ex.name === newExerciseName.trim())
+      .pop()
 
-  const handleDrop = (index: number) => (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    if (dragIndex === null || dragIndex === index) {
-      setDragIndex(null)
-      setHoverIndex(null)
-      return
+    const newSet: ExerciseOrder = {
+      step: variant.exerciseOrder.length + 1,
+      name: newExerciseName.trim(),
+      set: (lastSet?.set || 0) + 1,
+      reps: newSetReps,
+      restSeconds: parseInt(newSetRest, 10) || 60,
+      equipment: newSetEquipment
     }
 
-    const newOrder = Array.from(variant.exerciseOrder)
-    const [moved] = newOrder.splice(dragIndex, 1)
-    newOrder.splice(index, 0, moved)
+    updateVariant([...variant.exerciseOrder, newSet])
 
-    updateVariantWithOrder(newOrder)
-    setDragIndex(null)
-    setHoverIndex(null)
+    setNewExerciseName('')
+    setNewSetReps('8-12')
+    setNewSetRest('60')
+    setNewSetEquipment([])
   }
 
-  const handleDragEnd = () => {
-    setDragIndex(null)
-    setHoverIndex(null)
+  const handleUpdateSet = (index: number, updated: ExerciseOrder) => {
+    const order = [...variant.exerciseOrder]
+    order[index] = updated
+    updateVariant(order)
+  }
+
+  const handleDeleteSet = (index: number) => {
+    updateVariant(variant.exerciseOrder.filter((_, i) => i !== index))
   }
 
   return (
     <Accordion
       expanded={expanded}
-      onChange={(_, isExp) => setExpanded(isExp)}
+      onChange={(_, e) => setExpanded(e)}
       sx={{
         mb: 2,
         borderRadius: 3,
-        backgroundColor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
         boxShadow:
           theme.palette.mode === 'dark'
@@ -197,51 +145,25 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%'
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ color: theme.palette.primary.main, fontWeight: 700 }}
-          >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
             {variantName}
           </Typography>
 
           <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation()
-                setVariantNameDialog(true)
-              }}
-              size="small"
-            >
+            <IconButton size="small" onClick={() => setVariantNameDialog(true)}>
               <EditIcon fontSize="small" />
             </IconButton>
 
             <IconButton
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsEditing((prev) => !prev)
-              }}
-              color={isEditing ? 'primary' : 'default'}
               size="small"
+              onClick={() => setIsEditing((p) => !p)}
+              color={isEditing ? 'primary' : 'default'}
             >
               <AddIcon fontSize="small" />
             </IconButton>
 
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete()
-              }}
-              color="error"
-              size="small"
-            >
+            <IconButton size="small" color="error" onClick={onDelete}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Stack>
@@ -249,58 +171,38 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
       </AccordionSummary>
 
       <AccordionDetails>
-        {/* Add new exercise set */}
+        {/* Add Exercise Section */}
         {isEditing && (
           <Box sx={{ mb: 3, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 600, mb: 1.5, color: theme.palette.primary.main }}
-            >
+            <Typography sx={{ fontWeight: 600, mb: 2 }} variant="subtitle2">
               Add New Exercise Set
             </Typography>
 
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              alignItems="flex-start"
-              sx={{ flexWrap: 'wrap', mb: 2 }}
-            >
+            <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
               <Autocomplete
                 freeSolo
                 options={exerciseNameOptions}
                 value={newExerciseName}
-                onChange={(_, value) => setNewExerciseName(value ?? '')}
-                onInputChange={(_, value) => setNewExerciseName(value)}
-                renderInput={(params) => (
-                  <TextField {...params} label="Exercise Name" sx={{ minWidth: 220 }} />
-                )}
+                onChange={(_, val) => setNewExerciseName(val ?? '')}
+                onInputChange={(_, val) => setNewExerciseName(val)}
+                renderInput={(p) => <TextField {...p} label="Exercise Name" />}
               />
 
-              <TextField
-                label="Reps"
-                value={newSetReps}
-                onChange={(e) => setNewSetReps(e.target.value)}
-                sx={{ minWidth: 120 }}
-              />
-
+              <TextField label="Reps" value={newSetReps} onChange={(e) => setNewSetReps(e.target.value)} />
               <TextField
                 label="Rest (s)"
                 type="number"
                 value={newSetRest}
                 onChange={(e) => setNewSetRest(e.target.value)}
-                sx={{ minWidth: 100 }}
               />
 
-              <Button startIcon={<AddIcon />} onClick={handleAddSet} variant="contained">
+              <Button onClick={handleAddSet} variant="contained" startIcon={<AddIcon />}>
                 Add Set
               </Button>
             </Stack>
 
-            <Typography
-              variant="subtitle2"
-              sx={{ fontWeight: 600, mb: 1, color: theme.palette.primary.main }}
-            >
-              Equipment (select multiple)
+            <Typography sx={{ mt: 2, fontWeight: 600 }} variant="subtitle2">
+              Equipment
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
@@ -308,90 +210,79 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
                 <Chip
                   key={opt}
                   label={opt}
-                  onClick={() => toggleNewSetEquipment(opt)}
+                  clickable
                   color={newSetEquipment.includes(opt) ? 'primary' : 'default'}
                   variant={newSetEquipment.includes(opt) ? 'filled' : 'outlined'}
-                  sx={{ mb: 1 }}
+                  onClick={() => toggleNewSetEquipment(opt)}
                 />
               ))}
             </Stack>
           </Box>
         )}
 
-        {/* Exercise order + DnD */}
-        <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-            Exercise Order (drag rows to reorder)
-          </Typography>
+        {/* Exercise Order */}
+        <Typography sx={{ mb: 1, fontWeight: 600 }} variant="subtitle2">
+          Exercise Order (drag to reorder)
+        </Typography>
 
-          {variant.exerciseOrder.map((exercise: ExerciseOrder, idx: number) => {
-            const isDragging = dragIndex === idx
-            const isHover = hoverIndex === idx && dragIndex !== null
+        {variant.exerciseOrder.map((ex, idx) => (
+          <Box
+            key={idx}
+            draggable
+            onDragStart={() => setDragIndex(idx)}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setHoverIndex(idx)
+            }}
+            onDrop={() => {
+              if (dragIndex === null || dragIndex === idx) return
+              const newOrder = [...variant.exerciseOrder]
+              const [moved] = newOrder.splice(dragIndex, 1)
+              newOrder.splice(idx, 0, moved)
+              updateVariant(newOrder)
+              setDragIndex(null)
+              setHoverIndex(null)
+            }}
+            sx={{
+              mb: 1.5,
+              borderRadius: 2,
+              display: 'flex',
+              border: `1px solid ${
+                hoverIndex === idx ? theme.palette.primary.main : theme.palette.divider
+              }`
+            }}
+          >
+            <Box sx={{ px: 1, display: 'flex', alignItems: 'center', borderRight: `1px solid ${theme.palette.divider}` }}>
+              <DragIndicatorIcon fontSize="small" />
+            </Box>
 
-            return (
-              <Box
-                key={`${exercise.name}-${idx}`}
-                draggable
-                onDragStart={handleDragStart(idx)}
-                onDragOver={handleDragOver(idx)}
-                onDrop={handleDrop(idx)}
-                onDragEnd={handleDragEnd}
-                sx={{
-                  mb: 1.5,
-                  borderRadius: 2,
-                  border: `1px solid ${
-                    isDragging || isHover ? theme.palette.primary.main : theme.palette.divider
-                  }`,
-                  backgroundColor: isDragging
-                    ? theme.palette.action.selected
-                    : isHover
-                    ? theme.palette.action.hover
-                    : theme.palette.background.default,
-                  display: 'flex',
-                  alignItems: 'stretch',
-                  transition: '0.15s ease'
-                }}
-              >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 1,
-                    borderRight: `1px solid ${theme.palette.divider}`,
-                    cursor: 'grab'
-                  }}
-                >
-                  <DragIndicatorIcon fontSize="small" />
-                </Box>
-
-                <Box sx={{ flex: 1 }}>
-                  <EditExerciseRow
-                    exercise={exercise}
-                    equipmentOptions={equipmentOptions}
-                    onUpdate={(u) => handleUpdateSet(idx, u)}
-                    onDelete={() => handleDeleteSet(idx)}
-                  />
-                </Box>
-              </Box>
-            )
-          })}
-        </Box>
+            <Box sx={{ flex: 1 }}>
+              <EditExerciseRow
+                exercise={ex}
+                equipmentOptions={equipmentOptions}
+                onUpdate={(u) => handleUpdateSet(idx, u)}
+                onDelete={() => handleDeleteSet(idx)}
+              />
+            </Box>
+          </Box>
+        ))}
       </AccordionDetails>
 
-      {/* Variant Name Dialog */}
-      <Dialog open={variantNameDialog} onClose={() => setVariantNameDialog(false)} maxWidth="xs" fullWidth>
+      {/* Edit Name Dialog */}
+      <Dialog open={variantNameDialog} onClose={() => setVariantNameDialog(false)}>
         <DialogTitle>Edit Variant Name</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <TextField
-            fullWidth
-            label="Variant Name"
-            value={variantName}
-            onChange={(e) => setVariantName(e.target.value)}
-          />
+          <TextField fullWidth label="Variant Name" value={variantName} onChange={(e) => setVariantName(e.target.value)} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setVariantNameDialog(false)}>Cancel</Button>
-          <Button onClick={handleUpdateVariantName} variant="contained">
+          <Button
+            variant="contained"
+            onClick={() => {
+              onUpdate({ ...variant, id: variant.id, variantName })
+              setVariantNameDialog(false)
+            }}
+          >
             Save
           </Button>
         </DialogActions>

@@ -12,7 +12,6 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import AddIcon from '@mui/icons-material/Add'
 import { EditVariantCard } from '../components/EditVariantCard'
-import { getWorkoutState } from '../data/workoutUtils'
 import { getGitHubService, isGitHubConfigured } from '../data/githubService'
 import { loadData, getData, setData, syncToGitHub } from '../data/dataService'
 import type { Variant } from '../data/workoutUtils'
@@ -25,13 +24,24 @@ export default function VariantPage() {
   const [isSyncing, setIsSyncing] = useState(false)
   const hasGitHubToken = isGitHubConfigured()
 
-  // load GitHub data on mount
+  // Ensure every loaded variant has an ID
+  const ensureIds = (v: Variant[]): Variant[] =>
+    v.map((item) => ({
+      ...item,
+      id: item.id ?? crypto.randomUUID()
+    }))
+
+  // Load GitHub data + normalize IDs
   useEffect(() => {
     const load = async () => {
       try {
         await loadData()
-        const baseData = getData()
-        setVariants(baseData.variants || [])
+        const base = getData()
+        const fixed = ensureIds(base.variants || [])
+        setVariants(fixed)
+
+        // Write IDs back to memory so sync includes them
+        setData({ ...base, variants: fixed })
       } catch (err) {
         console.error(err)
         setSyncError('Failed to load data from GitHub.')
@@ -42,12 +52,22 @@ export default function VariantPage() {
     load()
   }, [])
 
-  // detect unsaved changes
+  // Detect unsaved changes
   const unsavedChanges = useMemo(() => {
     if (loading) return false
     try {
-      const base = getData().variants || []
-      return JSON.stringify(base) !== JSON.stringify(variants)
+      const baseVariants = (getData().variants || []).map((v: Variant) => ({
+        ...v,
+        // Remove ordering differences
+        exerciseOrder: v.exerciseOrder || [],
+        exercisesList: v.exercisesList || []
+      }))
+      const local = variants.map((v) => ({
+        ...v,
+        exerciseOrder: v.exerciseOrder || [],
+        exercisesList: v.exercisesList || []
+      }))
+      return JSON.stringify(baseVariants) !== JSON.stringify(local)
     } catch {
       return false
     }
@@ -61,6 +81,7 @@ export default function VariantPage() {
 
   const handleAddVariant = () => {
     const newVariant: Variant = {
+      id: crypto.randomUUID(),
       variantName: `New Variant ${variants.length + 1}`,
       exercisesList: [],
       exerciseOrder: []
@@ -78,24 +99,26 @@ export default function VariantPage() {
     setSyncMessage('')
 
     try {
-      const githubService = getGitHubService()
-      if (!githubService) {
-        setSyncError('GitHub token not configured in .env file')
+      const github = getGitHubService()
+      if (!github) {
+        setSyncError('GitHub token not configured')
         setIsSyncing(false)
         return
       }
 
-      // update in-memory JSON before push
       const current = getData()
-      const newData = { ...current, variants }
-      setData(newData)
+      const updated = { ...current, variants }
 
-      await syncToGitHub(`Update workout variants - ${new Date().toLocaleString()}`)
+      setData(updated)
+
+      await syncToGitHub(
+        `Update workout variants - ${new Date().toLocaleString('en-IN')}`
+      )
 
       setSyncMessage('✓ Successfully synced to GitHub!')
       setTimeout(() => setSyncMessage(''), 3000)
-    } catch (error) {
-      setSyncError(`Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } catch (err: any) {
+      setSyncError(`Sync failed: ${err?.message || 'Unknown error'}`)
     } finally {
       setIsSyncing(false)
     }
@@ -110,16 +133,10 @@ export default function VariantPage() {
     )
   }
 
-  const baseData = getData()
-  const state = getWorkoutState()
-  const weeklyOrder = baseData.weeklyOrder || []
-  const nextVariantIndex = weeklyOrder.findIndex(
-    (name: string) => !state.completedVariants.includes(name)
-  )
-
   return (
     <Container>
       <Box sx={{ py: 4 }}>
+        {/* Header + Actions */}
         <Box
           sx={{
             display: 'flex',
@@ -147,11 +164,7 @@ export default function VariantPage() {
           </Box>
 
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={handleAddVariant}
-            >
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={handleAddVariant}>
               Add Variant
             </Button>
 
@@ -169,35 +182,18 @@ export default function VariantPage() {
           </Stack>
         </Box>
 
-        {nextVariantIndex >= 0 && (
-          <Box
-            sx={{
-              mb: 3,
-              p: 2,
-              borderRadius: 2,
-              background: (t) =>
-                t.palette.mode === 'dark'
-                  ? 'rgba(0,200,83,0.12)'
-                  : 'rgba(0,200,83,0.08)',
-              border: '1px solid rgba(0,200,83,0.25)'
-            }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              ⭐ Next in rotation: <strong>{weeklyOrder[nextVariantIndex]}</strong>
-            </Typography>
-          </Box>
-        )}
-
+        {/* All Variant Cards */}
         {variants.map((variant, idx) => (
           <EditVariantCard
-            key={variant.variantName ?? idx}
+            key={variant.id}
             variant={variant}
-            onUpdate={(updated) => handleVariantUpdate(idx, updated)}
+            onUpdate={(u) => handleVariantUpdate(idx, u)}
             onDelete={() => handleDeleteVariant(idx)}
           />
         ))}
       </Box>
 
+      {/* Notifications */}
       {syncMessage && (
         <Snackbar
           open={true}

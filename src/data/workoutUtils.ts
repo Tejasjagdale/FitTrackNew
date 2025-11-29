@@ -16,6 +16,7 @@ export interface ExerciseList {
 }
 
 export interface Variant {
+  id:string;
   variantName: string;
   exercisesList: ExerciseList[];
   exerciseOrder: ExerciseOrder[];
