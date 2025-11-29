@@ -13,7 +13,7 @@ export default function Home() {
       {/* Header */}
       <Box sx={{ textAlign: 'center', mb: 5 }}>
         <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-          fitTrack
+          FitTrack
         </Typography>
 
         <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 520, mx: 'auto' }}>
@@ -28,6 +28,7 @@ export default function Home() {
           size="large"
           sx={{ px: 4, py: 1.4, borderRadius: 2 }}
           onClick={() => navigate('/today')}
+          startIcon={<TodayIcon />}
         >
           Start Today’s Workout
         </Button>
