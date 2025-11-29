@@ -435,6 +435,7 @@ export default function ProgressDashboardPage() {
         onSave={(date, data) => {
           setMeasurements(prev => ({ ...prev, [date]: data }))
         }}
+        profile={profile}
       />
 
     </Container>

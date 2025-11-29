@@ -147,8 +147,7 @@ export function MetricChartCard({ title, data, goalValue }: MetricAreaChartCardP
                 size="small"
                 onClick={() => setRange(r as any)}
                 sx={{
-                  minWidth: 48,
-                  padding: '4px 8px',
+                  minWidth: 35,
                   borderRadius: 0,
                   textTransform: 'none',
                   color: range === r ? '#fff' : '#aaa',
