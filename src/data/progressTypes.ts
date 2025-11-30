@@ -27,7 +27,8 @@ export interface ProgressDataFile {
   profile?: ProfileData
   dailyWeight: Record<string, number>
   measurements: Record<string, MeasurementsEntry>
-  workouts: WorkoutLogEntry[]
+  workouts: WorkoutLogEntry[],
+  dailyHealth?: Record<string, DailyHealthStatus>   // NEW
 }
 
 export interface DailyPoint {
@@ -46,4 +47,11 @@ export interface WorkoutLogEntry {
   variantId: string
   variantName: string
   completed: boolean
+}
+
+export interface DailyHealthStatus {
+  condition: 'stomachIssue' | 'bodyPain' | 'coldOrFever' | 'healthy'
+  dietQuality: 'insufficient' | 'adequate' | 'excess'
+  mood: 'sad' | 'neutral' | 'happy'
+  studied: boolean
 }
