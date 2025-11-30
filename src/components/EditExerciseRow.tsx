@@ -1,3 +1,5 @@
+// src/components/progress/EditExerciseRow.tsx
+
 import React, { useState } from 'react'
 import {
   Box,
@@ -31,27 +33,30 @@ export function EditExerciseRow({
   onDelete
 }: EditExerciseRowProps) {
   const theme = useTheme()
+
   const [editDialog, setEditDialog] = useState(false)
+  const [name, setName] = useState(exercise.name)        // ADDED
   const [reps, setReps] = useState(exercise.reps)
   const [rest, setRest] = useState(exercise.restSeconds.toString())
   const [equipment, setEquipment] = useState<string[]>(
     Array.isArray(exercise.equipment) ? exercise.equipment : []
   )
 
+  const toggleEquipment = (item: string) => {
+    setEquipment((prev) =>
+      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]
+    )
+  }
+
   const handleSave = () => {
     onUpdate({
       ...exercise,
+      name,                                         // UPDATED
       reps,
       restSeconds: parseInt(rest, 10) || 60,
       equipment
     })
     setEditDialog(false)
-  }
-
-  const toggleEquipment = (item: string) => {
-    setEquipment((prev) =>
-      prev.includes(item) ? prev.filter((e) => e !== item) : [...prev, item]
-    )
   }
 
   return (
@@ -86,21 +91,11 @@ export function EditExerciseRow({
           sx={{ alignItems: 'center', flexWrap: 'wrap', flexGrow: 1 }}
         >
           <Chip label={`${exercise.reps} reps`} size="small" color="primary" />
-          <Chip
-            label={`${exercise.restSeconds}s rest`}
-            size="small"
-            variant="outlined"
-          />
+          <Chip label={`${exercise.restSeconds}s rest`} size="small" variant="outlined" />
           {exercise.equipment && exercise.equipment.length > 0 && (
             <Stack direction="row" spacing={0.5}>
               {exercise.equipment.map((eq: string) => (
-                <Chip
-                  key={eq}
-                  label={eq}
-                  size="small"
-                  variant="outlined"
-                  sx={{ maxWidth: 120 }}
-                />
+                <Chip key={eq} label={eq} size="small" variant="outlined" />
               ))}
             </Stack>
           )}
@@ -116,31 +111,40 @@ export function EditExerciseRow({
         </Stack>
       </Box>
 
-      {/* Edit dialog */}
+      {/* EDIT DIALOG */}
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Edit Set</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField
             fullWidth
+            label="Exercise Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
             label="Reps"
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            placeholder="e.g., 8-12 or max"
             sx={{ mb: 2 }}
           />
+
           <TextField
             fullWidth
-            label="Rest (seconds)"
             type="number"
+            label="Rest (seconds)"
             value={rest}
             onChange={(e) => setRest(e.target.value)}
-            inputProps={{ min: 10 }}
             sx={{ mb: 2 }}
           />
+
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-            Equipment (select multiple)
+            Equipment
           </Typography>
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
+
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
             {equipmentOptions.map((opt) => (
               <Chip
                 key={opt}
@@ -153,9 +157,10 @@ export function EditExerciseRow({
             ))}
           </Stack>
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setEditDialog(false)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained">
+          <Button variant="contained" onClick={handleSave}>
             Save
           </Button>
         </DialogActions>
