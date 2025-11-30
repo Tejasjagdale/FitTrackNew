@@ -122,9 +122,24 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
 
   const handleUpdateSet = (index: number, updated: ExerciseOrder) => {
     const order = [...variant.exerciseOrder]
+
+    // detect rename
+    const oldName = order[index].name
+    const newName = updated.name
+
+    // update the edited set
     order[index] = updated
+
+    // if renamed → update all sets with same old name
+    if (oldName !== newName) {
+      order.forEach((s) => {
+        if (s.name === oldName) s.name = newName
+      })
+    }
+
     updateVariant(order)
   }
+
 
   const handleDeleteSet = (index: number) => {
     updateVariant(variant.exerciseOrder.filter((_, i) => i !== index))
@@ -247,9 +262,8 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
               mb: 1.5,
               borderRadius: 2,
               display: 'flex',
-              border: `1px solid ${
-                hoverIndex === idx ? theme.palette.primary.main : theme.palette.divider
-              }`
+              border: `1px solid ${hoverIndex === idx ? theme.palette.primary.main : theme.palette.divider
+                }`
             }}
           >
             <Box sx={{ px: 1, display: 'flex', alignItems: 'center', borderRight: `1px solid ${theme.palette.divider}` }}>
