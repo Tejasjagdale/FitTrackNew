@@ -23,7 +23,7 @@ export interface WorkoutLogEntry {
 }
 
 export interface WorkoutProgressTrackingProps {
-  workoutLog: WorkoutLogEntry[]
+  workouts: WorkoutLogEntry[]
 }
 
 /** Rolling windows in days */
@@ -92,7 +92,7 @@ const YearlyTarget = WeeklyTarget * 52 // 728
 
 /** MAIN COMPONENT */
 const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
-  workoutLog
+  workouts
 }) => {
   const [mode, setMode] = useState<Mode>('week')
 
@@ -102,7 +102,7 @@ const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
   const filtered = useMemo(() => {
     const windowDays = WINDOW_DAYS[mode]
 
-    return workoutLog
+    return workouts
       .map((w) => ({
         ...w,
         dateObj: dateFromIso(w.date),
@@ -113,7 +113,7 @@ const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
         return diff >= 0 && diff < windowDays
       })
       .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime())
-  }, [workoutLog, mode])
+  }, [workouts, mode])
 
   /** POINTS STATS (A) */
   const pointStats = useMemo(() => {
@@ -174,7 +174,7 @@ const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
 
   /** RECENT ACTIVITY LIST (C) – show last 10 (from *all* log, not just window) */
   const recent = useMemo(() => {
-    return [...workoutLog]
+    return [...workouts]
       .map((w) => ({
         ...w,
         dateObj: dateFromIso(w.date),
@@ -182,7 +182,7 @@ const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
       }))
       .sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime())
       .slice(0, 10)
-  }, [workoutLog])
+  }, [workouts])
 
   const modeLabel = mode === 'week' ? 'Week' : mode === 'month' ? 'Month' : 'Year'
 
