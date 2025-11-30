@@ -27,16 +27,42 @@ export function ProfileDialog({
 }: ProfileDialogProps) {
   const [form, setForm] = useState<ProfileData>(initial)
 
+  /* ------------------------------------------
+     Sync initial values when dialog opens
+  ------------------------------------------ */
   useEffect(() => {
     if (open) setForm(initial)
   }, [open, initial])
 
+  /* ------------------------------------------
+     Auto-calc targetBMI = goalWeight / (heightM^2)
+  ------------------------------------------ */
+  useEffect(() => {
+    const h = form.heightCm ? form.heightCm / 100 : undefined
+    if (form.goalWeight && h) {
+      const bmi = form.goalWeight / (h * h)
+      setForm(prev => ({
+        ...prev,
+        targetBMI: Number(bmi.toFixed(1))
+      }))
+    }
+  }, [form.goalWeight, form.heightCm])
+
+  /* ------------------------------------------
+     Handle input changes
+  ------------------------------------------ */
   const handleChange =
     (key: keyof ProfileData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value
-      setForm((prev) => ({
+      let parsed: any = val
+
+      if (key === 'age' || key === 'heightCm' || key === 'goalWeight') {
+        parsed = val === '' ? undefined : Number(val)
+      }
+
+      setForm(prev => ({
         ...prev,
-        [key]: key === 'age' || key === 'heightCm' ? Number(val) : val
+        [key]: parsed
       }))
     }
 
@@ -47,14 +73,17 @@ export function ProfileDialog({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>User Profile</DialogTitle>
+
       <DialogContent sx={{ pt: 2 }}>
         <Stack spacing={2}>
+
           <TextField
             label="Name"
             value={form.name || ''}
             onChange={handleChange('name')}
             fullWidth
           />
+
           <TextField
             label="Age"
             type="number"
@@ -62,6 +91,7 @@ export function ProfileDialog({
             onChange={handleChange('age')}
             fullWidth
           />
+
           <TextField
             select
             label="Gender"
@@ -73,6 +103,7 @@ export function ProfileDialog({
             <MenuItem value="female">Female</MenuItem>
             <MenuItem value="other">Other</MenuItem>
           </TextField>
+
           <TextField
             label="Height (cm)"
             type="number"
@@ -80,8 +111,27 @@ export function ProfileDialog({
             onChange={handleChange('heightCm')}
             fullWidth
           />
+
+          <TextField
+            label="Goal Weight (kg)"
+            type="number"
+            value={form.goalWeight || ''}
+            onChange={handleChange('goalWeight')}
+            fullWidth
+          />
+
+          <TextField
+            label="Target BMI"
+            type="number"
+            value={form.targetBMI || ''}
+            disabled
+            fullWidth
+            helperText="Auto-calculated from height & goal weight"
+          />
+
         </Stack>
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" onClick={handleSubmit}>

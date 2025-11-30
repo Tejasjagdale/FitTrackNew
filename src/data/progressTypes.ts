@@ -5,9 +5,7 @@ export interface ProfileData {
   age?: number
   gender?: string
   heightCm?: number
-}
-
-export interface Goals {
+  goalWeight?:number,
   targetBMI?: number
 }
 
@@ -27,7 +25,6 @@ export interface MeasurementsEntry {
 
 export interface ProgressDataFile {
   profile?: ProfileData
-  goals?: Goals
   dailyWeight: Record<string, number>
   measurements: Record<string, MeasurementsEntry>
   workouts: WorkoutLogEntry[]

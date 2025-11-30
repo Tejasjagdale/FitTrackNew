@@ -19,7 +19,6 @@ import { isGitHubConfigured } from '../data/githubService'
 
 import {
   ProfileData,
-  Goals,
   MeasurementsEntry,
   ProgressDataFile,
   DailyPoint,
@@ -41,13 +40,10 @@ import { GraphSelector } from '../components/progressComponents/GraphSelector'
 import WorkoutProgressTracking from '../components/progressComponents/WorkoutProgressTracking'
 import ProgressHistoryGrid from '../components/progressComponents/ProgressHistoryGrid'
 
+
 /* ------------------------------
    HELPER FUNCTIONS
 ------------------------------ */
-
-function getTodayDateString() {
-  return new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-}
 
 function daysBetween(d1: Date, d2: Date) {
   return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
@@ -55,7 +51,6 @@ function daysBetween(d1: Date, d2: Date) {
 
 export default function ProgressDashboardPage() {
   const [profile, setProfile] = useState<ProfileData>({})
-  const [goals, setGoals] = useState<Goals>({})
   const [dailyWeight, setDailyWeight] = useState<Record<string, number>>({})
   const [measurements, setMeasurements] = useState<Record<string, MeasurementsEntry>>({})
   const [workouts, setWorkouts] = useState<WorkoutLogEntry[]>([])
@@ -70,7 +65,7 @@ export default function ProgressDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  // Separate flags for each popup, per page load
+  // Fixed per-page popup flags
   const [weightPopupShown, setWeightPopupShown] = useState(false)
   const [measurementPopupShown, setMeasurementPopupShown] = useState(false)
 
@@ -79,6 +74,7 @@ export default function ProgressDashboardPage() {
   const [syncError, setSyncError] = useState<string | null>(null)
 
   const hasGitHubToken = isGitHubConfigured()
+
 
   /* ------------------------------
      LOAD PROGRESS DATA
@@ -93,7 +89,6 @@ export default function ProgressDashboardPage() {
         const data = (await loadProgressData()) as ProgressDataFile
         if (cancelled) return
         setProfile(data.profile || {})
-        setGoals(data.goals || {})
         setDailyWeight(data.dailyWeight || {})
         setMeasurements(data.measurements || {})
         setWorkouts(data.workouts || [])
@@ -109,59 +104,49 @@ export default function ProgressDashboardPage() {
     return () => { cancelled = true }
   }, [])
 
-  /* ------------------------------
-     AUTO POP-UP REMINDERS
-     - Weight popup: once per page load, if today's weight missing
-     - Measurement popup: once per page load, if 15+ days since last,
-       and ONLY after today's weight is present
-  ------------------------------ */
-
-/* ------------------------------
-   AUTO POP-UP REMINDERS (IST safe)
------------------------------- */
-useEffect(() => {
-  if (loading) return;
-
-  const today = getTodayIndia(); // FIXED
-  const hasTodayWeight = dailyWeight[today] !== undefined;
 
   /* ------------------------------
-      STEP 1 — DAILY WEIGHT POPUP
+     AUTO POPUPS (IST SAFE)
   ------------------------------ */
-  if (!hasTodayWeight && !weightPopupShown) {
-    setWeightDialogOpen(true);
-    setWeightPopupShown(true);
-    return;
-  }
 
-  /* ------------------------------
-      STEP 2 — MEASUREMENT POPUP
-         Only after weight is present
-  ------------------------------ */
-  if (hasTodayWeight && !measurementPopupShown) {
-    const measurementDatesSorted = sortedDates(measurements);
-    const lastMeasurementDate = measurementDatesSorted[measurementDatesSorted.length - 1];
+  useEffect(() => {
+    if (loading) return
 
-    if (!lastMeasurementDate) {
-      // No measurements ever recorded - show once
-      setMeasurementDialogOpen(true);
-      setMeasurementPopupShown(true);
-      return;
+    const today = getTodayIndia()
+    const hasTodayWeight = dailyWeight[today] !== undefined
+
+    // STEP 1 — Weight popup must ALWAYS trigger first
+    if (!hasTodayWeight && !weightPopupShown) {
+      setWeightDialogOpen(true)
+      setWeightPopupShown(true)
+      return
     }
 
-    // Use IST date strings to avoid UTC issues
-    const diffDays = daysBetween(
-      new Date(lastMeasurementDate + "T00:00:00+05:30"),
-      new Date(today + "T00:00:00+05:30")
-    );
+    // STEP 2 — Measurement popup only after weight exists
+    if (hasTodayWeight && !measurementPopupShown) {
+      const measurementDatesSorted = sortedDates(measurements)
+      const lastMeasurementDate = measurementDatesSorted[measurementDatesSorted.length - 1]
 
-    if (diffDays >= 10) {
-      setMeasurementDialogOpen(true);
-      setMeasurementPopupShown(true);
-      return;
+      if (!lastMeasurementDate) {
+        setMeasurementDialogOpen(true)
+        setMeasurementPopupShown(true)
+        return
+      }
+
+      const diffDays = daysBetween(
+        new Date(lastMeasurementDate + "T00:00:00+05:30"),
+        new Date(today + "T00:00:00+05:30")
+      )
+
+      if (diffDays >= 10) {
+        setMeasurementDialogOpen(true)
+        setMeasurementPopupShown(true)
+        return
+      }
     }
-  }
-}, [loading, dailyWeight, measurements, weightPopupShown, measurementPopupShown]);
+  }, [loading, dailyWeight, measurements, weightPopupShown, measurementPopupShown])
+
+
 
   /* ------------------------------
      DERIVED VALUES
@@ -175,6 +160,7 @@ useEffect(() => {
     }))
   }, [dailyWeight, profile.heightCm])
 
+
   const latestDaily = dailyPoints[dailyPoints.length - 1]
   const firstDaily = dailyPoints[0]
 
@@ -183,12 +169,6 @@ useEffect(() => {
     measurementDates.length ? measurements[measurementDates[0]] : {}
 
   const heightM = profile.heightCm ? profile.heightCm / 100 : undefined
-
-  const targetWeight = useMemo(() => {
-    if (!goals.targetBMI || !profile.heightCm) return undefined
-    const h = profile.heightCm / 100
-    return goals.targetBMI * h * h
-  }, [goals.targetBMI, profile.heightCm])
 
   const latestBMI =
     latestDaily && heightM ? latestDaily.weight / (heightM * heightM) : undefined
@@ -201,27 +181,7 @@ useEffect(() => {
       ? latestDaily.bmi - firstDaily.bmi
       : undefined
 
-  const bmiTrendText = useMemo(() => {
-    if (!goals.targetBMI || !profile.heightCm || dailyPoints.length < 2)
-      return 'Log more days to see BMI trend projections.'
 
-    const slope = computeTrendSlope(dailyPoints)
-    if (!slope) return 'BMI is flat based on recent data.'
-
-    const latest = dailyPoints[dailyPoints.length - 1]
-    const h = profile.heightCm / 100
-    const targetW = goals.targetBMI * h * h
-    const remaining = targetW - latest.weight
-    const daysToGoal = remaining / slope
-
-    if (!Number.isFinite(daysToGoal)) return 'BMI trend unstable.'
-    if (daysToGoal < 0) return 'Trend moving away from target BMI.'
-
-    const eta = new Date(new Date(latest.date).getTime() + daysToGoal * 86400000)
-    const etaStr = eta.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
-
-    return `At current trend, you may reach BMI ${goals.targetBMI} around ${etaStr}.`
-  }, [dailyPoints, goals.targetBMI, profile.heightCm])
 
   /* ------------------------------
      LOADING / ERROR
@@ -244,7 +204,9 @@ useEffect(() => {
     )
   }
 
+
   const measurementKeys = Object.keys(sampleMeasurement || {})
+
 
   /* ------------------------------
      PAGE RENDER
@@ -296,7 +258,7 @@ useEffect(() => {
               variant="outlined"
               onClick={() => {
                 setIsSyncing(true)
-                setProgressData({ profile, goals, dailyWeight, measurements, workoutLog: workouts })
+                setProgressData({ profile, dailyWeight, measurements, workoutLog: workouts })
                 syncProgressToGitHub(`Update progress - ${new Date().toLocaleString('en-IN')}`)
                   .then(() => setSyncMessage('Synced!'))
                   .catch(err => setSyncError(err.message || 'Sync failed'))
@@ -310,12 +272,14 @@ useEffect(() => {
         </Stack>
       </Box>
 
+
       {/* GRAPH SELECTOR */}
       <GraphSelector
         selectedGraph={selectedGraph}
         onChange={setSelectedGraph}
         measurementKeys={measurementKeys}
       />
+
 
       {/* GRAPHS */}
       {selectedGraph !== 'none' && (
@@ -324,7 +288,7 @@ useEffect(() => {
             <MetricChartCard
               title="Weight"
               data={dailyPoints.map(p => ({ date: p.date, value: p.weight }))}
-              goalValue={targetWeight}
+              goalValue={profile.goalWeight} // now goalWeight
             />
           )}
 
@@ -332,7 +296,7 @@ useEffect(() => {
             <MetricChartCard
               title="BMI"
               data={dailyPoints.map(p => ({ date: p.date, value: p.bmi }))}
-              goalValue={goals.targetBMI}
+              goalValue={profile.targetBMI} // moved to profile
             />
           )}
 
@@ -342,7 +306,7 @@ useEffect(() => {
                 <MetricChartCard
                   title="Weight"
                   data={dailyPoints.map(p => ({ date: p.date, value: p.weight }))}
-                  goalValue={targetWeight}
+                  goalValue={profile.goalWeight}
                 />
               </Grid>
 
@@ -350,7 +314,7 @@ useEffect(() => {
                 <MetricChartCard
                   title="BMI"
                   data={dailyPoints.map(p => ({ date: p.date, value: p.bmi }))}
-                  goalValue={goals.targetBMI}
+                  goalValue={profile.targetBMI}
                 />
               </Grid>
 
@@ -382,6 +346,7 @@ useEffect(() => {
         </Box>
       )}
 
+
       {/* SYNC MESSAGE */}
       {(syncMessage || syncError) && (
         <Box sx={{ mb: 2 }}>
@@ -390,21 +355,23 @@ useEffect(() => {
         </Box>
       )}
 
+
       {/* WORKOUT COMPONENT */}
       <WorkoutProgressTracking workoutLog={workouts} />
 
+
       {/* STATS CARDS */}
       <TrendStatsCards
+        dailyPoints={dailyPoints}
         latestDaily={latestDaily}
         firstDaily={firstDaily}
         latestBMI={latestBMI}
         weightChange={weightChange}
         bmiChange={bmiChange}
-        targetWeight={targetWeight}
-        goals={goals}
+        targetWeight={profile.goalWeight}        // updated
         profile={profile}
         measurementDates={measurementDates}
-        bmiTrendText={bmiTrendText}
+        bmiTrendText={"deprecated"}              // no longer used
         onEditLatestWeight={() => {
           setEditingWeightDate(latestDaily?.date)
           setWeightDialogOpen(true)
@@ -414,6 +381,7 @@ useEffect(() => {
           setMeasurementDialogOpen(true)
         }}
       />
+
 
       {/* EDITABLE GRID */}
       <ProgressHistoryGrid
@@ -434,6 +402,7 @@ useEffect(() => {
           })
         }}
       />
+
 
       {/* DIALOGS */}
       <AddWeightDialog
