@@ -35,7 +35,7 @@ import {
 
 import { AddWeightDialog } from '../components/progressComponents/AddWeightDialog'
 import { AddMeasurementDialog } from '../components/progressComponents/AddMeasurementDialog'
-import  AddDailyHealthDialog  from '../components/progressComponents/AddDailyHealthDialog'
+import AddDailyHealthDialog from '../components/progressComponents/AddDailyHealthDialog'
 import { MetricChartCard } from '../components/progressComponents/MetricChartCard'
 import { TrendStatsCards } from '../components/progressComponents/TrendStatsCards'
 import { GraphSelector } from '../components/progressComponents/GraphSelector'
@@ -159,11 +159,28 @@ export default function ProgressDashboardPage() {
     }
 
     // STEP 3 — Health popup, only after measurement popup is done
-    if (hasTodayWeight && measurementPopupShown && !hasTodayHealth && !healthPopupShown) {
-      setHealthDialogOpen(true)
-      setHealthPopupShown(true)
-      return
+    {
+      const today = getTodayIndia()
+      const now = new Date()
+      const hrs = now.getHours()
+
+      const hasTodayWeight = dailyWeight[today] !== undefined
+      const hasTodayHealth = dailyHealth[today] !== undefined
+      const after6pm = hrs >= 18
+
+      if (
+        hasTodayWeight &&               // weight already filled
+        measurementPopupShown &&        // measurement logic already passed
+        after6pm &&                     // after 6 PM IST
+        !hasTodayHealth &&              // user has NOT filled today's health
+        !healthPopupShown               // show only once per day
+      ) {
+        setHealthDialogOpen(true)
+        setHealthPopupShown(true)
+        return
+      }
     }
+
 
   }, [loading, dailyWeight, measurements, dailyHealth, weightPopupShown, measurementPopupShown, healthPopupShown])
 
@@ -261,7 +278,6 @@ export default function ProgressDashboardPage() {
 
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
             onClick={() => setWeightDialogOpen(true)}
           >
             Add Weight

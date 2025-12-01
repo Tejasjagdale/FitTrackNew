@@ -6,6 +6,7 @@ import WorkoutPlaylist from './pages/WorkoutPlaylist'
 import Layout from './components/Layout'
 import ProgressPage from './pages/ProgressPage'
 import TodayWorkout from './pages/TodayWorkout'
+import ExerciseDatabasePage from './pages/ExerciseDatabasePage'
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/today" element={<TodayWorkout />} />
         <Route path="/workout-playlist" element={<WorkoutPlaylist />} />
         <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/exercise-database" element={<ExerciseDatabasePage />} />
       </Routes>
     </Layout>
   )

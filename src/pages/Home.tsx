@@ -58,23 +58,44 @@ export default function Home() {
 
         <Grid item xs={12} sm={6} md={4}>
           <Card
+            className="glass-card"
+            onClick={() => navigate('/workout-playlist')}
             sx={{
               borderRadius: 3,
               cursor: 'pointer',
-              transition: '0.2s',
-              '&:hover': { boxShadow: 4 }
+              transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+              p: 0,
+              '&:hover': {
+                transform: 'scale(1.03)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
+              }
             }}
-            onClick={() => navigate('/workout-playlist')}
           >
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <TodayIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Checkout Playlist's</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-                Start your selected workout and track your steps.
+            <CardContent
+              sx={{
+                textAlign: 'center',
+                py: 5,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}
+            >
+              <TodayIcon sx={{ fontSize: 40, mb: 1, opacity: 0.9 }} />
+
+              <Typography variant="h6">
+                Checkout Playlists
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', mt: 1, maxWidth: 280 }}
+              >
+                View your curated workout playlists and start a guided training session.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
+
 
         <Grid item xs={12} sm={6} md={4}>
           <Card
