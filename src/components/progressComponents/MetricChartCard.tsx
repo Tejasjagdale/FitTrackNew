@@ -374,7 +374,7 @@ export function MetricChartCard({
   )
 
   return (
-    <Card sx={{ height: 350 }}>
+    <Card sx={{ height: 360 }}>
       <CardContent sx={{ height: '100%', pb: 0, position: 'relative' }}>
         {/* Header */}
         <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
