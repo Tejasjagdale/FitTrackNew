@@ -24,14 +24,17 @@ export function GraphSelector({
       >
         <MenuItem value="none">None</MenuItem>
         <MenuItem value="weight">Weight</MenuItem>
-        <MenuItem value="bmi">BMI</MenuItem>
         <MenuItem value="seeAll">See All</MenuItem>
 
-        {measurementKeys.map((key) => (
-          <MenuItem key={key} value={key}>
-            {key}
-          </MenuItem>
-        ))}
+        {/* Auto-populate all measurement keys */}
+        {measurementKeys
+          .slice()
+          .sort()
+          .map((key) => (
+            <MenuItem key={key} value={key}>
+              {key}
+            </MenuItem>
+          ))}
       </TextField>
     </Box>
   )
