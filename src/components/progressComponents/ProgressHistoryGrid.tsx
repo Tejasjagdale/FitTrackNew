@@ -1,7 +1,19 @@
 // src/components/progressComponents/ProgressHistoryGrid.tsx
 import React, { useMemo, useState } from "react";
-import { Box, Typography, Grid, TextField, Chip, MenuItem, Select } from "@mui/material";
-import { DataGrid, GridColDef, GridRenderEditCellParams } from "@mui/x-data-grid";
+import {
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  Chip,
+  MenuItem,
+  Select
+} from "@mui/material";
+import {
+  DataGrid,
+  GridColDef,
+  GridRenderEditCellParams
+} from "@mui/x-data-grid";
 
 import {
   MeasurementsEntry,
@@ -9,8 +21,6 @@ import {
   DailyHealthStatus
 } from "../../data/progressTypes";
 import { GridSingleSelectColDef } from "@mui/x-data-grid";
-
-
 
 type Col = GridColDef | GridSingleSelectColDef<any>;
 
@@ -70,7 +80,35 @@ function extractBodyPart(title: string): string {
 }
 
 /* -------------------------------------------------------
-   COLOR UTILS
+   COLORED CHIP UTILS
+-------------------------------------------------------- */
+function coloredChip(bodyPart: string) {
+  const colors: Record<string, string> = {
+    Arms: "#2196f3",
+    Chest: "#e53935",
+    Back: "#8e24aa",
+    Legs: "#43a047",
+    Shoulders: "#fb8c00",
+    Abs: "#26a69a",
+    "Full Body": "#9e9e9e",
+    Unknown: "#616161"
+  };
+
+  return (
+    <Chip
+      label={bodyPart}
+      size="small"
+      sx={{
+        background: colors[bodyPart] + "66",
+        color: "white",
+        fontWeight: 600
+      }}
+    />
+  );
+}
+
+/* -------------------------------------------------------
+   BACKGROUND COLOR FOR CELLS
 -------------------------------------------------------- */
 const applyCellStyle = (color: string) => ({
   backgroundColor: color,
@@ -85,12 +123,11 @@ const applyCellStyle = (color: string) => ({
 });
 
 /* -------------------------------------------------------
-   DROPDOWN EDIT COMPONENT FOR HEALTH GRID
+   SELECT DROPDOWN FOR HEALTH GRID
 -------------------------------------------------------- */
 function SelectEditCell(params: GridRenderEditCellParams) {
   const { id, field, value, api } = params;
 
-  // FIX: cast to any to access valueOptions safely
   const colDef: any = params.colDef;
   const options = colDef.valueOptions ?? [];
 
@@ -100,13 +137,7 @@ function SelectEditCell(params: GridRenderEditCellParams) {
   };
 
   return (
-    <Select
-      fullWidth
-      autoFocus
-      size="small"
-      value={value}
-      onChange={handleChange}
-    >
+    <Select fullWidth autoFocus size="small" value={value} onChange={handleChange}>
       {options.map((opt: any) => {
         const val = typeof opt === "object" ? opt.value : opt;
         const label = typeof opt === "object" ? opt.label : String(opt);
@@ -121,7 +152,9 @@ function SelectEditCell(params: GridRenderEditCellParams) {
   );
 }
 
-
+/* -------------------------------------------------------
+   MAIN COMPONENT
+-------------------------------------------------------- */
 
 export default function ProgressHistoryGrid({
   dailyWeight,
@@ -133,14 +166,12 @@ export default function ProgressHistoryGrid({
   onUpdateWorkout,
   onUpdateHealth
 }: Props) {
-
   const [filter, setFilter] = useState("");
+
   const sortDesc = (arr: string[]) =>
     [...arr].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-  /* -------------------------------------------------------
-     DAILY WEIGHT
-  -------------------------------------------------------- */
+  /* ------------------------ DAILY WEIGHT ------------------------ */
   const weightRows = sortDesc(Object.keys(dailyWeight)).map(date => ({
     id: date,
     date,
@@ -152,9 +183,7 @@ export default function ProgressHistoryGrid({
     { field: "weight", headerName: "Weight", width: 120, editable: true }
   ];
 
-  /* -------------------------------------------------------
-     MEASUREMENTS
-  -------------------------------------------------------- */
+  /* ------------------------ MEASUREMENTS ------------------------ */
   const measurementDates = sortDesc(Object.keys(measurements));
 
   const measurementKeys = useMemo(() => {
@@ -182,9 +211,7 @@ export default function ProgressHistoryGrid({
     }))
   ];
 
-  /* -------------------------------------------------------
-     WORKOUT GRID
-  -------------------------------------------------------- */
+  /* ------------------------ WORKOUT LOG ------------------------ */
   const sortedWorkouts = useMemo(
     () => [...workouts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
     [workouts]
@@ -198,16 +225,13 @@ export default function ProgressHistoryGrid({
 
   const workoutCols: GridColDef[] = [
     { field: "date", headerName: "Date", width: 120 },
-
     { field: "variantName", headerName: "Workout", width: 220 },
 
     {
       field: "bodyPart",
       headerName: "Body Part",
       width: 140,
-      renderCell: params => (
-        <Chip label={params.value} size="small" color="primary" variant="outlined" />
-      )
+      renderCell: params => coloredChip(params.value)
     },
 
     {
@@ -218,16 +242,30 @@ export default function ProgressHistoryGrid({
       editable: true,
       renderCell: params =>
         params.value ? (
-          <Chip label="Yes" color="success" size="small" />
+          <Chip
+            label="Completed"
+            sx={{
+              background: "#43a04766",
+              color: "white",
+              fontWeight: 600
+            }}
+            size="small"
+          />
         ) : (
-          <Chip label="No" color="error" size="small" />
+          <Chip
+            label="Partialy"
+            sx={{
+              background: "#e5393566",
+              color: "white",
+              fontWeight: 600
+            }}
+            size="small"
+          />
         )
     }
   ];
 
-  /* -------------------------------------------------------
-     DAILY HEALTH GRID (WITH DROPDOWN CELL EDITORS)
-  -------------------------------------------------------- */
+  /* ------------------------ DAILY HEALTH GRID ------------------------ */
   const healthRows = sortDesc(Object.keys(dailyHealth)).map(date => ({
     id: date,
     date,
@@ -245,9 +283,9 @@ export default function ProgressHistoryGrid({
       type: "singleSelect",
       valueOptions: ["healthy", "stomachIssue", "bodyPain", "coldOrFever"],
       renderEditCell: SelectEditCell,
-      renderCell: (params) => {
+      renderCell: params => {
         const v = params.value;
-        const color = v === "healthy" ? "#66BA6A59" : "#F4433659";
+        const color = v === "healthy" ? "#66BA6A66" : "#F4433666";
         return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
@@ -260,10 +298,10 @@ export default function ProgressHistoryGrid({
       type: "singleSelect",
       valueOptions: ["veryLow", "low", "normal", "high", "veryHigh"],
       renderEditCell: SelectEditCell,
-      renderCell: (params) => {
+      renderCell: params => {
         const v = params.value;
         const green = ["normal", "high", "veryHigh"];
-        const color = green.includes(v) ? "#66BA6A59" : "#F4433659";
+        const color = green.includes(v) ? "#66BA6A66" : "#F4433666";
         return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
@@ -276,13 +314,14 @@ export default function ProgressHistoryGrid({
       type: "singleSelect",
       valueOptions: ["verySad", "sad", "neutral", "happy", "veryHappy"],
       renderEditCell: SelectEditCell,
-      renderCell: (params) => {
+      renderCell: params => {
         const v = params.value;
         const green = ["neutral", "happy", "veryHappy"];
-        const color = green.includes(v) ? "#66BA6A59" : "#F4433659";
+        const color = green.includes(v) ? "#66BA6A66" : "#F4433666";
         return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
+
     {
       field: "studied",
       headerName: "Studied",
@@ -294,14 +333,13 @@ export default function ProgressHistoryGrid({
         { value: false, label: "No" }
       ],
       renderEditCell: SelectEditCell,
-      renderCell: (params) => {
+      renderCell: params => {
         const v = Boolean(params.value);
-        const color = v ? "#66BA6A59" : "#F4433659";
+        const color = v ? "#66BA6A66" : "#F4433666";
         return <Box sx={applyCellStyle(color)}>{v ? "Yes" : "No"}</Box>;
       }
     }
   ];
-
 
   /* -------------------------------------------------------
      RENDER
@@ -328,6 +366,8 @@ export default function ProgressHistoryGrid({
             columns={weightCols}
             autoHeight
             disableRowSelectionOnClick
+            pageSizeOptions={[7]}
+            initialState={{ pagination: { paginationModel: { pageSize: 7, page: 0 } } }}
             processRowUpdate={row => {
               onUpdateWeight(row.id, row.weight);
               return row;
@@ -342,14 +382,17 @@ export default function ProgressHistoryGrid({
           </Typography>
 
           <DataGrid
-            rows={workoutRows.filter(r =>
-              r.date.includes(filter) ||
-              r.variantName.toLowerCase().includes(filter.toLowerCase()) ||
-              r.bodyPart.toLowerCase().includes(filter.toLowerCase())
+            rows={workoutRows.filter(
+              r =>
+                r.date.includes(filter) ||
+                r.variantName.toLowerCase().includes(filter.toLowerCase()) ||
+                r.bodyPart.toLowerCase().includes(filter.toLowerCase())
             )}
             columns={workoutCols}
             autoHeight
             disableRowSelectionOnClick
+            pageSizeOptions={[7]}
+            initialState={{ pagination: { paginationModel: { pageSize: 7, page: 0 } } }}
             processRowUpdate={row => {
               const updated = { ...row };
               delete updated.id;
@@ -371,6 +414,8 @@ export default function ProgressHistoryGrid({
           columns={measurementCols}
           autoHeight
           disableRowSelectionOnClick
+          pageSizeOptions={[7]}
+          initialState={{ pagination: { paginationModel: { pageSize: 7, page: 0 } } }}
           processRowUpdate={row => {
             const updated: any = {};
             measurementKeys.forEach(k => {
@@ -393,6 +438,8 @@ export default function ProgressHistoryGrid({
           columns={healthCols}
           autoHeight
           disableRowSelectionOnClick
+          pageSizeOptions={[7]}
+          initialState={{ pagination: { paginationModel: { pageSize: 7, page: 0 } } }}
           processRowUpdate={row => {
             const updated = {
               condition: row.condition,
