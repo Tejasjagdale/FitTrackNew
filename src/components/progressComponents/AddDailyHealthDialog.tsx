@@ -39,12 +39,13 @@ export default function AddDailyHealthDialog({
     initial?.condition || 'healthy'
   )
 
-  const [dietQuality, setDietQuality] =
-    useState<DailyHealthStatus['dietQuality']>(
-      initial?.dietQuality || 'adequate'
-    )
+  // NEW: 5-level diet scale
+  const [dietQuality, setDietQuality] = useState<any>(
+    initial?.dietQuality || 'normal'
+  )
 
-  const [mood, setMood] = useState<DailyHealthStatus['mood']>(
+  // NEW: 5-level mood scale
+  const [mood, setMood] = useState<any>(
     initial?.mood || 'neutral'
   )
 
@@ -62,6 +63,7 @@ export default function AddDailyHealthDialog({
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
 
+          {/* DATE */}
           <TextField
             label="Date"
             type="date"
@@ -71,6 +73,7 @@ export default function AddDailyHealthDialog({
             InputLabelProps={{ shrink: true }}
           />
 
+          {/* CONDITION */}
           <TextField
             select
             label="Condition"
@@ -84,30 +87,37 @@ export default function AddDailyHealthDialog({
             <MenuItem value="healthy">Healthy</MenuItem>
           </TextField>
 
+          {/* DIET QUALITY (UPGRADED TO 5 LEVELS) */}
           <TextField
             select
             label="Diet Quality"
             value={dietQuality}
-            onChange={(e) => setDietQuality(e.target.value as any)}
+            onChange={(e) => setDietQuality(e.target.value)}
             fullWidth
           >
-            <MenuItem value="insufficient">Less / Insufficient</MenuItem>
-            <MenuItem value="adequate">Adequate / On Point</MenuItem>
-            <MenuItem value="excess">More / Excess</MenuItem>
+            <MenuItem value="veryLow">Very Low (Underfed)</MenuItem>
+            <MenuItem value="low">Low (Less than needed)</MenuItem>
+            <MenuItem value="normal">Normal / On Point</MenuItem>
+            <MenuItem value="high">High (Slightly excessive)</MenuItem>
+            <MenuItem value="veryHigh">Very High (Overate)</MenuItem>
           </TextField>
 
+          {/* MOOD (UPGRADED TO 5 LEVELS) */}
           <TextField
             select
             label="Mood"
             value={mood}
-            onChange={(e) => setMood(e.target.value as any)}
+            onChange={(e) => setMood(e.target.value)}
             fullWidth
           >
+            <MenuItem value="verySad">Very Sad</MenuItem>
             <MenuItem value="sad">Sad</MenuItem>
             <MenuItem value="neutral">Neutral</MenuItem>
             <MenuItem value="happy">Happy</MenuItem>
+            <MenuItem value="veryHappy">Very Happy</MenuItem>
           </TextField>
 
+          {/* STUDIED */}
           <FormControlLabel
             control={
               <Checkbox

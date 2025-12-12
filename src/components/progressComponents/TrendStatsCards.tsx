@@ -1,4 +1,4 @@
-// src/components/progress/TrendStatsCards.tsx
+// src/components/progressComponents/TrendStatsCards.tsx
 import React, { useMemo } from 'react'
 import {
   Grid,
@@ -11,28 +11,21 @@ import {
 } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import { ProfileData, DailyPoint } from '../../data/progressTypes'
-import { safeNum, computeTrendSlope } from '../../data/progressUtils'
+import { computeTrendSlope } from '../../data/progressUtils'
 
 interface TrendStatsCardsProps {
-  // NEW: full time series, needed for 14-day deltas & trend
   dailyPoints: DailyPoint[]
-
-  latestDaily?: DailyPoint
-  firstDaily?: DailyPoint
-  latestBMI?: number
-  weightChange?: number
-  bmiChange?: number
-  targetWeight?: number
   profile: ProfileData
   measurementDates: string[]
-  bmiTrendText: string // kept for compatibility, but not used now
+
   onEditLatestWeight: () => void
   onEditLatestMeasurement: () => void
 }
 
-/* -------------------------
-   Helper: color closer/further from goal
--------------------------- */
+/* ----------------------------
+   Helpers
+----------------------------- */
+
 function colorByGoalProgress(
   prevValue: number | undefined,
   currentValue: number | undefined,
@@ -50,84 +43,79 @@ function colorByGoalProgress(
   const currDist = Math.abs(goalValue - currentValue)
 
   const eps = 0.05
-
-  if (currDist < prevDist - eps) return 'success.main' // moved closer to goal
-  if (currDist > prevDist + eps) return 'error.main' // moved away from goal
-  return 'text.secondary' // basically unchanged
+  if (currDist < prevDist - eps) return 'success.main'
+  if (currDist > prevDist + eps) return 'error.main'
+  return 'text.secondary'
 }
 
-/* -------------------------
-   Helper: AUTO MODE bulk vs cut
--------------------------- */
-function getWeightMode(
-  currentWeight?: number,
-  goalWeight?: number
-): 'bulk' | 'cut' | 'maintain' | undefined {
+function getMode(currentWeight?: number, goalWeight?: number) {
   if (currentWeight === undefined || goalWeight === undefined) return undefined
-
   const diff = goalWeight - currentWeight
   const eps = 0.1
-
-  if (diff > eps) return 'bulk'      // goal above current → gaining is good
-  if (diff < -eps) return 'cut'      // goal below current → losing is good
+  if (diff > eps) return 'bulk'
+  if (diff < -eps) return 'cut'
   return 'maintain'
 }
 
-/* -------------------------
-   Helper: get point ~N days before latest
--------------------------- */
-function getBaselinePoint(
-  dailyPoints: DailyPoint[],
-  daysBack: number
-): DailyPoint | undefined {
-  if (!dailyPoints.length) return undefined
+function getBaselinePoint(dps: DailyPoint[], daysBack: number) {
+  if (!dps.length) return undefined
 
-  const latest = dailyPoints[dailyPoints.length - 1]
+  const latest = dps[dps.length - 1]
   const latestDate = new Date(latest.date)
-  const targetDate = new Date(latestDate)
-  targetDate.setDate(targetDate.getDate() - daysBack)
+  const target = new Date(latestDate)
+  target.setDate(latestDate.getDate() - daysBack)
 
   let best: DailyPoint | undefined
   let bestDiff = Infinity
 
-  for (const p of dailyPoints) {
+  for (const p of dps) {
     const d = new Date(p.date)
     if (d > latestDate) continue
-    const diff = Math.abs(d.getTime() - targetDate.getTime())
+    const diff = Math.abs(d.getTime() - target.getTime())
     if (diff < bestDiff) {
       bestDiff = diff
       best = p
     }
   }
-
   return best
 }
 
+/* ===================================================================
+   COMPONENT
+=================================================================== */
+
 export function TrendStatsCards({
   dailyPoints,
-  latestDaily,
-  latestBMI,
   profile,
   measurementDates,
   onEditLatestWeight,
   onEditLatestMeasurement
 }: TrendStatsCardsProps) {
-  const goalWeight = profile.goalWeight
-  const targetBMI = profile.targetBMI
+  const { goalWeight, targetBMI, heightCm } = profile
 
-  const heightM =
-    profile.heightCm && profile.heightCm > 0
-      ? profile.heightCm / 100
-      : undefined
+  /* ----------------------------
+     Sort dailyPoints chronologically ASC
+  ----------------------------- */
+  const sorted = useMemo(() => {
+    return [...dailyPoints].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
+  }, [dailyPoints])
 
-  const latestWeight = latestDaily?.weight
-  const mode = getWeightMode(latestWeight, goalWeight)
+  const latest = sorted.at(-1)
+  const heightM = heightCm ? heightCm / 100 : undefined
+  const latestBMI = latest && heightM ? latest.weight / (heightM * heightM) : undefined
 
-  /* =========================================================
-     1) 14-DAY WEIGHT & BMI DELTAS
-  ========================================================= */
-  const { delta14Weight, delta14BMI, baseWeight14, baseBMI14 } = useMemo(() => {
-    if (!dailyPoints.length || !latestDaily || !heightM) {
+  /* ----------------------------
+     14-DAY DELTAS
+  ----------------------------- */
+  const {
+    delta14Weight,
+    delta14BMI,
+    baseWeight14,
+    baseBMI14
+  } = useMemo(() => {
+    if (!sorted.length || !latest || !heightM) {
       return {
         delta14Weight: undefined,
         delta14BMI: undefined,
@@ -136,7 +124,7 @@ export function TrendStatsCards({
       }
     }
 
-    const baseline = getBaselinePoint(dailyPoints, 14)
+    const baseline = getBaselinePoint(sorted, 14)
     if (!baseline) {
       return {
         delta14Weight: undefined,
@@ -148,24 +136,19 @@ export function TrendStatsCards({
 
     const baseW = baseline.weight
     const baseBMI = baseW / (heightM * heightM)
-    const latestBMIValue = latestBMI ?? latestDaily.weight / (heightM * heightM)
-
-    const dW = latestDaily.weight - baseW
-    const dBMI = latestBMIValue - baseBMI
+    const latestBMIValue = latestBMI ?? latest.weight / (heightM * heightM)
 
     return {
-      delta14Weight: dW,
-      delta14BMI: dBMI,
+      delta14Weight: latest.weight - baseW,
+      delta14BMI: latestBMIValue - baseBMI,
       baseWeight14: baseW,
       baseBMI14: baseBMI
     }
-  }, [dailyPoints, latestDaily, latestBMI, heightM])
+  }, [sorted, latest, heightM, latestBMI])
 
   const weightDeltaColor = useMemo(
-    () =>
-      colorByGoalProgress(baseWeight14, latestWeight, goalWeight) ??
-      'text.secondary',
-    [baseWeight14, latestWeight, goalWeight]
+    () => colorByGoalProgress(baseWeight14, latest?.weight, goalWeight),
+    [baseWeight14, latest?.weight, goalWeight]
   )
 
   const bmiDeltaColor = useMemo(
@@ -173,123 +156,92 @@ export function TrendStatsCards({
     [baseBMI14, latestBMI, targetBMI]
   )
 
-  /* =========================================================
-     2) GOAL WEIGHT PROJECTION (ETA)
-     - Auto bulk/cut based on goal vs current
-  ========================================================= */
+  /* ----------------------------
+     Mode (bulk / cut / maintain)
+  ----------------------------- */
+  const mode = getMode(latest?.weight, goalWeight)
+
+  const modeLabel =
+    mode === 'bulk'
+      ? 'Mode: Bulking (gaining is good)'
+      : mode === 'cut'
+      ? 'Mode: Cutting (losing is good)'
+      : mode === 'maintain'
+      ? 'Mode: Maintenance'
+      : ''
+
+  /* ----------------------------
+     Goal projection (ETA)
+  ----------------------------- */
   const goalTrendText = useMemo(() => {
-    if (!goalWeight) {
-      return 'Set a goal weight in your profile to see projections.'
-    }
-    if (!dailyPoints.length || !latestDaily) {
-      return 'Log more days of weight data to see projections.'
-    }
-    if (dailyPoints.length < 2) {
-      return 'Not enough data yet to project trend.'
-    }
+    if (!goalWeight) return 'Set a goal weight in your profile.'
+    if (!sorted.length || !latest) return 'Not enough data to project.'
+    if (sorted.length < 2) return 'Need more days of data to project.'
 
-    const slope = computeTrendSlope(dailyPoints) // kg per day
-    if (!slope || slope === 0) {
-      return 'Weight trend is flat; no ETA can be projected.'
-    }
+    const slope = computeTrendSlope(sorted) // kg/day
 
-    const remaining = goalWeight - latestDaily.weight
-    if (Math.abs(remaining) < 0.1) {
+    if (!slope || slope === 0) return 'Trend is flat; no ETA.'
+
+    const remaining = goalWeight - latest.weight
+    if (Math.abs(remaining) < 0.1)
       return `You are at your goal weight of ${goalWeight.toFixed(1)} kg.`
-    }
 
-    // If remaining and slope have opposite signs, you're moving away from goal
-    if (remaining * slope <= 0) {
+    if (remaining * slope <= 0)
       return 'Current trend is moving away from your goal weight.'
-    }
 
     const daysToGoal = remaining / slope
-    if (!Number.isFinite(daysToGoal) || daysToGoal < 0) {
-      return 'Trend is unstable; unable to project a reliable ETA.'
-    }
+    if (!Number.isFinite(daysToGoal) || daysToGoal < 0)
+      return 'Unable to estimate ETA.'
 
-    const latestDate = new Date(latestDaily.date)
-    const eta = new Date(latestDate.getTime() + daysToGoal * 86400000)
+    const eta = new Date(new Date(latest.date).getTime() + daysToGoal * 86400000)
     const etaStr = eta.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
 
-    return `At current pace, you may reach ${goalWeight.toFixed(
+    return `At current pace, estimated to reach ${goalWeight.toFixed(
       1
     )} kg around ${etaStr}.`
-  }, [goalWeight, dailyPoints, latestDaily])
+  }, [goalWeight, sorted, latest])
 
-  /* =========================================================
-     3) GOAL WEIGHT CARD COLOR
-  ========================================================= */
+  /* ----------------------------
+     Goal card color logic
+  ----------------------------- */
   const goalDiffColor = useMemo(() => {
-    if (latestWeight === undefined || goalWeight === undefined) {
-      return 'text.secondary'
-    }
+    if (!latest || goalWeight === undefined) return 'text.secondary'
+    const diff = goalWeight - latest.weight
 
-    const diff = goalWeight - latestWeight // positive = below goal, negative = above
-
-    if (mode === 'bulk') {
-      // Want to go UP
-      if (diff > 0.1) return 'error.main' // still below goal
-      return 'success.main' // at or above goal
-    }
-
-    if (mode === 'cut') {
-      // Want to go DOWN
-      if (diff < -0.1) return 'error.main' // still above goal
-      return 'success.main' // at or below goal
-    }
-
+    if (mode === 'bulk') return diff > 0.1 ? 'error.main' : 'success.main'
+    if (mode === 'cut') return diff < -0.1 ? 'error.main' : 'success.main'
     return 'text.secondary'
-  }, [latestWeight, goalWeight, mode])
+  }, [latest, goalWeight, mode])
 
-  const modeLabel = useMemo(() => {
-    if (!mode) return ''
-    if (mode === 'bulk') return 'Mode: Bulking (gaining is good)'
-    if (mode === 'cut') return 'Mode: Cutting (losing is good)'
-    return 'Mode: Maintenance'
-  }, [mode])
-
-  /* =========================================================
+  /* ===================================================================
      RENDER
-  ========================================================= */
+  ================================================================== */
 
   return (
     <Grid container spacing={2} sx={{ mb: 3 }}>
-      {/* 1) WEIGHT CARD (Last 14 days) */}
+      {/* WEIGHT (14d) */}
       <Grid item xs={12} sm={6} md={3}>
         <Card>
           <CardContent>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start'
-              }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Box>
-                <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+                <Typography variant="subtitle2" color="text.secondary">
                   Weight (last 14 days)
                 </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  {safeNum(latestWeight)} kg
+                <Typography variant="h5" fontWeight={700}>
+                  {latest?.weight ?? '--'} kg
                 </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{
-                    mt: 0.5,
-                    color: weightDeltaColor
-                  }}
-                >
+                <Typography variant="body2" sx={{ mt: 0.5, color: weightDeltaColor }}>
                   {delta14Weight !== undefined
                     ? `${delta14Weight > 0 ? '+' : ''}${delta14Weight.toFixed(
                         1
                       )} kg in last 14 days`
-                    : 'Not enough data for 14-day change'}
+                    : 'Not enough data'}
                 </Typography>
               </Box>
 
-              {latestDaily && (
+              {latest && (
                 <Tooltip title="Edit latest weight">
                   <IconButton size="small" onClick={onEditLatestWeight}>
                     <EditIcon fontSize="small" />
@@ -301,30 +253,23 @@ export function TrendStatsCards({
         </Card>
       </Grid>
 
-      {/* 2) BMI CARD (Last 14 days) */}
+      {/* BMI (14d) */}
       <Grid item xs={12} sm={6} md={3}>
         <Card>
           <CardContent>
-            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="subtitle2" color="text.secondary">
               BMI (last 14 days)
             </Typography>
-
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {safeNum(latestBMI)}
+            <Typography variant="h5" fontWeight={700}>
+              {latestBMI ? latestBMI.toFixed(1) : '--'}
             </Typography>
 
-            <Typography
-              variant="body2"
-              sx={{
-                mt: 0.5,
-                color: bmiDeltaColor
-              }}
-            >
+            <Typography variant="body2" sx={{ mt: 0.5, color: bmiDeltaColor }}>
               {delta14BMI !== undefined
                 ? `${delta14BMI > 0 ? '+' : ''}${delta14BMI.toFixed(
                     1
-                  )} BMI in last 14 days`
-                : 'Not enough data for 14-day change'}
+                  )} in last 14 days`
+                : 'Not enough data'}
             </Typography>
 
             {targetBMI !== undefined && (
@@ -336,50 +281,42 @@ export function TrendStatsCards({
         </Card>
       </Grid>
 
-      {/* 3) GOAL WEIGHT CARD (AUTO BULK / CUT) */}
+      {/* GOAL WEIGHT */}
       <Grid item xs={12} sm={6} md={3}>
         <Card>
           <CardContent>
-            <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+            <Typography variant="subtitle2" color="text.secondary">
               Goal Weight
             </Typography>
-
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {safeNum(goalWeight)} kg
+            <Typography variant="h5" fontWeight={700}>
+              {goalWeight ?? '--'} kg
             </Typography>
 
-            {latestWeight !== undefined && goalWeight !== undefined && (
+            {latest && goalWeight !== undefined && (
               <>
                 <Typography variant="body2" sx={{ mt: 0.5 }}>
-                  Current: {latestWeight.toFixed(1)} kg
+                  Current: {latest.weight.toFixed(1)} kg
                 </Typography>
 
                 <Typography variant="body2" sx={{ mt: 0.5, color: goalDiffColor }}>
                   {(() => {
-                    const diff = goalWeight - latestWeight
-                    if (Math.abs(diff) < 0.1) {
-                      return 'At goal weight'
-                    }
-                    if (diff > 0) {
-                      return `Need +${diff.toFixed(1)} kg to reach goal`
-                    }
+                    const diff = goalWeight - latest.weight
+                    if (Math.abs(diff) < 0.1) return 'At goal weight'
+                    if (diff > 0) return `Need +${diff.toFixed(1)} kg`
                     return `Over goal by ${Math.abs(diff).toFixed(1)} kg`
                   })()}
                 </Typography>
               </>
             )}
 
-            {profile.heightCm && (
+            {heightCm && (
               <Typography variant="body2" sx={{ mt: 0.5 }}>
-                Height: {profile.heightCm} cm
+                Height: {heightCm} cm
               </Typography>
             )}
 
             {modeLabel && (
-              <Typography
-                variant="caption"
-                sx={{ mt: 0.5, display: 'block', color: 'text.secondary' }}
-              >
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                 {modeLabel}
               </Typography>
             )}
@@ -387,32 +324,24 @@ export function TrendStatsCards({
         </Card>
       </Grid>
 
-      {/* 4) GOAL WEIGHT PROJECTION CARD */}
+      {/* GOAL PROJECTION */}
       <Grid item xs={12} sm={6} md={3}>
         <Card>
           <CardContent>
-            <Typography
-              variant="subtitle2"
-              sx={{ color: 'text.secondary', mb: 0.5 }}
-            >
-              Goal Weight Projection
+            <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 0.5 }}>
+              Goal Projection
             </Typography>
 
             <Typography variant="body2">{goalTrendText}</Typography>
 
             {measurementDates.length > 0 && (
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  Latest measurement:{' '}
-                  {measurementDates[measurementDates.length - 1]}
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  Latest measurement: {measurementDates.at(-1)}
                 </Typography>
 
                 <Tooltip title="Edit latest measurements">
-                  <IconButton
-                    size="small"
-                    sx={{ ml: 1 }}
-                    onClick={onEditLatestMeasurement}
-                  >
+                  <IconButton size="small" sx={{ ml: 1 }} onClick={onEditLatestMeasurement}>
                     <EditIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>

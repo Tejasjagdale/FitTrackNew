@@ -1,12 +1,18 @@
+// src/components/progressComponents/ProgressHistoryGrid.tsx
 import React, { useMemo, useState } from "react";
-import { Box, Typography, Grid, TextField } from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { Box, Typography, Grid, TextField, Chip, MenuItem, Select } from "@mui/material";
+import { DataGrid, GridColDef, GridRenderEditCellParams } from "@mui/x-data-grid";
 
 import {
   MeasurementsEntry,
   WorkoutLogEntry,
   DailyHealthStatus
 } from "../../data/progressTypes";
+import { GridSingleSelectColDef } from "@mui/x-data-grid";
+
+
+
+type Col = GridColDef | GridSingleSelectColDef<any>;
 
 type Props = {
   dailyWeight: Record<string, number>;
@@ -20,6 +26,103 @@ type Props = {
   onUpdateHealth: (date: string, updated: DailyHealthStatus) => void;
 };
 
+/* -------------------------------------------------------
+   SMART BODY PART EXTRACTION
+-------------------------------------------------------- */
+function extractBodyPart(title: string): string {
+  if (!title) return "Unknown";
+
+  const lower = title.toLowerCase();
+
+  const map: Record<string, string> = {
+    arm: "Arms",
+    tricep: "Arms",
+    bicep: "Arms",
+
+    pull: "Back",
+    back: "Back",
+    row: "Back",
+    lat: "Back",
+
+    push: "Chest",
+    chest: "Chest",
+    pec: "Chest",
+
+    shoulder: "Shoulders",
+    delt: "Shoulders",
+
+    leg: "Legs",
+    squat: "Legs",
+    quad: "Legs",
+    hamstring: "Legs",
+    calf: "Legs",
+
+    abs: "Abs",
+    core: "Abs"
+  };
+
+  const detected = new Set<string>();
+  Object.keys(map).forEach(k => lower.includes(k) && detected.add(map[k]));
+
+  if (detected.size === 0) return "Unknown";
+  if (detected.size === 1) return [...detected][0];
+  return "Full Body";
+}
+
+/* -------------------------------------------------------
+   COLOR UTILS
+-------------------------------------------------------- */
+const applyCellStyle = (color: string) => ({
+  backgroundColor: color,
+  color: "white",
+  fontWeight: 600,
+  borderRadius: "4px",
+  width: "100%",
+  height: "100%",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center"
+});
+
+/* -------------------------------------------------------
+   DROPDOWN EDIT COMPONENT FOR HEALTH GRID
+-------------------------------------------------------- */
+function SelectEditCell(params: GridRenderEditCellParams) {
+  const { id, field, value, api } = params;
+
+  // FIX: cast to any to access valueOptions safely
+  const colDef: any = params.colDef;
+  const options = colDef.valueOptions ?? [];
+
+  const handleChange = (event: any) => {
+    api.setEditCellValue({ id, field, value: event.target.value }, event);
+    setTimeout(() => api.stopCellEditMode({ id, field }));
+  };
+
+  return (
+    <Select
+      fullWidth
+      autoFocus
+      size="small"
+      value={value}
+      onChange={handleChange}
+    >
+      {options.map((opt: any) => {
+        const val = typeof opt === "object" ? opt.value : opt;
+        const label = typeof opt === "object" ? opt.label : String(opt);
+
+        return (
+          <MenuItem key={String(val)} value={val}>
+            {label}
+          </MenuItem>
+        );
+      })}
+    </Select>
+  );
+}
+
+
+
 export default function ProgressHistoryGrid({
   dailyWeight,
   measurements,
@@ -30,329 +133,275 @@ export default function ProgressHistoryGrid({
   onUpdateWorkout,
   onUpdateHealth
 }: Props) {
+
   const [filter, setFilter] = useState("");
+  const sortDesc = (arr: string[]) =>
+    [...arr].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-  // ----------------------------------------------------
-  // DAILY WEIGHT
-  // ----------------------------------------------------
-  const weightRows = Object.keys(dailyWeight)
-    .sort()
-    .map((date) => ({
-      id: date,
-      date,
-      weight: dailyWeight[date]
-    }));
-
-  const filteredWeightRows = weightRows.filter((r) =>
-    r.date.toLowerCase().includes(filter.toLowerCase())
-  );
+  /* -------------------------------------------------------
+     DAILY WEIGHT
+  -------------------------------------------------------- */
+  const weightRows = sortDesc(Object.keys(dailyWeight)).map(date => ({
+    id: date,
+    date,
+    weight: dailyWeight[date]
+  }));
 
   const weightCols: GridColDef[] = [
-    { field: "date", headerName: "Date", width: 120, editable: false },
-    {
-      field: "weight",
-      headerName: "Weight (kg)",
-      width: 130,
-      editable: true,
-      type: "number"
-    }
+    { field: "date", headerName: "Date", width: 120 },
+    { field: "weight", headerName: "Weight", width: 120, editable: true }
   ];
 
-  // ----------------------------------------------------
-  // MEASUREMENTS
-  // ----------------------------------------------------
-  const measurementDates = Object.keys(measurements).sort();
+  /* -------------------------------------------------------
+     MEASUREMENTS
+  -------------------------------------------------------- */
+  const measurementDates = sortDesc(Object.keys(measurements));
 
   const measurementKeys = useMemo(() => {
-    const set = new Set<string>();
-    measurementDates.forEach((d) => {
-      Object.keys(measurements[d] || {}).forEach((k) => set.add(k));
+    const s = new Set<string>();
+    measurementDates.forEach(d => {
+      Object.keys(measurements[d] || {}).forEach(k => s.add(k));
     });
-    return Array.from(set);
-  }, [measurements, measurementDates]);
+    return [...s];
+  }, [measurements]);
 
-  const measurementRows = measurementDates.map((date) => ({
+  const measurementRows = measurementDates.map(date => ({
     id: date,
     date,
     ...measurements[date]
   }));
 
-  const filteredMeasurementRows = measurementRows.filter((r) =>
-    r.date.toLowerCase().includes(filter.toLowerCase())
-  );
-
   const measurementCols: GridColDef[] = [
-    { field: "date", headerName: "Date", width: 120, editable: false },
-    ...measurementKeys.map(
-      (key) =>
-        ({
-          field: key,
-          headerName: key,
-          width: 110,
-          editable: true,
-          type: "number"
-        } as GridColDef)
-    )
+    { field: "date", headerName: "Date", width: 120 },
+    ...measurementKeys.map(key => ({
+      field: key,
+      headerName: key,
+      width: 110,
+      editable: true,
+      valueParser: (v: any) => Number(v) || 0
+    }))
   ];
 
-  // ----------------------------------------------------
-  // WORKOUTS
-  // ----------------------------------------------------
-  const workoutRows = workouts.map((w, index) => ({
+  /* -------------------------------------------------------
+     WORKOUT GRID
+  -------------------------------------------------------- */
+  const sortedWorkouts = useMemo(
+    () => [...workouts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [workouts]
+  );
+
+  const workoutRows = sortedWorkouts.map((w, index) => ({
     id: index,
-    ...w
+    ...w,
+    bodyPart: extractBodyPart(w.variantName)
   }));
 
-  const filteredWorkoutRows = workoutRows.filter((r) => {
-    const s = filter.toLowerCase();
-    return (
-      r.date?.toLowerCase().includes(s) ||
-      r.variantName?.toLowerCase().includes(s)
-    );
-  });
-
   const workoutCols: GridColDef[] = [
-    { field: "date", headerName: "Date", width: 120, editable: true },
-    { field: "exercise", headerName: "Exercise", width: 160, editable: true },
+    { field: "date", headerName: "Date", width: 120 },
+
+    { field: "variantName", headerName: "Workout", width: 220 },
+
     {
-      field: "weight",
-      headerName: "Weight",
-      width: 100,
-      editable: true,
-      type: "number"
+      field: "bodyPart",
+      headerName: "Body Part",
+      width: 140,
+      renderCell: params => (
+        <Chip label={params.value} size="small" color="primary" variant="outlined" />
+      )
     },
+
     {
-      field: "reps",
-      headerName: "Reps",
-      width: 90,
+      field: "completed",
+      headerName: "Done?",
+      width: 120,
+      type: "boolean",
       editable: true,
-      type: "number"
-    },
-    {
-      field: "sets",
-      headerName: "Sets",
-      width: 90,
-      editable: true,
-      type: "number"
+      renderCell: params =>
+        params.value ? (
+          <Chip label="Yes" color="success" size="small" />
+        ) : (
+          <Chip label="No" color="error" size="small" />
+        )
     }
   ];
 
-  // ----------------------------------------------------
-  // DAILY HEALTH STATUS (WITH FULL-CELL COLORS)
-  // ----------------------------------------------------
-  const healthDates = Object.keys(dailyHealth).sort();
-
-  const healthRows = healthDates.map((date) => ({
+  /* -------------------------------------------------------
+     DAILY HEALTH GRID (WITH DROPDOWN CELL EDITORS)
+  -------------------------------------------------------- */
+  const healthRows = sortDesc(Object.keys(dailyHealth)).map(date => ({
     id: date,
     date,
-    condition: dailyHealth[date].condition,
-    dietQuality: dailyHealth[date].dietQuality,
-    mood: dailyHealth[date].mood,
-    studied: dailyHealth[date].studied
+    ...dailyHealth[date]
   }));
 
-  const filteredHealthRows = healthRows.filter((r) =>
-    r.date.toLowerCase().includes(filter.toLowerCase())
-  );
+  const healthCols: Col[] = [
+    { field: "date", headerName: "Date", width: 120 },
 
-  const healthColor = {
-    red: "#F4433659",
-    green: "#66BA6A59"
-  };
-
-  const applyCellStyle = (color: string) => ({
-    backgroundColor: color,
-    color: "white",
-    fontWeight: 600,
-    borderRadius: "4px",
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  });
-
-  const healthCols: GridColDef[] = [
-    { field: "date", headerName: "Date", width: 120, editable: false },
-
-    // CONDITION
     {
       field: "condition",
       headerName: "Condition",
       width: 150,
       editable: true,
+      type: "singleSelect",
+      valueOptions: ["healthy", "stomachIssue", "bodyPain", "coldOrFever"],
+      renderEditCell: SelectEditCell,
       renderCell: (params) => {
-        const val = params.value as DailyHealthStatus["condition"];
-        const color =
-          val === "healthy" ? healthColor.green : healthColor.red;
-
-        return <Box sx={applyCellStyle(color)}>{val}</Box>;
+        const v = params.value;
+        const color = v === "healthy" ? "#66BA6A59" : "#F4433659";
+        return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
 
-    // DIET
     {
       field: "dietQuality",
       headerName: "Diet",
-      width: 130,
+      width: 150,
       editable: true,
+      type: "singleSelect",
+      valueOptions: ["veryLow", "low", "normal", "high", "veryHigh"],
+      renderEditCell: SelectEditCell,
       renderCell: (params) => {
-        const val = params.value as DailyHealthStatus["dietQuality"];
-        const color =
-          val === "insufficient" ? healthColor.red : healthColor.green;
-
-        return <Box sx={applyCellStyle(color)}>{val}</Box>;
+        const v = params.value;
+        const green = ["normal", "high", "veryHigh"];
+        const color = green.includes(v) ? "#66BA6A59" : "#F4433659";
+        return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
 
-    // MOOD
     {
       field: "mood",
       headerName: "Mood",
-      width: 120,
+      width: 140,
       editable: true,
+      type: "singleSelect",
+      valueOptions: ["verySad", "sad", "neutral", "happy", "veryHappy"],
+      renderEditCell: SelectEditCell,
       renderCell: (params) => {
-        const val = params.value as DailyHealthStatus["mood"];
-        const color =
-          val === "sad" ? healthColor.red : healthColor.green;
-
-        return <Box sx={applyCellStyle(color)}>{val}</Box>;
+        const v = params.value;
+        const green = ["neutral", "happy", "veryHappy"];
+        const color = green.includes(v) ? "#66BA6A59" : "#F4433659";
+        return <Box sx={applyCellStyle(color)}>{v}</Box>;
       }
     },
-
-    // STUDIED
     {
       field: "studied",
       headerName: "Studied",
-      width: 120,
+      width: 130,
       editable: true,
-      type: "boolean",
+      type: "singleSelect",
+      valueOptions: [
+        { value: true, label: "Yes" },
+        { value: false, label: "No" }
+      ],
+      renderEditCell: SelectEditCell,
       renderCell: (params) => {
-        const val = Boolean(params.value);
-        const color = val ? healthColor.green : healthColor.red;
-
-        return (
-          <Box sx={applyCellStyle(color)}>
-            {val ? "✔ Yes" : "✖ No"}
-          </Box>
-        );
+        const v = Boolean(params.value);
+        const color = v ? "#66BA6A59" : "#F4433659";
+        return <Box sx={applyCellStyle(color)}>{v ? "Yes" : "No"}</Box>;
       }
     }
   ];
 
-  // ----------------------------------------------------
-  // UI
-  // ----------------------------------------------------
+
+  /* -------------------------------------------------------
+     RENDER
+  -------------------------------------------------------- */
   return (
     <Box sx={{ mt: 4 }}>
-      {/* Quick Filter */}
       <TextField
         fullWidth
-        label="Filter dates, exercises..."
-        variant="outlined"
+        label="Filter date / workout / body part..."
         value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+        onChange={e => setFilter(e.target.value)}
         sx={{ mb: 3 }}
       />
 
-      {/* Weight + Workouts */}
       <Grid container spacing={2}>
+        {/* WEIGHT */}
         <Grid item xs={12} md={6}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
             Daily Weight
           </Typography>
 
           <DataGrid
-            rows={filteredWeightRows}
+            rows={weightRows.filter(r => r.date.includes(filter))}
             columns={weightCols}
             autoHeight
-            pageSizeOptions={[5, 10, 20]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10, page: 0 } }
-            }}
             disableRowSelectionOnClick
-            processRowUpdate={(newRow) => {
-              onUpdateWeight(newRow.id, Number(newRow.weight) || 0);
-              return newRow;
+            processRowUpdate={row => {
+              onUpdateWeight(row.id, row.weight);
+              return row;
             }}
-            sx={{ mb: 3 }}
           />
         </Grid>
 
+        {/* WORKOUTS */}
         <Grid item xs={12} md={6}>
           <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
             Workout Log
           </Typography>
 
           <DataGrid
-            rows={filteredWorkoutRows}
+            rows={workoutRows.filter(r =>
+              r.date.includes(filter) ||
+              r.variantName.toLowerCase().includes(filter.toLowerCase()) ||
+              r.bodyPart.toLowerCase().includes(filter.toLowerCase())
+            )}
             columns={workoutCols}
             autoHeight
-            pageSizeOptions={[5, 10, 20]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10, page: 0 } }
-            }}
             disableRowSelectionOnClick
-            processRowUpdate={(newRow) => {
-              const updated = { ...newRow };
+            processRowUpdate={row => {
+              const updated = { ...row };
               delete updated.id;
-              onUpdateWorkout(newRow.id as number, updated);
-              return newRow;
+              onUpdateWorkout(row.id, updated);
+              return row;
             }}
           />
         </Grid>
       </Grid>
 
-      {/* Measurements */}
+      {/* MEASUREMENTS */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
           Measurements
         </Typography>
 
         <DataGrid
-          rows={filteredMeasurementRows}
+          rows={measurementRows.filter(r => r.date.includes(filter))}
           columns={measurementCols}
           autoHeight
-          pageSizeOptions={[5, 10, 20]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10, page: 0 } }
-          }}
           disableRowSelectionOnClick
-          processRowUpdate={(newRow) => {
+          processRowUpdate={row => {
             const updated: any = {};
-            measurementKeys.forEach((key) => {
-              updated[key] = Number(newRow[key]) || 0;
+            measurementKeys.forEach(k => {
+              updated[k] = Number(row[k]) || 0;
             });
-            onUpdateMeasurement(newRow.id, updated);
-            return newRow;
+            onUpdateMeasurement(row.id, updated);
+            return row;
           }}
         />
       </Box>
 
-      {/* Daily Health */}
+      {/* HEALTH */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
           Daily Health Status
         </Typography>
 
         <DataGrid
-          rows={filteredHealthRows}
+          rows={healthRows.filter(r => r.date.includes(filter))}
           columns={healthCols}
           autoHeight
-          pageSizeOptions={[5, 10, 20]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10, page: 0 } }
-          }}
           disableRowSelectionOnClick
-          processRowUpdate={(newRow) => {
-            const updated: DailyHealthStatus = {
-              condition: newRow.condition,
-              dietQuality: newRow.dietQuality,
-              mood: newRow.mood,
-              studied: Boolean(newRow.studied)
+          processRowUpdate={row => {
+            const updated = {
+              condition: row.condition,
+              dietQuality: row.dietQuality,
+              mood: row.mood,
+              studied: Boolean(row.studied)
             };
-            onUpdateHealth(newRow.id, updated);
-            return newRow;
+            onUpdateHealth(row.id, updated);
+            return row;
           }}
         />
       </Box>

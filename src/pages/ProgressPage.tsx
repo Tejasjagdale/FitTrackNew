@@ -414,24 +414,18 @@ export default function ProgressDashboardPage() {
       {/* STATS CARDS */}
       <TrendStatsCards
         dailyPoints={dailyPoints}
-        latestDaily={latestDaily}
-        firstDaily={firstDaily}
-        latestBMI={latestBMI}
-        weightChange={weightChange}
-        bmiChange={bmiChange}
-        targetWeight={profile.goalWeight}
         profile={profile}
         measurementDates={measurementDates}
-        bmiTrendText={"deprecated"}
         onEditLatestWeight={() => {
           setEditingWeightDate(latestDaily?.date)
           setWeightDialogOpen(true)
         }}
         onEditLatestMeasurement={() => {
-          setEditingMeasurementDate(measurementDates[measurementDates.length - 1])
+          setEditingMeasurementDate(measurementDates.at(-1))
           setMeasurementDialogOpen(true)
         }}
       />
+
 
 
       {/* EDITABLE GRID */}
