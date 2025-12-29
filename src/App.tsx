@@ -7,6 +7,7 @@ import Layout from './components/Layout'
 import ProgressPage from './pages/ProgressPage'
 import TodayWorkout from './pages/TodayWorkout'
 import ExerciseDatabasePage from './pages/ExerciseDatabasePage'
+import TodoApp from './pages/TodoApp'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/workout-playlist" element={<WorkoutPlaylist />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/exercise-database" element={<ExerciseDatabasePage />} />
+        <Route path="/todo" element={<TodoApp />} />
       </Routes>
     </Layout>
   )
