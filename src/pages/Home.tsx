@@ -1,8 +1,17 @@
 import React from 'react'
-import { Container, Typography, Box, Grid, Card, CardContent, Button } from '@mui/material'
+import {
+  Container,
+  Typography,
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Button
+} from '@mui/material'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import TodayIcon from '@mui/icons-material/Today'
+import ChecklistIcon from '@mui/icons-material/Checklist'
 import { useNavigate } from 'react-router-dom'
 
 export default function Home() {
@@ -16,8 +25,12 @@ export default function Home() {
           FitTrack
         </Typography>
 
-        <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 520, mx: 'auto' }}>
-          Your fitness companion. Track workouts, measure progress, and stay consistent.
+        <Typography
+          variant="body1"
+          sx={{ color: 'text.secondary', maxWidth: 520, mx: 'auto' }}
+        >
+          Your fitness companion. Track workouts, plan tasks, measure progress,
+          and stay consistent.
         </Typography>
       </Box>
 
@@ -36,6 +49,7 @@ export default function Home() {
 
       {/* Feature Grid */}
       <Grid container spacing={3} justifyContent="center">
+        {/* Workout Variants */}
         <Grid item xs={12} sm={6} md={4}>
           <Card
             sx={{
@@ -49,13 +63,17 @@ export default function Home() {
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
               <FitnessCenterIcon sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h6">Workout Variants</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', mt: 1 }}
+              >
                 Browse and switch between your stored workout routines.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
+        {/* Playlists */}
         <Grid item xs={12} sm={6} md={4}>
           <Card
             className="glass-card"
@@ -64,7 +82,6 @@ export default function Home() {
               borderRadius: 3,
               cursor: 'pointer',
               transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-              p: 0,
               '&:hover': {
                 transform: 'scale(1.03)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
@@ -80,23 +97,19 @@ export default function Home() {
                 alignItems: 'center'
               }}
             >
-              <TodayIcon sx={{ fontSize: 40, mb: 1, opacity: 0.9 }} />
-
-              <Typography variant="h6">
-                Checkout Playlists
-              </Typography>
-
+              <TodayIcon sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h6">Workout Playlists</Typography>
               <Typography
                 variant="body2"
                 sx={{ color: 'text.secondary', mt: 1, maxWidth: 280 }}
               >
-                View your curated workout playlists and start a guided training session.
+                View curated workout playlists and start guided training.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-
+        {/* Progress */}
         <Grid item xs={12} sm={6} md={4}>
           <Card
             sx={{
@@ -110,8 +123,35 @@ export default function Home() {
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
               <ShowChartIcon sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="h6">Progress Dashboard</Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', mt: 1 }}
+              >
                 Monitor your weight, BMI, measurements and trends.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* ✅ TODO APP */}
+        <Grid item xs={12} sm={6} md={4}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              cursor: 'pointer',
+              transition: '0.2s',
+              '&:hover': { boxShadow: 4 }
+            }}
+            onClick={() => navigate('/todo')}
+          >
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
+              <ChecklistIcon sx={{ fontSize: 40, mb: 1 }} />
+              <Typography variant="h6">Task Planner</Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: 'text.secondary', mt: 1 }}
+              >
+                Plan your day, track priorities, and stay consistent with tasks.
               </Typography>
             </CardContent>
           </Card>

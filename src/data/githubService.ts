@@ -7,6 +7,8 @@ const REPO = "github-db";
 const WORKOUT_FILE = "workoutData.json";
 const PROGRESS_FILE = "progressData.json";
 const EXERCISE_DB_FILE = "exerciseDatabase.json";
+const TODO_FILE = "todo.json";
+
 
 let octokit: Octokit | null = null;
 
@@ -99,20 +101,26 @@ export function getGitHubService() {
     }
   }
 
-  return {
-    // Workout
-    fetchWorkoutData: () => fetchJSON(WORKOUT_FILE),
-    updateWorkoutData: (data: any, msg: string) =>
-      updateJSON(WORKOUT_FILE, data, msg),
+return {
+  // Workout
+  fetchWorkoutData: () => fetchJSON(WORKOUT_FILE),
+  updateWorkoutData: (data: any, msg: string) =>
+    updateJSON(WORKOUT_FILE, data, msg),
 
-    // Progress
-    fetchProgressData: () => fetchJSON(PROGRESS_FILE),
-    updateProgressData: (data: any, msg: string) =>
-      updateJSON(PROGRESS_FILE, data, msg),
+  // Progress
+  fetchProgressData: () => fetchJSON(PROGRESS_FILE),
+  updateProgressData: (data: any, msg: string) =>
+    updateJSON(PROGRESS_FILE, data, msg),
 
-    // Exercise DB (NEW)
-    fetchExerciseDatabase: () => fetchJSON(EXERCISE_DB_FILE),
-    updateExerciseDatabase: (data: any, msg: string) =>
-      updateJSON(EXERCISE_DB_FILE, data, msg)
-  };
+  // Exercise DB
+  fetchExerciseDatabase: () => fetchJSON(EXERCISE_DB_FILE),
+  updateExerciseDatabase: (data: any, msg: string) =>
+    updateJSON(EXERCISE_DB_FILE, data, msg),
+
+  // ✅ TODO (NEW)
+  fetchTodoData: () => fetchJSON(TODO_FILE),
+  updateTodoData: (data: any, msg: string) =>
+    updateJSON(TODO_FILE, data, msg)
+};
+
 }

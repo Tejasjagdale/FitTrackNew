@@ -1,292 +1,345 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from 'react'
 import {
+  Container,
   Box,
+  Typography,
+  Stack,
+  Button,
   Card,
   CardContent,
-  Typography,
   Checkbox,
   IconButton,
-  Button,
-  Stack,
+  Chip,
+  Dialog,
+  DialogContent,
   Select,
   MenuItem,
   TextField,
-  Dialog,
-  DialogContent,
-  Divider,
-  Chip
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FolderIcon from "@mui/icons-material/Folder";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+  Divider
+} from '@mui/material'
 
-import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import AddIcon from '@mui/icons-material/Add'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import FolderIcon from '@mui/icons-material/Folder'
+import DoneAllIcon from '@mui/icons-material/DoneAll'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import dayjs, { Dayjs } from 'dayjs'
+
+import {
+  loadTodoData,
+  getTodoData,
+  setTodoData,
+  syncTodoToGitHub
+} from '../data/todoDataService'
 
 /* ================= TYPES ================= */
 
-type View = "TASKS" | "GROUPS" | "COMPLETED";
-type Priority = "NORMAL" | "MEDIUM" | "HIGH";
+type View = 'TASKS' | 'GROUPS' | 'COMPLETED'
+type Priority = 'NORMAL' | 'MEDIUM' | 'HIGH'
 
 interface Group {
-  id: string;
-  name: string;
-  type: "USER" | "SYSTEM";
-  locked?: boolean;
+  id: string
+  name: string
+  type: 'USER' | 'SYSTEM'
+  locked?: boolean
 }
 
 interface Task {
-  id: string;
-  title: string;
-  groupId: string;
-  originalGroupId?: string;
-  dueDate?: string;
-  priority: Priority;
+  id: string
+  title: string
+  groupId: string
+  originalGroupId?: string
+  priority: Priority
+  dueDate?: string
 }
 
 /* ================= CONSTANTS ================= */
 
-const GROUP_COMPLETED = "completed";
+const COMPLETED_GROUP_ID = 'completed'
 
-const priorityBorder:any = {
-  NORMAL: "#1976d2",
-  MEDIUM: "#ed6c02",
-  HIGH: "#d32f2f"
-};
+const priorityColor: any = {
+  NORMAL: '#1976d2',
+  MEDIUM: '#ed6c02',
+  HIGH: '#d32f2f'
+}
 
-/* ================= DATA ================= */
+/* ================= PAGE ================= */
 
-const initialGroups: Group[] = [
-  { id: "daily", name: "Daily Activity", type: "USER" },
-  { id: "important", name: "Important", type: "USER" },
-  { id: GROUP_COMPLETED, name: "Completed Tasks", type: "SYSTEM", locked: true }
-];
+export default function Todo() {
+  const [view, setView] = useState<View>('TASKS')
+  const [groups, setGroups] = useState<Group[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
 
-const initialTasks: Task[] = [
-  {
-    id: "t1",
-    title: "Finish system design prep",
-    groupId: "important",
-    priority: "HIGH",
-    dueDate: "2025-12-30T23:59"
-  },
-  {
-    id: "t2",
-    title: "Workout",
-    groupId: "daily",
-    priority: "MEDIUM"
-  }
-];
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-/* ================= APP ================= */
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [forcedGroupId, setForcedGroupId] = useState<string | null>(null)
 
-const TodoApp: React.FC = () => {
-  const [view, setView] = useState<View>("TASKS");
-  const [groups] = useState<Group[]>(initialGroups);
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  /* ================= LOAD FROM GITHUB ================= */
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [forcedGroupId, setForcedGroupId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false
 
-  const activeTasks = tasks.filter(t => t.groupId !== GROUP_COMPLETED);
-  const completedTasks = tasks.filter(t => t.groupId === GROUP_COMPLETED);
+    async function run() {
+      setLoading(true)
+      setError(null)
 
-  /* ================= ACTIONS ================= */
+      try {
+        await loadTodoData()
+        if (cancelled) return
 
-  const toggleComplete = (task: Task) => {
-    setTasks(prev =>
-      prev.map(t => {
-        if (t.id !== task.id) return t;
-        if (t.groupId === GROUP_COMPLETED) {
-          return {
-            ...t,
-            groupId: t.originalGroupId!,
-            originalGroupId: undefined
-          };
+        const data = getTodoData()
+        setGroups(data.groups || [])
+        setTasks(data.tasks || [])
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err.message || 'Failed to load todo data')
         }
-        return {
-          ...t,
-          originalGroupId: t.groupId,
-          groupId: GROUP_COMPLETED
-        };
-      })
-    );
-  };
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
 
-  const saveTask = (task: Task) => {
-    setTasks(prev =>
-      prev.some(t => t.id === task.id)
-        ? prev.map(t => (t.id === task.id ? task : t))
-        : [...prev, task]
-    );
-    setModalOpen(false);
-    setEditingTask(null);
-    setForcedGroupId(null);
-  };
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
-  const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
-  };
+  /* ================= DERIVED ================= */
+
+  const activeTasks = tasks.filter(t => t.groupId !== COMPLETED_GROUP_ID)
+  const completedTasks = tasks.filter(t => t.groupId === COMPLETED_GROUP_ID)
 
   const groupName = (id: string) =>
-    groups.find(g => g.id === id)?.name || "Unknown";
+    groups.find(g => g.id === id)?.name || 'Unknown'
 
-  /* ================= UI ================= */
+  /* ================= MUTATIONS ================= */
+
+  const updateTasks = async (next: Task[], msg: string) => {
+    const updated = { ...getTodoData(), tasks: next }
+    setTasks(next)
+    setTodoData(updated)
+    await syncTodoToGitHub(msg)
+  }
+
+  const toggleComplete = async (task: Task) => {
+    const next = tasks.map(t => {
+      if (t.id !== task.id) return t
+
+      if (t.groupId === COMPLETED_GROUP_ID) {
+        return {
+          ...t,
+          groupId: t.originalGroupId!,
+          originalGroupId: undefined
+        }
+      }
+
+      return {
+        ...t,
+        originalGroupId: t.groupId,
+        groupId: COMPLETED_GROUP_ID
+      }
+    })
+
+    await updateTasks(next, 'Toggle task completion')
+  }
+
+  const saveTask = async (task: Task) => {
+    const next = tasks.some(t => t.id === task.id)
+      ? tasks.map(t => (t.id === task.id ? task : t))
+      : [...tasks, task]
+
+    await updateTasks(next, 'Save task')
+    setModalOpen(false)
+    setEditingTask(null)
+    setForcedGroupId(null)
+  }
+
+  const deleteTask = async (id: string) => {
+    const next = tasks.filter(t => t.id !== id)
+    await updateTasks(next, 'Delete task')
+  }
+
+  /* ================= UI STATES ================= */
+
+  if (loading) {
+    return (
+      <Container>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography>Loading todos…</Typography>
+        </Box>
+      </Container>
+    )
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Box sx={{ py: 4, textAlign: 'center' }}>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      </Container>
+    )
+  }
+
+  /* ================= RENDER ================= */
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Container>
+      <Box sx={{ py: 4 }}>
 
-      {/* ===== TOP BAR ===== */}
-      <Stack direction="row" spacing={1} mb={2}>
-        {view !== "TASKS" && (
-          <Button startIcon={<ArrowBackIcon />} onClick={() => setView("TASKS")}>
-            Back
+        {/* ===== TOP BAR ===== */}
+        <Stack direction="row" spacing={1} mb={3}>
+          {view !== 'TASKS' && (
+            <Button startIcon={<ArrowBackIcon />} onClick={() => setView('TASKS')}>
+              Back
+            </Button>
+          )}
+          <Button startIcon={<FolderIcon />} onClick={() => setView('GROUPS')}>
+            Groups
           </Button>
+          <Button startIcon={<DoneAllIcon />} onClick={() => setView('COMPLETED')}>
+            Completed
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              setEditingTask(null)
+              setForcedGroupId(null)
+              setModalOpen(true)
+            }}
+          >
+            New Task
+          </Button>
+        </Stack>
+
+        {/* ===== TASKS VIEW ===== */}
+        {view === 'TASKS' && (
+          <Stack spacing={2}>
+            {activeTasks.length === 0 && (
+              <EmptyCard text="🎉 No pending tasks" />
+            )}
+            {activeTasks.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                groupName={groupName(task.groupId)}
+                onToggle={() => toggleComplete(task)}
+                onEdit={() => {
+                  setEditingTask(task)
+                  setForcedGroupId(task.groupId)
+                  setModalOpen(true)
+                }}
+                onDelete={() => deleteTask(task.id)}
+              />
+            ))}
+          </Stack>
         )}
-        <Button startIcon={<FolderIcon />} onClick={() => setView("GROUPS")}>
-          Groups
-        </Button>
-        <Button startIcon={<DoneAllIcon />} onClick={() => setView("COMPLETED")}>
-          Completed
-        </Button>
-        <Button
-          startIcon={<AddIcon />}
-          variant="contained"
-          onClick={() => {
-            setEditingTask(null);
-            setForcedGroupId(null);
-            setModalOpen(true);
-          }}
-        >
-          New Task
-        </Button>
-      </Stack>
 
-      {/* ===== TASKS VIEW ===== */}
-      {view === "TASKS" && (
-        <Stack spacing={2}>
-          {activeTasks.length === 0 && (
-            <EmptyCard text="🎉 No pending tasks. You are done!" />
-          )}
-          {activeTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              groupName={groupName(task.groupId)}
-              onToggle={() => toggleComplete(task)}
-              onEdit={() => {
-                setEditingTask(task);
-                setForcedGroupId(task.groupId);
-                setModalOpen(true);
-              }}
-              onDelete={() => deleteTask(task.id)}
-            />
-          ))}
-        </Stack>
-      )}
+        {/* ===== GROUPS VIEW ===== */}
+        {view === 'GROUPS' && (
+          <Stack spacing={3}>
+            {groups.filter(g => g.type === 'USER').map(group => (
+              <Card key={group.id}>
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography fontWeight={700}>{group.name}</Typography>
+                    <IconButton
+                      onClick={() => {
+                        setEditingTask(null)
+                        setForcedGroupId(group.id)
+                        setModalOpen(true)
+                      }}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Stack>
 
-      {/* ===== GROUPS VIEW ===== */}
-      {view === "GROUPS" && (
-        <Stack spacing={3}>
-          {groups.filter(g => g.type === "USER").map(group => (
-            <Card key={group.id}>
-              <CardContent>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography fontSize={20} fontWeight={700}>
-                    {group.name}
-                  </Typography>
-                  <IconButton
-                    onClick={() => {
-                      setEditingTask(null);
-                      setForcedGroupId(group.id);
-                      setModalOpen(true);
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </Stack>
+                  <Divider sx={{ my: 2 }} />
 
-                <Divider sx={{ my: 2 }} />
+                  <Stack spacing={2}>
+                    {activeTasks
+                      .filter(t => t.groupId === group.id)
+                      .map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          groupName={group.name}
+                          onToggle={() => toggleComplete(task)}
+                          onEdit={() => {
+                            setEditingTask(task)
+                            setForcedGroupId(group.id)
+                            setModalOpen(true)
+                          }}
+                          onDelete={() => deleteTask(task.id)}
+                        />
+                      ))}
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
 
-                <Stack spacing={2}>
-                  {activeTasks
-                    .filter(t => t.groupId === group.id)
-                    .map(task => (
-                      <TaskCard
-                        key={task.id}
-                        task={task}
-                        groupName={group.name}
-                        onToggle={() => toggleComplete(task)}
-                        onEdit={() => {
-                          setEditingTask(task);
-                          setForcedGroupId(group.id);
-                          setModalOpen(true);
-                        }}
-                        onDelete={() => deleteTask(task.id)}
-                      />
-                    ))}
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
-      )}
+        {/* ===== COMPLETED VIEW ===== */}
+        {view === 'COMPLETED' && (
+          <Stack spacing={2}>
+            {completedTasks.length === 0 && (
+              <EmptyCard text="No completed tasks yet" />
+            )}
+            {completedTasks.map(task => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                groupName="Completed Tasks"
+                onToggle={() => toggleComplete(task)}
+                onEdit={() => {
+                  setEditingTask(task)
+                  setForcedGroupId(task.originalGroupId || '')
+                  setModalOpen(true)
+                }}
+                onDelete={() => deleteTask(task.id)}
+              />
+            ))}
+          </Stack>
+        )}
 
-      {/* ===== COMPLETED VIEW ===== */}
-      {view === "COMPLETED" && (
-        <Stack spacing={2}>
-          {completedTasks.length === 0 && (
-            <EmptyCard text="No tasks completed yet." />
-          )}
-          {completedTasks.map(task => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              groupName="Completed Tasks"
-              onToggle={() => toggleComplete(task)}
-              onEdit={() => {
-                setEditingTask(task);
-                setForcedGroupId(task.originalGroupId || "");
-                setModalOpen(true);
-              }}
-              onDelete={() => deleteTask(task.id)}
-            />
-          ))}
-        </Stack>
-      )}
-
-      {/* ===== MODAL ===== */}
-      <TaskModal
-        open={modalOpen}
-        task={editingTask}
-        groups={groups}
-        forcedGroupId={forcedGroupId}
-        onClose={() => setModalOpen(false)}
-        onSave={saveTask}
-      />
-    </Box>
-  );
-};
+        {/* ===== MODAL ===== */}
+        <TaskModal
+          open={modalOpen}
+          task={editingTask}
+          groups={groups}
+          forcedGroupId={forcedGroupId}
+          onClose={() => setModalOpen(false)}
+          onSave={saveTask}
+        />
+      </Box>
+    </Container>
+  )
+}
 
 /* ================= COMPONENTS ================= */
 
 const TaskCard = ({ task, groupName, onToggle, onEdit, onDelete }: any) => (
-  <Card sx={{ borderLeft: `6px solid ${priorityBorder[task.priority]}` }}>
+  <Card sx={{ borderLeft: `6px solid ${priorityColor[task.priority]}` }}>
     <CardContent>
       <Stack direction="row" alignItems="center">
-        <Checkbox checked={task.groupId === GROUP_COMPLETED} onChange={onToggle} />
+        <Checkbox checked={task.groupId === COMPLETED_GROUP_ID} onChange={onToggle} />
         <Box sx={{ flexGrow: 1 }}>
           <Typography fontWeight={600}>{task.title}</Typography>
           <Stack direction="row" spacing={1} mt={1}>
             <Chip size="small" label={groupName} />
             <Chip
               size="small"
-              label={task.dueDate ? dayjs(task.dueDate).format("DD MMM YYYY") : "No due date"}
+              label={task.dueDate ? dayjs(task.dueDate).format('DD MMM YYYY') : 'No due date'}
             />
           </Stack>
         </Box>
@@ -295,7 +348,7 @@ const TaskCard = ({ task, groupName, onToggle, onEdit, onDelete }: any) => (
       </Stack>
     </CardContent>
   </Card>
-);
+)
 
 const EmptyCard = ({ text }: { text: string }) => (
   <Card>
@@ -303,22 +356,22 @@ const EmptyCard = ({ text }: { text: string }) => (
       <Typography align="center">{text}</Typography>
     </CardContent>
   </Card>
-);
+)
 
 /* ================= MODAL ================= */
 
 const TaskModal = ({ open, task, groups, forcedGroupId, onClose, onSave }: any) => {
-  const [title, setTitle] = useState("");
-  const [groupId, setGroupId] = useState("daily");
-  const [priority, setPriority] = useState<Priority>("NORMAL");
-  const [dueDate, setDueDate] = useState<Dayjs | null>(null);
+  const [title, setTitle] = useState('')
+  const [groupId, setGroupId] = useState('daily')
+  const [priority, setPriority] = useState<Priority>('NORMAL')
+  const [dueDate, setDueDate] = useState<Dayjs | null>(null)
 
   useEffect(() => {
-    setTitle(task?.title || "");
-    setGroupId(task?.groupId || forcedGroupId || "daily");
-    setPriority(task?.priority || "NORMAL");
-    setDueDate(task?.dueDate ? dayjs(task.dueDate) : null);
-  }, [task, forcedGroupId]);
+    setTitle(task?.title || '')
+    setGroupId(task?.groupId || forcedGroupId || 'daily')
+    setPriority(task?.priority || 'NORMAL')
+    setDueDate(task?.dueDate ? dayjs(task.dueDate) : null)
+  }, [task, forcedGroupId])
 
   const save = () => {
     onSave({
@@ -328,8 +381,8 @@ const TaskModal = ({ open, task, groups, forcedGroupId, onClose, onSave }: any) 
       priority,
       dueDate: dueDate?.toISOString(),
       originalGroupId: task?.originalGroupId
-    });
-  };
+    })
+  }
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -338,18 +391,18 @@ const TaskModal = ({ open, task, groups, forcedGroupId, onClose, onSave }: any) 
           <TextField label="Task" value={title} onChange={e => setTitle(e.target.value)} />
 
           <Select value={groupId} onChange={e => setGroupId(e.target.value)}>
-            {groups.filter((g:any) => g.type === "USER").map((g:any)=> (
+            {groups.filter((g:any) => g.type === 'USER').map((g:any) => (
               <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
             ))}
           </Select>
 
           <Stack direction="row" spacing={1}>
-            {(["NORMAL", "MEDIUM", "HIGH"] as Priority[]).map(p => (
+            {(['NORMAL', 'MEDIUM', 'HIGH'] as Priority[]).map(p => (
               <Chip
                 key={p}
                 label={p}
                 clickable
-                color={priority === p ? "primary" : "default"}
+                color={priority === p ? 'primary' : 'default'}
                 onClick={() => setPriority(p)}
               />
             ))}
@@ -359,11 +412,11 @@ const TaskModal = ({ open, task, groups, forcedGroupId, onClose, onSave }: any) 
             <DatePicker label="Due date" value={dueDate} onChange={setDueDate} />
           </LocalizationProvider>
 
-          <Button variant="contained" onClick={save}>Save</Button>
+          <Button variant="contained" onClick={save}>
+            Save
+          </Button>
         </Stack>
       </DialogContent>
     </Dialog>
-  );
-};
-
-export default TodoApp;
+  )
+}
