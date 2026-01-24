@@ -36,6 +36,36 @@ type Props = {
   onUpdateHealth: (date: string, updated: DailyHealthStatus) => void;
 };
 
+function formatTime(ts?: string): string {
+  if (!ts) return "—"
+
+  const d = new Date(ts)
+  if (Number.isNaN(d.getTime())) return "—"
+
+  return d.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata"
+  })
+}
+
+function formatDuration(start?: string, end?: string): string {
+  if (!start || !end) return "—"
+
+  const s = new Date(start).getTime()
+  const e = new Date(end).getTime()
+
+  if (Number.isNaN(s) || Number.isNaN(e) || e <= s) return "—"
+
+  const mins = Math.floor((e - s) / 60000)
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
+
 /* -------------------------------------------------------
    SMART BODY PART EXTRACTION
 -------------------------------------------------------- */
@@ -220,8 +250,12 @@ export default function ProgressHistoryGrid({
   const workoutRows = sortedWorkouts.map((w, index) => ({
     id: index,
     ...w,
-    bodyPart: extractBodyPart(w.variantName)
-  }));
+    bodyPart: extractBodyPart(w.variantName),
+    startTimeFormatted: formatTime(w.startTime),
+    endTimeFormatted: formatTime(w.endTime),
+    duration: formatDuration(w.startTime, w.endTime)
+  }))
+
 
   const workoutCols: GridColDef[] = [
     { field: "date", headerName: "Date", width: 120 },
@@ -262,7 +296,44 @@ export default function ProgressHistoryGrid({
             size="small"
           />
         )
+    },
+    {
+      field: "startTimeFormatted",
+      headerName: "Start",
+      width: 110,
+      align: "center",
+      headerAlign: "center",
+      sortable: false
+    },
+    {
+      field: "endTimeFormatted",
+      headerName: "End",
+      width: 110,
+      align: "center",
+      headerAlign: "center",
+      sortable: false
+    },
+    {
+      field: "duration",
+      headerName: "Duration",
+      width: 120,
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
+      renderCell: params => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            background:
+              params.value === "—" ? "#61616166" : "#1e88e566",
+            color: "white",
+            fontWeight: 600
+          }}
+        />
+      )
     }
+
   ];
 
   /* ------------------------ DAILY HEALTH GRID ------------------------ */

@@ -21,6 +21,7 @@ export default function WorkoutPlaylist() {
   const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isWorkoutInProgress, setIsWorkoutInProgress] = useState(false)
+  const [workoutStartTime, setWorkoutStartTime] = useState<string | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -85,6 +86,7 @@ export default function WorkoutPlaylist() {
   const handleStartWorkout = () => {
     setIsWorkoutInProgress(true)
     setCurrentStepIndex(0)
+    setWorkoutStartTime(new Date().toISOString())
   }
 
   const handleStepComplete = (nextIndex: number) => {
@@ -99,16 +101,21 @@ export default function WorkoutPlaylist() {
   // **IMPORTANT FIX** — Save workout to GitHub
   // ------------------------------------------------
   const handleFinishWorkout = async (completedFully: boolean) => {
-    if (!selectedVariant) return
+    if (!selectedVariant || !workoutStartTime) return
 
     try {
-      const today = new Date().toISOString().slice(0, 10)
+      const now = new Date()
 
+      const today = now.toLocaleDateString('en-CA', {
+        timeZone: 'Asia/Kolkata'
+      })
       const progress = getProgressData()
       const log = progress.workouts || []
 
       log.push({
         date: today,
+        startTime: workoutStartTime,
+        endTime: now.toISOString(),
         variantId: selectedVariant.id,
         variantName: selectedVariant.variantName,
         completed: completedFully
@@ -130,6 +137,7 @@ export default function WorkoutPlaylist() {
     // reset UI
     setIsWorkoutInProgress(false)
     setCurrentStepIndex(0)
+    setWorkoutStartTime(null)
   }
 
   // -----------------------------

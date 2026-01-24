@@ -46,7 +46,9 @@ export interface WorkoutLogEntry {
   date: string
   variantId: string
   variantName: string
-  completed: boolean
+  completed: boolean,
+  startTime:string,
+  endTime:string
 }
 
 export interface DailyHealthStatus {

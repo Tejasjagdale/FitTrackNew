@@ -1,0 +1,720 @@
+{
+  "profile": {
+    "name": "Tejas",
+    "age": 23,
+    "gender": "male",
+    "heightCm": 177,
+    "goalWeight": 65,
+    "targetBMI": 20.7
+  },
+  "dailyWeight": {
+    "2024-07-03": 59,
+    "2024-07-16": 59.2,
+    "2024-07-29": 59.5,
+    "2024-08-11": 60,
+    "2024-08-24": 59,
+    "2024-09-06": 59,
+    "2024-11-23": 61,
+    "2024-12-06": 58,
+    "2025-01-15": 60.2,
+    "2025-01-22": 61.1,
+    "2025-01-29": 60.8,
+    "2025-02-05": 60.3,
+    "2025-11-29": 62.5,
+    "2025-11-30": 63.5,
+    "2025-12-01": 63,
+    "2025-12-02": 63.1,
+    "2025-12-03": 63.2,
+    "2025-12-04": 64,
+    "2025-12-05": 63.3,
+    "2025-12-06": 63.3,
+    "2025-12-07": 63.5,
+    "2025-12-08": 63.75,
+    "2025-12-09": 63.75,
+    "2025-12-10": 63.77,
+    "2025-12-11": 63.8,
+    "2025-12-12": 63.65,
+    "2025-12-13": 64.1,
+    "2025-12-14": 64.2,
+    "2025-12-15": 64.5,
+    "2025-12-16": 64.7,
+    "2025-12-17": 65,
+    "2025-12-18": 64.75,
+    "2025-12-19": "63.85",
+    "2025-12-20": 63.8,
+    "2025-12-21": 63.75,
+    "2025-12-22": 63.7,
+    "2025-12-23": 63.75,
+    "2025-12-24": 63.8,
+    "2025-12-25": 63.85,
+    "2025-12-26": 64.5,
+    "2025-12-27": 63.7,
+    "2025-12-28": 63.95,
+    "2025-12-29": 63.65,
+    "2025-12-30": 64,
+    "2025-11-28": 62.2,
+    "2025-11-27": 62,
+    "2025-11-26": 61.9,
+    "2025-11-25": 62.25,
+    "2025-11-24": 61.7,
+    "2025-12-31": 64.1,
+    "2026-01-01": 63.9,
+    "2026-01-02": 63.9,
+    "2026-01-03": 64.15,
+    "2026-01-04": 63.7,
+    "2026-01-05": 64,
+    "2026-01-06": 63.5,
+    "2026-01-07": 63.5,
+    "2026-01-08": 63.6,
+    "2026-01-09": 63.3,
+    "2026-01-10": 63.6,
+    "2026-01-11": 63.4,
+    "2026-01-12": 62.9,
+    "2026-01-13": 63.4,
+    "2026-01-14": 64,
+    "2026-01-15": 63.5,
+    "2026-01-16": 63.7,
+    "2026-01-17": 63.9,
+    "2026-01-18": 63.5,
+    "2026-01-19": 64,
+    "2026-01-20": 63.7,
+    "2026-01-21": 63.8,
+    "2026-01-22": 63.9,
+    "2026-01-23": 63.8,
+    "2026-01-24": 64
+  },
+  "measurements": {
+    "2024-07-03": {
+      "unflexedArms": 10.4,
+      "flexedArms": 12.2,
+      "forearms": 10.2,
+      "thighs": 20.5,
+      "calf": 13.3,
+      "chest": 34,
+      "stomach": 31.4,
+      "waist": 32,
+      "neck": 13.1,
+      "bodyFat": 17.5
+    },
+    "2024-07-16": {
+      "unflexedArms": 10.5,
+      "flexedArms": 12.3,
+      "forearms": 10.1,
+      "thighs": 21,
+      "calf": 13.3,
+      "chest": 33.4,
+      "stomach": 31.2,
+      "waist": 31.5,
+      "neck": 13.2,
+      "bodyFat": 16.4
+    },
+    "2024-07-29": {
+      "unflexedArms": 10.6,
+      "flexedArms": 12.3,
+      "forearms": 10.2,
+      "thighs": 21.1,
+      "calf": 14,
+      "chest": 34,
+      "stomach": 31.6,
+      "waist": 31,
+      "neck": 13.2,
+      "bodyFat": 15.2
+    },
+    "2024-08-11": {
+      "unflexedArms": 10.6,
+      "flexedArms": 12.1,
+      "forearms": 10,
+      "thighs": 21,
+      "calf": 13.1,
+      "chest": 33.1,
+      "stomach": 29.5,
+      "waist": 30.3,
+      "neck": 13,
+      "bodyFat": 14.3
+    },
+    "2024-08-24": {
+      "unflexedArms": 10.7,
+      "flexedArms": 12.1,
+      "forearms": 10,
+      "thighs": 20.3,
+      "calf": 13.5,
+      "chest": 33.2,
+      "stomach": 29,
+      "waist": 30,
+      "neck": 13.2,
+      "bodyFat": 13.3
+    },
+    "2024-09-06": {
+      "unflexedArms": 10.7,
+      "flexedArms": 12,
+      "forearms": 10,
+      "thighs": 20.3,
+      "calf": 13.4,
+      "chest": 33.4,
+      "stomach": 30,
+      "waist": 30.4,
+      "neck": 12.7,
+      "bodyFat": 15
+    },
+    "2024-11-23": {
+      "unflexedArms": 11.1,
+      "flexedArms": 12.4,
+      "forearms": 10.1,
+      "thighs": 20.4,
+      "calf": 13.4,
+      "chest": 35.2,
+      "stomach": 30.5,
+      "waist": 31,
+      "neck": 13.1,
+      "bodyFat": 15.4,
+      "fatFreeMass": 0
+    },
+    "2024-12-06": {
+      "unflexedArms": 11,
+      "flexedArms": 12.2,
+      "forearms": 10,
+      "thighs": 20.6,
+      "calf": 13.3,
+      "chest": 34.2,
+      "stomach": 31,
+      "waist": 31.1,
+      "neck": 13.2,
+      "bodyFat": 13.4,
+      "fatFreeMass": 0
+    },
+    "2025-11-30": {
+      "unflexedArms": 11.2,
+      "bodyFat": 15.6,
+      "flexedArms": 12.3,
+      "forearms": 10.1,
+      "thighs": 21.5,
+      "calf": 13.2,
+      "chest": 35.1,
+      "stomach": 32,
+      "waist": 31.3,
+      "neck": 13.3,
+      "fatFreeMass": 53.59
+    },
+    "2025-12-10": {
+      "unflexedArms": 11.1,
+      "bodyFat": 13.53,
+      "flexedArms": 12.5,
+      "waist": 30.2,
+      "stomach": 29.6,
+      "chest": 34.2,
+      "calf": 13.1,
+      "forearms": 10.1,
+      "thighs": 21.6,
+      "neck": 13.2,
+      "fatFreeMass": 54.82
+    },
+    "2025-12-20": {
+      "unflexedArms": 11.2,
+      "bodyFat": 15.6,
+      "flexedArms": 12.55,
+      "forearms": 10.1,
+      "thighs": 22,
+      "calf": 13.2,
+      "chest": 34.5,
+      "stomach": 31.2,
+      "waist": 31,
+      "neck": 13,
+      "fatFreeMass": 53.85
+    },
+    "2025-12-31": {
+      "unflexedArms": 11.25,
+      "bodyFat": 15.9,
+      "flexedArms": 12.6,
+      "forearms": 10.2,
+      "thighs": 22.1,
+      "calf": 13.12,
+      "chest": 35.2,
+      "waist": 31.3,
+      "stomach": 30.7,
+      "neck": 13.15,
+      "fatFreeMass": 53.91
+    },
+    "2026-01-10": {
+      "forearms": 10.1,
+      "bodyFat": 14.16,
+      "flexedArms": 12.55,
+      "unflexedArms": 11.25,
+      "thighs": 22,
+      "calf": 13.1,
+      "waist": 30.5,
+      "stomach": 30.7,
+      "chest": 35,
+      "neck": 13.2,
+      "fatFreeMass": 54.59
+    },
+    "2026-01-20": {
+      "unflexedArms": 11.25,
+      "bodyFat": 13.95,
+      "flexedArms": 12.6,
+      "forearms": 10.1,
+      "thighs": 22.2,
+      "calf": 13.3,
+      "chest": 35.2,
+      "waist": 30.2,
+      "stomach": 30.6,
+      "neck": 13,
+      "fatFreeMass": 54.81
+    }
+  },
+  "workouts": [
+    {
+      "date": "2025-11-30",
+      "timestamp": "2025-11-30T13:34:31.303Z",
+      "variantId": "74594616-43ca-4dc1-ba9f-eeee8b1c9b90",
+      "variantName": "Arms Variant 1",
+      "completed": true
+    },
+    {
+      "date": "2025-12-07",
+      "timestamp": "2025-12-07T16:40:29.073Z",
+      "variantId": "740d73c3-5b5d-489e-9282-7f98de5c6d0a",
+      "variantName": "Chest Variant 1",
+      "completed": false
+    },
+    {
+      "date": "2025-12-08",
+      "variantId": "22fc7c99-0400-437e-b688-b25adfb482bd",
+      "variantName": "Pull day",
+      "completed": true
+    },
+    {
+      "date": "2025-12-09",
+      "variantId": "1d448ff4-8574-4c45-8259-373d37124b25",
+      "variantName": "Morning Pull Bar",
+      "completed": false
+    },
+    {
+      "date": "2025-12-09",
+      "variantId": "0a2a680e-2dce-47e6-95cb-015248593d91",
+      "variantName": "Arms A - Heavy Tension",
+      "completed": true
+    },
+    {
+      "date": "2025-12-15",
+      "timestamp": "2025-12-15T16:56:28.333Z",
+      "variantId": "8599b31a-cca6-4fda-9d99-fb3c0c10ed64",
+      "variantName": "Chest A - Mid Chest Strength",
+      "completed": true
+    },
+    {
+      "date": "2025-12-16",
+      "timestamp": "2025-12-16T14:54:08.450Z",
+      "variantId": "2f4b8722-9ea0-406d-8e4b-e5012ff8de67",
+      "variantName": "Arms B - Volume & Shape",
+      "completed": true
+    },
+    {
+      "date": "2025-12-27",
+      "timestamp": "2025-12-27T15:13:53.364Z",
+      "variantId": "8599b31a-cca6-4fda-9d99-fb3c0c10ed64",
+      "variantName": "Chest A - Mid Chest Strength",
+      "completed": true
+    },
+    {
+      "date": "2025-12-28",
+      "timestamp": "2025-12-28T17:13:30.563Z",
+      "variantId": "2f4b8722-9ea0-406d-8e4b-e5012ff8de67",
+      "variantName": "Arms B - Volume & Shape",
+      "completed": true
+    },
+    {
+      "date": "2025-12-30",
+      "variantId": "6ea4cfa6-695a-4bd5-b7c5-0c687d21d975",
+      "variantName": "Morning Abs",
+      "completed": true
+    },
+    {
+      "date": "2026-01-04",
+      "variantId": "c666982e-8750-4af2-b910-3abc56525b68",
+      "variantName": "Chest B - Upper Chest Strength",
+      "completed": true
+    },
+    {
+      "date": "2026-01-06",
+      "variantId": "1d448ff4-8574-4c45-8259-373d37124b25",
+      "variantName": "Morning Pull Bar",
+      "completed": true
+    },
+    {
+      "date": "2026-01-06",
+      "variantId": "cfd8d450-5216-446b-a5b2-84426d06bc45",
+      "variantName": "Arms C - Functional Strength & Power",
+      "completed": true
+    },
+    {
+      "date": "2026-01-09",
+      "timestamp": "2026-01-09T17:14:30.217Z",
+      "variantId": "4fa54c53-c316-4426-88ed-1f36b20aee1a",
+      "variantName": "Chest C - Lower Chest & Shape",
+      "completed": true
+    },
+    {
+      "date": "2026-01-10",
+      "variantId": "0a2a680e-2dce-47e6-95cb-015248593d91",
+      "variantName": "Arms A - Heavy Tension",
+      "completed": true
+    },
+    {
+      "date": "2026-01-15",
+      "timestamp": "2026-01-15T16:33:53.783Z",
+      "variantId": "8599b31a-cca6-4fda-9d99-fb3c0c10ed64",
+      "variantName": "Chest A - Mid Chest Strength",
+      "completed": true
+    },
+    {
+      "date": "2026-01-16",
+      "variantId": "1d448ff4-8574-4c45-8259-373d37124b25",
+      "variantName": "Morning Pull Bar",
+      "completed": true
+    },
+    {
+      "date": "2026-01-21",
+      "variantId": "2f4b8722-9ea0-406d-8e4b-e5012ff8de67",
+      "variantName": "Arms B - Volume & Shape",
+      "completed": true
+    },
+    {
+      "date": "2026-01-23",
+      "variantId": "c666982e-8750-4af2-b910-3abc56525b68",
+      "variantName": "Chest B - Upper Chest Strength",
+      "completed": true
+    },
+    {
+      "date": "2026-01-24",
+      "variantId": "1d448ff4-8574-4c45-8259-373d37124b25",
+      "variantName": "Morning Pull Bar",
+      "completed": true
+    }
+  ],
+  "dailyHealth": {
+    "2025-11-30": {
+      "condition": "stomachIssue",
+      "dietQuality": "insufficient",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-11-29": {
+      "condition": "stomachIssue",
+      "dietQuality": "insufficient",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-01": {
+      "condition": "stomachIssue",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-02": {
+      "condition": "stomachIssue",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-04": {
+      "condition": "stomachIssue",
+      "dietQuality": "veryLow",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-03": {
+      "condition": "healthy",
+      "dietQuality": "veryHigh",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-05": {
+      "condition": "bodyPain",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-06": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-07": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-08": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-09": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-10": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-11": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-12": {
+      "condition": "healthy",
+      "dietQuality": "veryLow",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2025-12-13": {
+      "condition": "healthy",
+      "dietQuality": "high",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-14": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-15": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-16": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2025-12-17": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-18": {
+      "condition": "coldOrFever",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-19": {
+      "condition": "coldOrFever",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-20": {
+      "condition": "coldOrFever",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-21": {
+      "condition": "stomachIssue",
+      "dietQuality": "low",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-22": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-23": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-24": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-25": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-26": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2025-12-27": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2025-12-28": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2025-12-29": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-30": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2025-12-31": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-02": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-03": {
+      "condition": "healthy",
+      "dietQuality": "veryLow",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2026-01-04": {
+      "condition": "healthy",
+      "dietQuality": "veryLow",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-05": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-06": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2026-01-01": {
+      "condition": "healthy",
+      "dietQuality": "high",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-07": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-08": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-09": {
+      "condition": "healthy",
+      "dietQuality": "high",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-10": {
+      "condition": "healthy",
+      "dietQuality": "veryLow",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-11": {
+      "condition": "bodyPain",
+      "dietQuality": "veryLow",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-12": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-14": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-15": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-17": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-16": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-19": {
+      "condition": "bodyPain",
+      "dietQuality": "low",
+      "mood": "verySad",
+      "studied": false
+    },
+    "2026-01-18": {
+      "condition": "bodyPain",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-21": {
+      "condition": "healthy",
+      "dietQuality": "low",
+      "mood": "neutral",
+      "studied": false
+    },
+    "2026-01-22": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "sad",
+      "studied": false
+    },
+    "2026-01-23": {
+      "condition": "healthy",
+      "dietQuality": "normal",
+      "mood": "neutral",
+      "studied": false
+    }
+  }
+}

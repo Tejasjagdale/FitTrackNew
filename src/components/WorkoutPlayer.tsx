@@ -21,6 +21,17 @@ interface Props {
     onFinishWorkout: (completedFully: boolean) => void
 }
 
+/* ===== ADD: helpers ===== */
+function extractSeconds(reps?: string): number | null {
+    if (!reps) return null
+    const m = reps.match(/(\d+)\s*sec/i)
+    return m ? Number(m[1]) : null
+}
+
+const horn = new Audio('/sounds/bell.mp3')
+horn.volume = 0.6
+/* ======================= */
+
 export default function WorkoutPlayer({
     variant,
     currentStepIndex,
@@ -34,16 +45,43 @@ export default function WorkoutPlayer({
     const [timeLeft, setTimeLeft] = useState(0)
     const [isResting, setIsResting] = useState(false)
 
-    const nextStep = variant.exerciseOrder[currentStepIndex + 1] || null
+    /* ===== ADD: timer state ===== */
+    const [isTimerRunning, setIsTimerRunning] = useState(false)
+    const [timerTotal, setTimerTotal] = useState(0)
+    /* =========================== */
 
+    const nextStep = variant.exerciseOrder[currentStepIndex + 1] || null
+    const timedSeconds = extractSeconds(currentStep?.reps)
+
+    /* ===== EXISTING REST TIMER + SOUND ===== */
     useEffect(() => {
         if (!isResting || timeLeft <= 0) return
         const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000)
 
-        if (timeLeft === 1) handleNextStep(true)
+        if (timeLeft === 1) {
+            horn.play()              // 🔊 rest over
+            handleNextStep(true)
+        }
 
         return () => clearTimeout(timer)
     }, [isResting, timeLeft])
+    /* ===================================== */
+
+    /* ===== ADD: TIMED EXERCISE TIMER ===== */
+    useEffect(() => {
+        if (!isTimerRunning || timeLeft <= 0) return
+
+        const timer = setTimeout(() => setTimeLeft(t => t - 1), 1000)
+
+        if (timeLeft === 1) {
+            horn.play()              // 🔊 timer end
+            setIsTimerRunning(false)
+            startRest()              // ⬅ existing logic
+        }
+
+        return () => clearTimeout(timer)
+    }, [isTimerRunning, timeLeft])
+    /* ===================================== */
 
     if (!currentStep) return null
 
@@ -54,14 +92,23 @@ export default function WorkoutPlayer({
 
     const handleCompleteSet = () => startRest()
 
-    const handleNextStep = (fromRest = false) => {
+    /* ===== ADD: start timed exercise ===== */
+    const handleStartTimer = () => {
+        if (!timedSeconds) return
+        const total = 10 + timedSeconds   // 10s prep + work
+        setTimerTotal(total)
+        setTimeLeft(total)
+        setIsTimerRunning(true)
+    }
+    /* ==================================== */
+
+    const handleNextStep = (_fromRest = false) => {
         setIsResting(false)
+        setIsTimerRunning(false)
         setTimeLeft(0)
 
         const nextIndex = currentStepIndex + 1
-        const total = variant.exerciseOrder.length
-
-        if (nextIndex < total) {
+        if (nextIndex < variant.exerciseOrder.length) {
             onStepComplete(nextIndex)
         } else {
             onFinishWorkout(true)
@@ -70,6 +117,7 @@ export default function WorkoutPlayer({
 
     const handleUndoStep = () => {
         setIsResting(false)
+        setIsTimerRunning(false)
         setTimeLeft(0)
 
         const prevIndex = currentStepIndex - 1
@@ -127,52 +175,48 @@ export default function WorkoutPlayer({
                         {currentStep.name}
                     </Typography>
 
-                    {/* Bigger, more visible chips */}
+                    {/* ADDITIVE: timer display only when running */}
+                    {isTimerRunning && (
+                        <TimerCircle timeLeft={timeLeft} totalTime={timerTotal} />
+                    )}
+
                     <Stack spacing={2} sx={{ mb: 3 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                             <Chip
                                 label={`Set ${currentStep.set}`}
                                 color="primary"
                                 variant="filled"
-                                sx={{
-                                    fontSize: 18,
-                                    px: 3,
-                                    py: 1,
-                                    borderRadius: 2,
-                                    fontWeight: 700
-                                }}
+                                sx={{ fontSize: 18, px: 3, py: 1, borderRadius: 2, fontWeight: 700 }}
                             />
-
                             <Chip
                                 label={`${currentStep.reps} reps`}
                                 variant="outlined"
-                                sx={{
-                                    fontSize: 18,
-                                    px: 3,
-                                    py: 1,
-                                    borderRadius: 2,
-                                    fontWeight: 700
-                                }}
+                                sx={{ fontSize: 18, px: 3, py: 1, borderRadius: 2, fontWeight: 700 }}
                             />
                         </Box>
                     </Stack>
 
-                    {/* Smaller action buttons */}
+                    {/* BUTTONS — NOTHING REMOVED */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2 }}>
                         <Button
                             variant="contained"
                             size="medium"
                             onClick={handleCompleteSet}
-                            sx={{
-                                borderRadius: 2,
-                                px: 3,
-                                textTransform: 'none',
-                                fontSize: 15,
-                                fontWeight: 600
-                            }}
+                            sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 15, fontWeight: 600 }}
                         >
                             Complete Set
                         </Button>
+
+                        {timedSeconds && !isTimerRunning && (
+                            <Button
+                                variant="outlined"
+                                size="medium"
+                                onClick={handleStartTimer}
+                                sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 14 }}
+                            >
+                                Start Timer
+                            </Button>
+                        )}
 
                         {currentStepIndex > 0 && (
                             <Button
@@ -180,12 +224,7 @@ export default function WorkoutPlayer({
                                 startIcon={<ArrowBackIcon />}
                                 onClick={handleUndoStep}
                                 size="medium"
-                                sx={{
-                                    borderRadius: 2,
-                                    px: 3,
-                                    textTransform: 'none',
-                                    fontSize: 14
-                                }}
+                                sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 14 }}
                             >
                                 Undo
                             </Button>
@@ -194,14 +233,14 @@ export default function WorkoutPlayer({
                 </>
             )}
 
-            {/* REST TIMER */}
+            {/* REST TIMER (UNCHANGED) */}
             {isResting && (
                 <>
                     <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2 }}>
                         Rest before next set
                     </Typography>
 
-                    {/* NEXT EXERCISE PREVIEW — GLASS MORPH */}
+                    {/* NEXT EXERCISE PREVIEW — UNCHANGED */}
                     {nextStep && (
                         <Box
                             sx={{
@@ -216,72 +255,28 @@ export default function WorkoutPlayer({
                                 WebkitBackdropFilter: 'blur(18px)',
                                 border: '1px solid rgba(255, 255, 255, 0.28)',
                                 boxShadow: `
-                0 8px 28px rgba(0, 0, 0, 0.25),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-                inset 0 0 25px 12px rgba(255, 255, 255, 0.25)
-            `,
+                  0 8px 28px rgba(0, 0, 0, 0.25),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                  inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+                  inset 0 0 25px 12px rgba(255, 255, 255, 0.25)
+                `,
                                 position: 'relative',
-                                overflow: 'hidden',
-
-                                '&::before': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    height: '1px',
-                                    background:
-                                        'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
-                                },
-                                '&::after': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '1px',
-                                    height: '100%',
-                                    background:
-                                        'linear-gradient(180deg, rgba(255,255,255,0.8), transparent, rgba(255,255,255,0.2))',
-                                }
+                                overflow: 'hidden'
                             }}
                         >
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ opacity: 0.7, fontSize: 14, mb: 0.5 }}
-                            >
+                            <Typography variant="subtitle2" sx={{ opacity: 0.7, fontSize: 14, mb: 0.5 }}>
                                 Next:
                             </Typography>
 
-                            <Typography
-                                variant="h6"
-                                sx={{
-                                    fontWeight: 700,
-                                    fontSize: 22,
-                                    mb: 1,
-                                    textShadow: '0 1px 2px rgba(0,0,0,0.4)'
-                                }}
-                            >
+                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 22, mb: 1 }}>
                                 {nextStep.name}
                             </Typography>
 
-                            <Typography
-                                variant="body2"
-                                sx={{
-                                    opacity: 0.9,
-                                    mb: 1,
-                                    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                                }}
-                            >
+                            <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
                                 Set {nextStep.set} — {nextStep.reps} reps
                             </Typography>
 
-                            <Stack
-                                direction="row"
-                                spacing={1}
-                                justifyContent="center"
-                                sx={{ mt: 0.5 }}
-                            >
+                            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 0.5 }}>
                                 {nextStep.equipment?.map(item => (
                                     <Chip
                                         key={item}
@@ -291,9 +286,7 @@ export default function WorkoutPlayer({
                                             fontSize: 12,
                                             color: 'white',
                                             background: 'rgba(255,255,255,0.2)',
-                                            border: '1px solid rgba(255,255,255,0.4)',
-                                            backdropFilter: 'blur(8px)',
-                                            WebkitBackdropFilter: 'blur(8px)',
+                                            border: '1px solid rgba(255,255,255,0.4)'
                                         }}
                                     />
                                 ))}
@@ -301,40 +294,20 @@ export default function WorkoutPlayer({
                         </Box>
                     )}
 
-
-                    {/* TIMER WITH CONTROLS LEFT & RIGHT */}
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 3,
-                            mb: 2
-                        }}
-                    >
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => adjustTime(-10)}
-                            sx={{ minWidth: 60 }}
-                        >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, mb: 2 }}>
+                        <Button size="small" variant="outlined" onClick={() => adjustTime(-10)}>
                             -10s
                         </Button>
 
                         <TimerCircle timeLeft={timeLeft} totalTime={currentStep.restSeconds} />
 
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => adjustTime(10)}
-                            sx={{ minWidth: 60 }}
-                        >
+                        <Button size="small" variant="outlined" onClick={() => adjustTime(10)}>
                             +10s
                         </Button>
                     </Box>
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2, mb: 2 }}>
-                        <Button variant="outlined" onClick={() => handleNextStep(true)} sx={{ borderRadius: 2 }}>
+                        <Button variant="outlined" onClick={() => handleNextStep(true)}>
                             Skip Rest
                         </Button>
 
@@ -344,7 +317,6 @@ export default function WorkoutPlayer({
                                 color="warning"
                                 startIcon={<ArrowBackIcon />}
                                 onClick={handleUndoStep}
-                                sx={{ borderRadius: 2 }}
                             >
                                 Undo
                             </Button>
@@ -353,8 +325,6 @@ export default function WorkoutPlayer({
                 </>
             )}
 
-
-            {/* FINISH EARLY */}
             <Button
                 variant="contained"
                 color="error"

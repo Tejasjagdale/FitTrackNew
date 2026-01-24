@@ -1,0 +1,1496 @@
+{
+  "equipments": [
+    "10Kg dumbbell",
+    "15Kg dumbbell",
+    "pull-up bar",
+    "chair",
+    "yoga mat"
+  ],
+  "variants": [
+    {
+      "variantName": "Arms A - Heavy Tension",
+      "exercisesList": [
+        {
+          "name": "Single-Arm Dumbbell Curl",
+          "sets": 4,
+          "reps": "5-6"
+        },
+        {
+          "name": "Single-Arm Overhead Triceps Extension",
+          "sets": 4,
+          "reps": "6-8"
+        },
+        {
+          "name": "Hammer Curl",
+          "sets": 3,
+          "reps": "8"
+        },
+        {
+          "name": "Close-Grip Push-ups",
+          "sets": 3,
+          "reps": "12-15"
+        },
+        {
+          "name": "Farmer Hold",
+          "sets": 3,
+          "reps": "40-50 sec"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Single-Arm Dumbbell Curl",
+          "set": 1,
+          "reps": "5-6",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Single-Arm Dumbbell Curl",
+          "set": 2,
+          "reps": "5-6",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Single-Arm Dumbbell Curl",
+          "set": 3,
+          "reps": "5-6",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Single-Arm Dumbbell Curl",
+          "set": 4,
+          "reps": "5-6",
+          "restSeconds": 120,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Single-Arm Overhead Triceps Extension",
+          "set": 1,
+          "reps": "6-8",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Single-Arm Overhead Triceps Extension",
+          "set": 2,
+          "reps": "6-8",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Single-Arm Overhead Triceps Extension",
+          "set": 3,
+          "reps": "6-8",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Single-Arm Overhead Triceps Extension",
+          "set": 4,
+          "reps": "6-8",
+          "restSeconds": 120,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Hammer Curl",
+          "set": 1,
+          "reps": "8",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Hammer Curl",
+          "set": 2,
+          "reps": "8",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Hammer Curl",
+          "set": 3,
+          "reps": "8",
+          "restSeconds": 100,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Close-Grip Push-ups",
+          "set": 1,
+          "reps": "12-15",
+          "restSeconds": 75,
+          "equipment": []
+        },
+        {
+          "step": 13,
+          "name": "Close-Grip Push-ups",
+          "set": 2,
+          "reps": "12-15",
+          "restSeconds": 75,
+          "equipment": []
+        },
+        {
+          "step": 14,
+          "name": "Close-Grip Push-ups",
+          "set": 3,
+          "reps": "12-15",
+          "restSeconds": 100,
+          "equipment": []
+        },
+        {
+          "step": 15,
+          "name": "Farmer Hold",
+          "set": 1,
+          "reps": "40-50 sec",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Farmer Hold",
+          "set": 2,
+          "reps": "40-50 sec",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 17,
+          "name": "Farmer Hold",
+          "set": 3,
+          "reps": "40-50 sec",
+          "restSeconds": 120,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        }
+      ],
+      "id": "0a2a680e-2dce-47e6-95cb-015248593d91"
+    },
+    {
+      "variantName": "Chest A - Mid Chest Strength",
+      "exercisesList": [
+        {
+          "name": "Feet-Elevated Push-ups",
+          "sets": 4,
+          "reps": "10-15"
+        },
+        {
+          "name": "Single-Arm Dumbbell Floor Press",
+          "sets": 3,
+          "reps": "6-8 each"
+        },
+        {
+          "name": "Wide Push-ups (slow)",
+          "sets": 3,
+          "reps": "12"
+        },
+        {
+          "name": "Isometric Push-up Hold (bottom)",
+          "sets": 3,
+          "reps": "30-40 sec"
+        },
+        {
+          "name": "Dumbbell Pullover",
+          "sets": 3,
+          "reps": "8-10"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Feet-Elevated Push-ups",
+          "set": 1,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Feet-Elevated Push-ups",
+          "set": 2,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Feet-Elevated Push-ups",
+          "set": 3,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Feet-Elevated Push-ups",
+          "set": 4,
+          "reps": "10-15",
+          "restSeconds": 120,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Single-Arm Dumbbell Floor Press",
+          "set": 1,
+          "reps": "6-8 each",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat",
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Single-Arm Dumbbell Floor Press",
+          "set": 2,
+          "reps": "6-8 each",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat",
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Single-Arm Dumbbell Floor Press",
+          "set": 3,
+          "reps": "6-8 each",
+          "restSeconds": 120,
+          "equipment": [
+            "yoga mat",
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Wide Push-ups (slow)",
+          "set": 1,
+          "reps": "12",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Wide Push-ups (slow)",
+          "set": 2,
+          "reps": "12",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Wide Push-ups (slow)",
+          "set": 3,
+          "reps": "12",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Isometric Push-up Hold (bottom)",
+          "set": 1,
+          "reps": "30-40 sec",
+          "restSeconds": 60,
+          "equipment": []
+        },
+        {
+          "step": 12,
+          "name": "Isometric Push-up Hold (bottom)",
+          "set": 2,
+          "reps": "30-40 sec",
+          "restSeconds": 60,
+          "equipment": []
+        },
+        {
+          "step": 13,
+          "name": "Isometric Push-up Hold (bottom)",
+          "set": 3,
+          "reps": "30-40 sec",
+          "restSeconds": 90,
+          "equipment": []
+        },
+        {
+          "step": 14,
+          "name": "Dumbbell Pullover",
+          "set": 1,
+          "reps": "8-10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Dumbbell Pullover",
+          "set": 2,
+          "reps": "8-10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Dumbbell Pullover",
+          "set": 3,
+          "reps": "8-10",
+          "restSeconds": 120,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        }
+      ],
+      "id": "8599b31a-cca6-4fda-9d99-fb3c0c10ed64"
+    },
+    {
+      "variantName": "Arms B - Volume & Shape",
+      "exercisesList": [
+        {
+          "name": "Alternating Dumbbell Curl",
+          "sets": 3,
+          "reps": "10-12"
+        },
+        {
+          "name": "Zottman Curl",
+          "sets": 3,
+          "reps": "10"
+        },
+        {
+          "name": "Inclined dumbbell curls",
+          "sets": 3,
+          "reps": "10-12"
+        },
+        {
+          "name": "Bench Dips",
+          "sets": 3,
+          "reps": "15-20"
+        },
+        {
+          "name": "Wrist Curl + Reverse Wrist Curl",
+          "sets": 3,
+          "reps": "15-20 each"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Alternating Dumbbell Curl",
+          "set": 1,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Alternating Dumbbell Curl",
+          "set": 2,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Alternating Dumbbell Curl",
+          "set": 3,
+          "reps": "10-12",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Zottman Curl",
+          "set": 1,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Zottman Curl",
+          "set": 2,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Zottman Curl",
+          "set": 3,
+          "reps": "10",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Inclined dumbbell curls",
+          "set": 1,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell",
+            "chair"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Inclined dumbbell curls",
+          "set": 2,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Inclined dumbbell curls",
+          "set": 3,
+          "reps": "10-12",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Bench Dips",
+          "set": 1,
+          "reps": "15-20",
+          "restSeconds": 75,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Bench Dips",
+          "set": 2,
+          "reps": "15-20",
+          "restSeconds": 75,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Bench Dips",
+          "set": 3,
+          "reps": "15-20",
+          "restSeconds": 100,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Wrist Curl + Reverse Wrist Curl",
+          "set": 1,
+          "reps": "15-20 each",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Wrist Curl + Reverse Wrist Curl",
+          "set": 2,
+          "reps": "15-20 each",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Wrist Curl + Reverse Wrist Curl",
+          "set": 3,
+          "reps": "15-20 each",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        }
+      ],
+      "id": "2f4b8722-9ea0-406d-8e4b-e5012ff8de67"
+    },
+    {
+      "variantName": "Chest B - Upper Chest Strength",
+      "exercisesList": [
+        {
+          "name": "Decline Push-ups",
+          "sets": 4,
+          "reps": "10-15"
+        },
+        {
+          "name": "Incline dumbbell Press",
+          "sets": 3,
+          "reps": "6-8 each"
+        },
+        {
+          "name": "Arnold Press",
+          "sets": 3,
+          "reps": "8-10"
+        },
+        {
+          "name": "Dumbbell Pullover",
+          "sets": 3,
+          "reps": "10"
+        },
+        {
+          "name": "Scapular Push-ups",
+          "sets": 3,
+          "reps": "15-20"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Decline Push-ups",
+          "set": 1,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Decline Push-ups",
+          "set": 2,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Decline Push-ups",
+          "set": 3,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Decline Push-ups",
+          "set": 4,
+          "reps": "10-15",
+          "restSeconds": 120,
+          "equipment": [
+            "chair"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Incline dumbbell Press",
+          "set": 1,
+          "reps": "6-8 each",
+          "restSeconds": 90,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Incline dumbbell Press",
+          "set": 2,
+          "reps": "6-8 each",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat",
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Incline dumbbell Press",
+          "set": 3,
+          "reps": "6-8 each",
+          "restSeconds": 120,
+          "equipment": [
+            "yoga mat",
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Arnold Press",
+          "set": 1,
+          "reps": "8-10",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Arnold Press",
+          "set": 2,
+          "reps": "8-10",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Arnold Press",
+          "set": 3,
+          "reps": "8-10",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Dumbbell Pullover",
+          "set": 1,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Dumbbell Pullover",
+          "set": 2,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Dumbbell Pullover",
+          "set": 3,
+          "reps": "10",
+          "restSeconds": 120,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Scapular Push-ups",
+          "set": 1,
+          "reps": "15-20",
+          "restSeconds": 45,
+          "equipment": []
+        },
+        {
+          "step": 15,
+          "name": "Scapular Push-ups",
+          "set": 2,
+          "reps": "15-20",
+          "restSeconds": 45,
+          "equipment": []
+        },
+        {
+          "step": 16,
+          "name": "Scapular Push-ups",
+          "set": 3,
+          "reps": "15-20",
+          "restSeconds": 75,
+          "equipment": []
+        }
+      ],
+      "id": "c666982e-8750-4af2-b910-3abc56525b68"
+    },
+    {
+      "variantName": "Arms C - Functional Strength & Power",
+      "exercisesList": [
+        {
+          "name": "Clean & Press",
+          "sets": 4,
+          "reps": "5-6 each"
+        },
+        {
+          "name": "Concentration Curl",
+          "sets": 3,
+          "reps": "10-12"
+        },
+        {
+          "name": "Triceps Kickback",
+          "sets": 3,
+          "reps": "12-15"
+        },
+        {
+          "name": "Cross-Body Hammer Curl",
+          "sets": 3,
+          "reps": "10"
+        },
+        {
+          "name": "Plank Shoulder Taps",
+          "sets": 3,
+          "reps": "50-60 sec"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Clean & Press",
+          "set": 1,
+          "reps": "5-6 each",
+          "restSeconds": 120,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Clean & Press",
+          "set": 2,
+          "reps": "5-6 each",
+          "restSeconds": 120,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Clean & Press",
+          "set": 3,
+          "reps": "5-6 each",
+          "restSeconds": 120,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Clean & Press",
+          "set": 4,
+          "reps": "5-6 each",
+          "restSeconds": 150,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Concentration Curl",
+          "set": 1,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Concentration Curl",
+          "set": 2,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Concentration Curl",
+          "set": 3,
+          "reps": "10-12",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Triceps Kickback",
+          "set": 1,
+          "reps": "12-15",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Triceps Kickback",
+          "set": 2,
+          "reps": "12-15",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Triceps Kickback",
+          "set": 3,
+          "reps": "12-15",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Cross-Body Hammer Curl",
+          "set": 1,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Cross-Body Hammer Curl",
+          "set": 2,
+          "reps": "10",
+          "restSeconds": 75,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Cross-Body Hammer Curl",
+          "set": 3,
+          "reps": "10",
+          "restSeconds": 100,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Plank Shoulder Taps",
+          "set": 1,
+          "reps": "50-60 sec",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Plank Shoulder Taps",
+          "set": 2,
+          "reps": "50-60 sec",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Plank Shoulder Taps",
+          "set": 3,
+          "reps": "50-60 sec",
+          "restSeconds": 120,
+          "equipment": [
+            "yoga mat"
+          ]
+        }
+      ],
+      "id": "cfd8d450-5216-446b-a5b2-84426d06bc45"
+    },
+    {
+      "variantName": "Chest C - Lower Chest & Shape",
+      "exercisesList": [
+        {
+          "name": "Deficit Push-ups",
+          "sets": 4,
+          "reps": "12-15"
+        },
+        {
+          "name": "Close-Grip Push-ups",
+          "sets": 3,
+          "reps": "10-12"
+        },
+        {
+          "name": "Single-Arm Dumbbell Squeeze Press",
+          "sets": 3,
+          "reps": "10-12"
+        },
+        {
+          "name": "Pseudo Planche Push-ups",
+          "sets": 3,
+          "reps": "6-10"
+        },
+        {
+          "name": "Pullover Iso Hold",
+          "sets": 3,
+          "reps": "30-40 sec"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Deficit Push-ups",
+          "set": 1,
+          "reps": "12-15",
+          "restSeconds": 90,
+          "equipment": [
+            "books",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Deficit Push-ups",
+          "set": 2,
+          "reps": "12-15",
+          "restSeconds": 90,
+          "equipment": [
+            "books",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Deficit Push-ups",
+          "set": 3,
+          "reps": "12-15",
+          "restSeconds": 90,
+          "equipment": [
+            "books",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Deficit Push-ups",
+          "set": 4,
+          "reps": "12-15",
+          "restSeconds": 120,
+          "equipment": [
+            "books",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Close-Grip Push-ups",
+          "set": 1,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": []
+        },
+        {
+          "step": 6,
+          "name": "Close-Grip Push-ups",
+          "set": 2,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": []
+        },
+        {
+          "step": 7,
+          "name": "Close-Grip Push-ups",
+          "set": 3,
+          "reps": "10-12",
+          "restSeconds": 100,
+          "equipment": []
+        },
+        {
+          "step": 8,
+          "name": "Single-Arm Dumbbell Squeeze Press",
+          "set": 1,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Single-Arm Dumbbell Squeeze Press",
+          "set": 2,
+          "reps": "10-12",
+          "restSeconds": 75,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Single-Arm Dumbbell Squeeze Press",
+          "set": 3,
+          "reps": "10-12",
+          "restSeconds": 100,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Pseudo Planche Push-ups",
+          "set": 1,
+          "reps": "6-10",
+          "restSeconds": 75,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Pseudo Planche Push-ups",
+          "set": 2,
+          "reps": "6-10",
+          "restSeconds": 75,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Pseudo Planche Push-ups",
+          "set": 3,
+          "reps": "6-10",
+          "restSeconds": 120,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Pullover Iso Hold",
+          "set": 1,
+          "reps": "30-40 sec",
+          "restSeconds": 60,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Pullover Iso Hold",
+          "set": 2,
+          "reps": "30-40 sec",
+          "restSeconds": 60,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        },
+        {
+          "step": 16,
+          "name": "Pullover Iso Hold",
+          "set": 3,
+          "reps": "30-40 sec",
+          "restSeconds": 120,
+          "equipment": [
+            "15Kg dumbbell"
+          ]
+        }
+      ],
+      "id": "4fa54c53-c316-4426-88ed-1f36b20aee1a"
+    },
+    {
+      "variantName": "Morning Pull Bar",
+      "exercisesList": [
+        {
+          "name": "Dead Hang",
+          "sets": 2,
+          "reps": "30-45 sec"
+        },
+        {
+          "name": "Negative Pull-ups",
+          "sets": 4,
+          "reps": "3-5"
+        },
+        {
+          "name": "Chin-ups",
+          "sets": 3,
+          "reps": "3-6"
+        },
+        {
+          "name": "Scapular Pull-ups",
+          "sets": 3,
+          "reps": "8-12"
+        },
+        {
+          "name": "Hanging Knee Raises",
+          "sets": 3,
+          "reps": "8-12"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Dead Hang",
+          "set": 1,
+          "reps": "30-45 sec",
+          "restSeconds": 45,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Dead Hang",
+          "set": 2,
+          "reps": "30-45 sec",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Negative Pull-ups",
+          "set": 1,
+          "reps": "3-5 (5-6 sec descent)",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Negative Pull-ups",
+          "set": 2,
+          "reps": "3-5 (5-6 sec descent)",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Negative Pull-ups",
+          "set": 3,
+          "reps": "3-5 (5-6 sec descent)",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Negative Pull-ups",
+          "set": 4,
+          "reps": "3-5 (5-6 sec descent)",
+          "restSeconds": 120,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Chin-ups",
+          "set": 1,
+          "reps": "3-6",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Chin-ups",
+          "set": 2,
+          "reps": "3-6",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Chin-ups",
+          "set": 3,
+          "reps": "3-6",
+          "restSeconds": 120,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Scapular Pull-ups",
+          "set": 1,
+          "reps": "8-12",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Scapular Pull-ups",
+          "set": 2,
+          "reps": "8-12",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Scapular Pull-ups",
+          "set": 3,
+          "reps": "8-12",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 13,
+          "name": "Hanging Knee Raises",
+          "set": 1,
+          "reps": "8-12",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 14,
+          "name": "Hanging Knee Raises",
+          "set": 2,
+          "reps": "8-12",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 15,
+          "name": "Hanging Knee Raises",
+          "set": 3,
+          "reps": "8-12",
+          "restSeconds": 120,
+          "equipment": [
+            "pull-up bar"
+          ]
+        }
+      ],
+      "id": "1d448ff4-8574-4c45-8259-373d37124b25"
+    },
+    {
+      "variantName": "Morning Abs",
+      "goal": "Thick, deep, visible abs (hypertrophy + definition)",
+      "durationMinutes": "20-25",
+      "exercisesList": [
+        {
+          "name": "Hanging Leg Raise Progression",
+          "sets": 3,
+          "reps": "8-15"
+        },
+        {
+          "name": "Weighted Crunch (Dumbbell)",
+          "sets": 3,
+          "reps": "10-15"
+        },
+        {
+          "name": "Slow Lying Leg Raises (Posterior Pelvic Tilt)",
+          "sets": 3,
+          "reps": "8-12"
+        },
+        {
+          "name": "Long-Lever Plank (Posterior Pelvic Tilt)",
+          "sets": 3,
+          "reps": "40-60 sec"
+        }
+      ],
+      "exerciseOrder": [
+        {
+          "step": 1,
+          "name": "Hanging Leg Raise Progression",
+          "set": 1,
+          "reps": "8-15",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Hanging Leg Raise Progression",
+          "set": 2,
+          "reps": "8-15",
+          "restSeconds": 60,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Hanging Leg Raise Progression",
+          "set": 3,
+          "reps": "8-15",
+          "restSeconds": 90,
+          "equipment": [
+            "pull-up bar"
+          ]
+        },
+        {
+          "step": 4,
+          "name": "Weighted Crunch (Dumbbell)",
+          "set": 1,
+          "reps": "10-15",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 5,
+          "name": "Weighted Crunch (Dumbbell)",
+          "set": 2,
+          "reps": "10-15",
+          "restSeconds": 60,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 6,
+          "name": "Weighted Crunch (Dumbbell)",
+          "set": 3,
+          "reps": "10-15",
+          "restSeconds": 90,
+          "equipment": [
+            "10Kg dumbbell",
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 7,
+          "name": "Slow Lying Leg Raises (Posterior Pelvic Tilt)",
+          "set": 1,
+          "reps": "8-12 (3 sec down)",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 8,
+          "name": "Slow Lying Leg Raises (Posterior Pelvic Tilt)",
+          "set": 2,
+          "reps": "8-12 (3 sec down)",
+          "restSeconds": 60,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 9,
+          "name": "Slow Lying Leg Raises (Posterior Pelvic Tilt)",
+          "set": 3,
+          "reps": "8-12 (3 sec down)",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 10,
+          "name": "Long-Lever Plank (Posterior Pelvic Tilt)",
+          "set": 1,
+          "reps": "40-60 sec",
+          "restSeconds": 45,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 11,
+          "name": "Long-Lever Plank (Posterior Pelvic Tilt)",
+          "set": 2,
+          "reps": "40-60 sec",
+          "restSeconds": 45,
+          "equipment": [
+            "yoga mat"
+          ]
+        },
+        {
+          "step": 12,
+          "name": "Long-Lever Plank (Posterior Pelvic Tilt)",
+          "set": 3,
+          "reps": "40-60 sec",
+          "restSeconds": 90,
+          "equipment": [
+            "yoga mat"
+          ]
+        }
+      ],
+      "id": "6ea4cfa6-695a-4bd5-b7c5-0c687d21d975"
+    }
+  ]
+}
