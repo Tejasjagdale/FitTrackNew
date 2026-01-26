@@ -1,0 +1,17 @@
+{
+  "groups": [
+    {
+      "id": "grp_001",
+      "name": "Health"
+    },
+    {
+      "id": "grp_002",
+      "name": "Office"
+    },
+    {
+      "id": "grp_004",
+      "name": "Finance"
+    }
+  ],
+  "tasks": []
+}

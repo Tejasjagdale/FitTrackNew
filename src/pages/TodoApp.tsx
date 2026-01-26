@@ -40,6 +40,12 @@ import GroupList from "../components/todoComponents/GroupList";
 
 export default function TodoPage() {
   /* ================= STATE ================= */
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [syncing, setSyncing] = useState(false);
+
+  const [syncSuccess, setSyncSuccess] = useState(false);
+
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -127,10 +133,9 @@ export default function TodoPage() {
 
   /* ================= SAVE ================= */
 
-  const saveToDb = async (
+  const saveToDb = (
     nextTasks: Task[],
-    nextGroups: Group[] | null,
-    msg: string
+    nextGroups: Group[] | null
   ) => {
     const db = getTodoData();
 
@@ -146,8 +151,9 @@ export default function TodoPage() {
 
     setTodoData(updated);
 
-    await syncTodoToGitHub(msg);
+    setIsDirty(true); // mark unsynced
   };
+
 
   /* ================= TASK ================= */
 
@@ -168,11 +174,7 @@ export default function TodoPage() {
             : t
         );
 
-        await saveToDb(
-          next,
-          null,
-          done ? "Reopen task" : "Complete task"
-        );
+        saveToDb(next, null);
 
         setConfirmOpen(false);
       }
@@ -184,11 +186,11 @@ export default function TodoPage() {
 
     const next = exists
       ? tasks.map(t =>
-          t.id === task.id ? task : t
-        )
+        t.id === task.id ? task : t
+      )
       : [...tasks, task];
 
-    await saveToDb(next, null, "Save task");
+    saveToDb(next, null);
 
     setTaskModalOpen(false);
     setEditingTask(null);
@@ -202,7 +204,7 @@ export default function TodoPage() {
       async () => {
         const next = tasks.filter(t => t.id !== id);
 
-        await saveToDb(next, null, "Delete task");
+        saveToDb(next, null);
 
         setTaskModalOpen(false);
         setEditingTask(null);
@@ -212,12 +214,39 @@ export default function TodoPage() {
     );
   };
 
+  const handleSync = async () => {
+    try {
+      setSyncing(true);
+
+      await syncTodoToGitHub("Manual sync");
+
+      setIsDirty(false);
+
+      setSyncSuccess(true);
+
+      setTimeout(() => {
+        setSyncSuccess(false);
+      }, 2000);
+
+    } catch (err) {
+      console.error("Sync failed:", err);
+      alert("Sync failed. Check console.");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+
   /* ================= GROUP ================= */
 
-  const handleSaveGroup = async (group: Group) => {
-    await saveToDb(tasks, [...groups, group], "Add group");
+  const handleSaveGroup = (group: Group) => {
+    const nextGroups = [...groups, group];
+
+    saveToDb(tasks, nextGroups);
+
     setGroupModalOpen(false);
   };
+
 
   /* ================= FILTER ENGINE ================= */
 
@@ -477,6 +506,7 @@ export default function TodoPage() {
 
         {/* ================= FLOATING ACTIONS ================= */}
 
+        hookup to GitHub
         <Stack
           direction="row"
           spacing={1}
@@ -486,6 +516,8 @@ export default function TodoPage() {
             right: 24
           }}
         >
+
+          {/* Group */}
           <Fab
             color="secondary"
             size="small"
@@ -494,6 +526,7 @@ export default function TodoPage() {
             <CategoryIcon />
           </Fab>
 
+          {/* Add */}
           <Fab
             color="primary"
             onClick={() => {
@@ -503,6 +536,20 @@ export default function TodoPage() {
           >
             <AddIcon />
           </Fab>
+
+          {/* Sync */}
+          <Fab
+            color={isDirty ? "warning" : "success"}
+            onClick={handleSync}
+            disabled={syncing}
+          >
+            {syncing ? (
+              <CircularProgress size={22} color="inherit" />
+            ) : (
+              "⟳"
+            )}
+          </Fab>
+
         </Stack>
 
         {/* ================= MODALS ================= */}
@@ -538,6 +585,37 @@ export default function TodoPage() {
           }}
         />
       </Box>
+
+      {syncSuccess && (
+        <Paper
+          elevation={6}
+          sx={{
+            position: "fixed",
+            bottom: 90,
+            right: 24,
+
+            px: 2,
+            py: 1,
+
+            borderRadius: 2,
+
+            background:
+              "linear-gradient(135deg,#1b5e20,#2e7d32)",
+
+            color: "#fff",
+
+            animation: "fadeIn .3s",
+
+            "@keyframes fadeIn": {
+              from: { opacity: 0, transform: "translateY(10px)" },
+              to: { opacity: 1, transform: "translateY(0)" }
+            }
+          }}
+        >
+          ✅ Synced to GitHub
+        </Paper>
+      )}
+
     </Container>
   );
 }
