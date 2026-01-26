@@ -98,3 +98,22 @@ body.theme-light .glass {
 @media (max-width:600px) {
   .app-hero { padding: 20px 12px; }
 }
+
+.filter-select {
+  padding: 6px 10px;
+
+  border-radius: 6px;
+  border: none;
+
+  background: rgba(255,255,255,0.08);
+  color: white;
+
+  font-size: 0.75rem;
+
+  outline: none;
+}
+
+.filter-select option {
+  background: #0f172a;
+  color: white;
+}
