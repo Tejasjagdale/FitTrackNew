@@ -39,13 +39,12 @@ import GroupList from "../components/todoComponents/GroupList";
 /* ================= PAGE ================= */
 
 export default function TodoPage() {
+
   /* ================= STATE ================= */
+
   const [isDirty, setIsDirty] = useState(false);
-
   const [syncing, setSyncing] = useState(false);
-
   const [syncSuccess, setSyncSuccess] = useState(false);
-
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -68,6 +67,7 @@ export default function TodoPage() {
     onConfirm: () => void;
   } | null>(null);
 
+
   /* ================= FILTER STATE ================= */
 
   const [search, setSearch] = useState("");
@@ -78,11 +78,9 @@ export default function TodoPage() {
   const [filterType, setFilterType] =
     useState<"all" | "deadline" | "repeat">("all");
 
-  const [filterStatus, setFilterStatus] =
-    useState<"all" | "pending" | "on_hold">("pending");
-
   const [filterPriority, setFilterPriority] =
     useState<number | "all">("all");
+
 
   /* ================= LOAD ================= */
 
@@ -108,6 +106,7 @@ export default function TodoPage() {
           ...db,
           tasks: fixed
         });
+
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -120,6 +119,7 @@ export default function TodoPage() {
     };
   }, []);
 
+
   /* ================= CONFIRM ================= */
 
   const openConfirm = (
@@ -131,12 +131,14 @@ export default function TodoPage() {
     setConfirmOpen(true);
   };
 
+
   /* ================= SAVE ================= */
 
   const saveToDb = (
     nextTasks: Task[],
     nextGroups: Group[] | null
   ) => {
+
     const db = getTodoData();
 
     const updated = {
@@ -151,13 +153,14 @@ export default function TodoPage() {
 
     setTodoData(updated);
 
-    setIsDirty(true); // mark unsynced
+    setIsDirty(true);
   };
 
 
   /* ================= TASK ================= */
 
   const handleToggleComplete = (task: Task) => {
+
     const done = task.status === "completed";
 
     openConfirm(
@@ -168,6 +171,7 @@ export default function TodoPage() {
         : "Mark this task as done?",
 
       async () => {
+
         const next = tasks.map(t =>
           t.id === task.id
             ? toggleCompleteTask(t)
@@ -181,7 +185,9 @@ export default function TodoPage() {
     );
   };
 
+
   const handleSaveTask = async (task: Task) => {
+
     const exists = tasks.some(t => t.id === task.id);
 
     const next = exists
@@ -196,12 +202,15 @@ export default function TodoPage() {
     setEditingTask(null);
   };
 
+
   const handleDeleteTask = (id: string) => {
+
     openConfirm(
       "Delete Task",
       "This cannot be undone. Continue?",
 
       async () => {
+
         const next = tasks.filter(t => t.id !== id);
 
         saveToDb(next, null);
@@ -214,8 +223,11 @@ export default function TodoPage() {
     );
   };
 
+
   const handleSync = async () => {
+
     try {
+
       setSyncing(true);
 
       await syncTodoToGitHub("Manual sync");
@@ -229,8 +241,10 @@ export default function TodoPage() {
       }, 2000);
 
     } catch (err) {
+
       console.error("Sync failed:", err);
       alert("Sync failed. Check console.");
+
     } finally {
       setSyncing(false);
     }
@@ -240,6 +254,7 @@ export default function TodoPage() {
   /* ================= GROUP ================= */
 
   const handleSaveGroup = (group: Group) => {
+
     const nextGroups = [...groups, group];
 
     saveToDb(tasks, nextGroups);
@@ -251,9 +266,6 @@ export default function TodoPage() {
   /* ================= FILTER ENGINE ================= */
 
   const filteredTasks = tasks.filter(t => {
-    /* Status */
-    if (filterStatus !== "all" && t.status !== filterStatus)
-      return false;
 
     /* Search */
     if (
@@ -285,9 +297,11 @@ export default function TodoPage() {
     return true;
   });
 
+
   const completedTasks = tasks.filter(
     t => t.status === "completed"
   );
+
 
   /* ================= LOADING ================= */
 
@@ -302,149 +316,178 @@ export default function TodoPage() {
     );
   }
 
+
   /* ================= RENDER ================= */
 
+  const showFilters = tab === 0 || tab === 1;
+
+
   return (
-    <Container maxWidth="md" sx={{ padding: "0px" }} >
-      <Box >
-        <Stack spacing={3}>
+    <Container maxWidth="md" sx={{ p: 0 }}>
+
+      <Box>
+
+        <Stack spacing={2}>
+
+
+          {/* ================= STICKY TABS ================= */}
+
+          <Paper
+            elevation={2}
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 20,
+
+              borderRadius: 2,
+
+              background: "#020617"
+            }}
+          >
+            <TabsHeader
+              value={tab}
+              onChange={setTab}
+            />
+          </Paper>
+
+
           {/* ================= FILTER BAR ================= */}
 
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1.5,
-              borderRadius: 1,
+          {showFilters && (
 
-              background:
-                "linear-gradient(135deg,#1e293b,#0f172a)",
+            <Paper
+              elevation={0}
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
 
-              color: "#fff"
-            }}
-          >
-            <Stack spacing={1.5}>
+                background:
+                  "linear-gradient(135deg,#1e293b,#0f172a)",
 
-              {/* ================= SEARCH ROW ================= */}
+                color: "#fff"
+              }}
+            >
+              <Stack spacing={1.5}>
 
-              <Stack direction="row" spacing={1} alignItems="center">
 
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="🔍 Search tasks..."
-                  style={{
-                    flex: 1,
+                {/* Search Row */}
 
-                    padding: "8px 12px",
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                >
+                  <input
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="🔍 Search tasks..."
+                    style={{
+                      flex: 1,
 
-                    borderRadius: 8,
-                    border: "none",
+                      padding: "8px 12px",
 
-                    background: "rgba(255,255,255,0.08)",
-                    color: "#fff",
+                      borderRadius: 8,
+                      border: "none",
 
-                    outline: "none",
+                      background: "rgba(255,255,255,0.08)",
+                      color: "#fff",
 
-                    fontSize: "0.9rem"
-                  }}
-                />
+                      outline: "none",
 
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => {
-                    setSearch("");
-                    setFilterGroup("all");
-                    setFilterType("all");
-                    setFilterPriority("all");
-                  }}
-                  sx={{
-                    color: "#18e96f",
-                    borderColor: "rgba(255,255,255,0.3)",
+                      fontSize: "0.9rem"
+                    }}
+                  />
 
-                    "&:hover": {
-                      borderColor: "#fff",
-                      background: "rgba(255,255,255,0.05)"
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => {
+                      setSearch("");
+                      setFilterGroup("all");
+                      setFilterType("all");
+                      setFilterPriority("all");
+                    }}
+                    sx={{
+                      color: "#18e96f",
+
+                      "&:hover": {
+                        background:
+                          "rgba(255,255,255,0.05)"
+                      }
+                    }}
+                  >
+                    Clear
+                  </Button>
+
+                </Stack>
+
+
+                {/* Filter Row */}
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  flexWrap="wrap"
+                >
+
+                  <select
+                    value={filterGroup}
+                    onChange={e =>
+                      setFilterGroup(e.target.value)
                     }
-                  }}
-                >
-                  Clear
-                </Button>
+                    className="filter-select"
+                  >
+                    <option value="all">All Groups</option>
+
+                    {groups.map(g => (
+                      <option
+                        key={g.id}
+                        value={g.id}
+                      >
+                        {g.name}
+                      </option>
+                    ))}
+                  </select>
+
+
+                  <select
+                    value={filterType}
+                    onChange={e =>
+                      setFilterType(e.target.value as any)
+                    }
+                    className="filter-select"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="deadline">Deadline</option>
+                    <option value="repeat">Repeat</option>
+                  </select>
+
+
+                  <select
+                    value={filterPriority}
+                    onChange={e =>
+                      setFilterPriority(
+                        e.target.value === "all"
+                          ? "all"
+                          : Number(e.target.value)
+                      )
+                    }
+                    className="filter-select"
+                  >
+                    <option value="all">All Priority</option>
+                    <option value={5}>Critical</option>
+                    <option value={4}>High</option>
+                    <option value={3}>Medium</option>
+                    <option value={2}>Low</option>
+                    <option value={1}>Trivial</option>
+                  </select>
+
+                </Stack>
 
               </Stack>
+            </Paper>
+          )}
 
-
-              {/* ================= FILTER ROW ================= */}
-
-              <Stack direction="row" spacing={1} flexWrap="wrap">
-
-                {/* Group */}
-                <select
-                  value={filterGroup}
-                  onChange={e => setFilterGroup(e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="all">All Groups</option>
-
-                  {groups.map(g => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Type */}
-                <select
-                  value={filterType}
-                  onChange={e =>
-                    setFilterType(e.target.value as any)
-                  }
-                  className="filter-select"
-                >
-                  <option value="all">All Types</option>
-                  <option value="deadline">Deadline</option>
-                  <option value="repeat">Repeat</option>
-                </select>
-
-                {/* Priority */}
-                <select
-                  value={filterPriority}
-                  onChange={e =>
-                    setFilterPriority(
-                      e.target.value === "all"
-                        ? "all"
-                        : Number(e.target.value)
-                    )
-                  }
-                  className="filter-select"
-                >
-                  <option value="all">All Priority</option>
-                  <option value={5}>Critical</option>
-                  <option value={4}>High</option>
-                  <option value={3}>Medium</option>
-                  <option value={2}>Low</option>
-                  <option value={1}>Trivial</option>
-                </select>
-
-              </Stack>
-
-            </Stack>
-          </Paper>
-
-          {/* ================= TABS ================= */}
-
-          <Paper
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              overflow: "hidden",
-
-              background:
-                "rgba(255,255,255,0.03)"
-            }}
-          >
-            <TabsHeader value={tab} onChange={setTab} />
-          </Paper>
 
           {/* ================= CONTENT ================= */}
 
@@ -452,7 +495,9 @@ export default function TodoPage() {
 
             {tab === 0 && (
               <TaskList
-                tasks={filteredTasks}
+                tasks={filteredTasks.filter(
+                  t => t.status === "pending"
+                )}
                 onComplete={handleToggleComplete}
                 onEdit={t => {
                   setEditingTask(t);
@@ -460,10 +505,13 @@ export default function TodoPage() {
                 }}
               />
             )}
+
 
             {tab === 1 && (
               <TaskList
-                tasks={completedTasks}
+                tasks={filteredTasks.filter(
+                  t => t.status === "completed"
+                )}
                 onComplete={handleToggleComplete}
                 onEdit={t => {
                   setEditingTask(t);
@@ -472,7 +520,11 @@ export default function TodoPage() {
               />
             )}
 
-            {tab === 2 && <StreakList tasks={tasks} />}
+
+            {tab === 2 && (
+              <StreakList tasks={tasks} />
+            )}
+
 
             {tab === 3 && (
               <GroupList
@@ -483,7 +535,9 @@ export default function TodoPage() {
             )}
 
           </Box>
+
         </Stack>
+
 
         {/* ================= FLOATING ACTIONS ================= */}
 
@@ -493,11 +547,11 @@ export default function TodoPage() {
           sx={{
             position: "fixed",
             bottom: 24,
-            right: 24
+            right: 24,
+            zIndex: 50
           }}
         >
 
-          {/* Group */}
           <Fab
             color="secondary"
             size="small"
@@ -506,7 +560,7 @@ export default function TodoPage() {
             <CategoryIcon />
           </Fab>
 
-          {/* Add */}
+
           <Fab
             color="primary"
             onClick={() => {
@@ -517,20 +571,24 @@ export default function TodoPage() {
             <AddIcon />
           </Fab>
 
-          {/* Sync */}
+
           <Fab
             color={isDirty ? "warning" : "success"}
             onClick={handleSync}
             disabled={syncing}
           >
             {syncing ? (
-              <CircularProgress size={22} color="inherit" />
+              <CircularProgress
+                size={22}
+                color="inherit"
+              />
             ) : (
               "⟳"
             )}
           </Fab>
 
         </Stack>
+
 
         {/* ================= MODALS ================= */}
 
@@ -546,11 +604,13 @@ export default function TodoPage() {
           onDelete={handleDeleteTask}
         />
 
+
         <GroupModal
           open={groupModalOpen}
           onClose={() => setGroupModalOpen(false)}
           onSave={handleSaveGroup}
         />
+
 
         <ConfirmDialog
           open={confirmOpen}
@@ -558,15 +618,22 @@ export default function TodoPage() {
           message={confirmConfig?.message || ""}
           confirmText="Yes"
           cancelText="Cancel"
-          onConfirm={() => confirmConfig?.onConfirm()}
+          onConfirm={() =>
+            confirmConfig?.onConfirm()
+          }
           onCancel={() => {
             setConfirmOpen(false);
             setConfirmConfig(null);
           }}
         />
+
       </Box>
 
+
+      {/* ================= SYNC TOAST ================= */}
+
       {syncSuccess && (
+
         <Paper
           elevation={6}
           sx={{
@@ -587,8 +654,14 @@ export default function TodoPage() {
             animation: "fadeIn .3s",
 
             "@keyframes fadeIn": {
-              from: { opacity: 0, transform: "translateY(10px)" },
-              to: { opacity: 1, transform: "translateY(0)" }
+              from: {
+                opacity: 0,
+                transform: "translateY(10px)"
+              },
+              to: {
+                opacity: 1,
+                transform: "translateY(0)"
+              }
             }
           }}
         >

@@ -10,9 +10,13 @@ import {
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
-import WarningIcon from "@mui/icons-material/Warning";
 
 import { Task } from "../../types/todoModels";
+
+import {
+  getDaysDiff,
+  getRepeatDiff
+} from "../../engine/taskPriorityEngine";
 
 /* ================= PRIORITY META ================= */
 
@@ -27,21 +31,7 @@ const priorityMeta: Record<
   5: { label: "Critical", color: "#EF5350" }
 };
 
-/* ================= HELPERS ================= */
-
-function daysUntil(date: string) {
-  const d = new Date(date);
-  const now = new Date();
-
-  return Math.ceil(
-    (d.getTime() - now.getTime()) /
-    (1000 * 60 * 60 * 24)
-  );
-}
-
-function isAfter9PM() {
-  return new Date().getHours() >= 21;
-}
+/* ================= COMPONENT ================= */
 
 interface Props {
   task: Task;
@@ -54,32 +44,62 @@ export default function TaskCard({
   onComplete,
   onEdit
 }: Props) {
+
   const meta =
     priorityMeta[task.priority] ||
     priorityMeta[3];
 
-  /* ================= URGENCY LOGIC ================= */
+  /* ================= TIME STATUS ================= */
 
-  const deadlineCritical =
+  let daysLeft: number | null = null;
+
+  if (task.type === "deadline" && task.deadline) {
+    daysLeft = getDaysDiff(task.deadline);
+  }
+
+  if (task.type === "repeat") {
+    daysLeft = getRepeatDiff(task);
+  }
+
+  const isOverdue =
     task.type === "deadline" &&
-    task.deadline &&
-    daysUntil(task.deadline) === 1 &&
-    task.status === "pending";
+    daysLeft !== null &&
+    daysLeft < 0;
 
-  const dailyLate =
+  const isToday = daysLeft === 0;
+
+  const isTomorrow = daysLeft === 1;
+
+  const isDaily =
     task.type === "repeat" &&
-    task.repeatEveryDays === 1 &&
-    task.status === "pending" &&
-    isAfter9PM();
+    task.repeatEveryDays === 1;
 
-  const overdue =
-    task.type === "deadline" &&
-    task.deadline &&
-    daysUntil(task.deadline) < 0 &&
-    task.status === "pending";
 
-  const shouldBlink =
-    overdue || deadlineCritical || dailyLate;
+  /* ================= VISUAL MODE ================= */
+
+  let border = "rgba(255,255,255,0.06)";
+  let shadow = "none";
+  let animation = "none";
+
+  /* 🚨 OVERDUE = EMERGENCY */
+  if (isOverdue) {
+    border = "#f44336";
+    shadow = "0 0 18px rgba(244,67,54,.8)";
+    animation = "alarm 0.5s infinite";
+  }
+
+  /* ⚠️ DUE / MISSED = IMPORTANT */
+  else if (isToday && !isDaily) {
+    border = "#ff9800";
+    shadow = "0 0 14px rgba(255,152,0,.6)";
+    animation = "pulse 2.5s ease-in-out infinite";
+  }
+
+  /* ⏳ TOMORROW = WARNING */
+  else if (isTomorrow) {
+    border = "rgba(255,152,0,.5)";
+    shadow = "0 0 10px rgba(255,152,0,.3)";
+  }
 
 
   return (
@@ -87,40 +107,56 @@ export default function TaskCard({
       elevation={0}
       sx={{
         position: "relative",
+
         borderRadius: 2,
+
         background:
-          "linear-gradient(135deg, rgba(18,22,28,.9), rgba(28,32,38,.9))",
+          "linear-gradient(135deg,#0f172a,#020617)",
 
-        backdropFilter: "blur(10px)",
+        border: `1px solid ${border}`,
 
-        border: "1px solid rgba(255,255,255,0.05)",
+        boxShadow: shadow,
 
-        transition: "all .2s ease",
-        
-        ...(overdue && {
-          animation: "blink .6s infinite",
-          boxShadow: "0 0 0 3px rgba(244,67,54,.9)"
-        }),
+        animation,
 
+        transition: "all .25s ease",
 
-        ...(shouldBlink && {
-          animation: "blink 1.2s infinite",
-          boxShadow:
-            "0 0 0 2px rgba(255,82,82,.7)"
-        }),
+        /* Emergency heartbeat */
+        "@keyframes alarm": {
+          "0%": {
+            transform: "scale(1)",
+            boxShadow: shadow
+          },
+          "50%": {
+            transform: "scale(1.015)",
+            boxShadow:
+              "0 0 28px rgba(244,67,54,1)"
+          },
+          "100%": {
+            transform: "scale(1)",
+            boxShadow: shadow
+          }
+        },
 
-        "@keyframes blink": {
-          "0%": { opacity: 1 },
-          "50%": { opacity: 0.65 },
-          "100%": { opacity: 1 }
+        /* Soft attention pulse */
+        "@keyframes pulse": {
+          "0%": {
+            boxShadow: shadow
+          },
+          "50%": {
+            boxShadow:
+              "0 0 22px rgba(255,152,0,.8)"
+          },
+          "100%": {
+            boxShadow: shadow
+          }
         },
 
         "&:hover": {
+          transform: "translateY(-2px)",
           boxShadow:
-            "0 6px 20px rgba(0,0,0,.35)"
+            "0 10px 24px rgba(0,0,0,.4)"
         }
-
-
       }}
     >
       <CardContent
@@ -135,6 +171,7 @@ export default function TaskCard({
           spacing={1}
           alignItems="flex-start"
         >
+
           {/* Checkbox */}
           <Checkbox
             checked={task.status === "completed"}
@@ -149,23 +186,25 @@ export default function TaskCard({
             }}
           />
 
-          {/* Main Content */}
+
+          {/* Main */}
           <Box flex={1} minWidth={0}>
-            {/* Title + Chips Row */}
+
             <Stack
               direction="row"
               spacing={0.6}
               flexWrap="wrap"
               alignItems="center"
             >
+
               {/* Title */}
               <Typography
-                noWrap={false}
                 sx={{
                   flexGrow: 1,
                   minWidth: 120,
 
                   fontSize: "0.9rem",
+
                   fontWeight:
                     task.priority >= 4 ? 700 : 600,
 
@@ -188,6 +227,7 @@ export default function TaskCard({
                 {task.title}
               </Typography>
 
+
               {/* Priority */}
               <Chip
                 size="small"
@@ -203,22 +243,71 @@ export default function TaskCard({
                 }}
               />
 
-              {/* Repeat */}
-              {task.type === "repeat" && (
-                <Chip
-                  size="small"
-                  label={`Every ${task.repeatEveryDays}d`}
-                  sx={{
-                    height: 18,
-                    fontSize: "0.6rem",
 
-                    background:
-                      "rgba(255,255,255,.08)",
+              {/* Deadline */}
+              {task.type === "deadline" &&
+                daysLeft !== null && (
+                  <Chip
+                    size="small"
+                    label={
+                      daysLeft < 0
+                        ? "Overdue"
+                        : daysLeft === 0
+                        ? "Today"
+                        : daysLeft === 1
+                        ? "Tomorrow"
+                        : `${daysLeft}d`
+                    }
+                    sx={{
+                      height: 18,
+                      fontSize: "0.6rem",
 
-                    color: "#eee"
-                  }}
-                />
-              )}
+                      background:
+                        isOverdue
+                          ? "rgba(244,67,54,.25)"
+                          : isToday || isTomorrow
+                          ? "rgba(255,152,0,.25)"
+                          : "rgba(255,255,255,.08)",
+
+                      color:
+                        isOverdue
+                          ? "#f44336"
+                          : isToday || isTomorrow
+                          ? "#ff9800"
+                          : "#eee"
+                    }}
+                  />
+                )}
+
+
+              {/* Repeat (NON-daily only) */}
+              {task.type === "repeat" &&
+                !isDaily &&
+                daysLeft !== null && (
+                  <Chip
+                    size="small"
+                    label={
+                      daysLeft <= 0
+                        ? "Missed"
+                        : `In ${daysLeft}d`
+                    }
+                    sx={{
+                      height: 18,
+                      fontSize: "0.6rem",
+
+                      background:
+                        daysLeft <= 0
+                          ? "rgba(255,152,0,.2)"
+                          : "rgba(255,255,255,.08)",
+
+                      color:
+                        daysLeft <= 0
+                          ? "#ff9800"
+                          : "#eee"
+                    }}
+                  />
+                )}
+
 
               {/* Streak */}
               {task.trackStreak && task.streak && (
@@ -237,25 +326,9 @@ export default function TaskCard({
                 />
               )}
 
-              {/* Deadline Warning */}
-              {deadlineCritical && (
-                <Chip
-                  size="small"
-                  icon={<WarningIcon />}
-                  label="Due Tomorrow"
-                  sx={{
-                    height: 18,
-                    fontSize: "0.6rem",
-
-                    background:
-                      "rgba(255,152,0,.2)",
-
-                    color: "#ff9800"
-                  }}
-                />
-              )}
             </Stack>
           </Box>
+
 
           {/* Edit */}
           <IconButton
@@ -268,6 +341,7 @@ export default function TaskCard({
           >
             <EditIcon fontSize="small" />
           </IconButton>
+
         </Stack>
       </CardContent>
     </Card>
