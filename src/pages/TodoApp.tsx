@@ -305,17 +305,16 @@ export default function TodoPage() {
   /* ================= RENDER ================= */
 
   return (
-    <Container maxWidth="md">
-      <Box py={3}>
+    <Container maxWidth="md" sx={{ padding: "0px" }} >
+      <Box >
         <Stack spacing={3}>
-
-          {/* ================= HEADER ================= */}
+          {/* ================= FILTER BAR ================= */}
 
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              borderRadius: 3,
+              p: 1.5,
+              borderRadius: 1,
 
               background:
                 "linear-gradient(135deg,#1e293b,#0f172a)",
@@ -323,53 +322,60 @@ export default function TodoPage() {
               color: "#fff"
             }}
           >
-            <Typography fontWeight={700}>
-              🚀 Daily Command Center
-            </Typography>
-
-            <Typography fontSize="0.8rem">
-              Stay focused. Finish strong.
-            </Typography>
-          </Paper>
-
-          {/* ================= FILTER BAR ================= */}
-
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1.5,
-              borderRadius: 3,
-
-              background: "rgba(255,255,255,0.04)",
-
-              backdropFilter: "blur(8px)"
-            }}
-          >
             <Stack spacing={1.5}>
 
-              {/* Search */}
-              <input
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="🔍 Search tasks..."
+              {/* ================= SEARCH ROW ================= */}
 
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
+              <Stack direction="row" spacing={1} alignItems="center">
 
-                  borderRadius: 8,
-                  border: "none",
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="🔍 Search tasks..."
+                  style={{
+                    flex: 1,
 
-                  background: "rgba(255,255,255,0.08)",
-                  color: "#fff",
+                    padding: "8px 12px",
 
-                  outline: "none",
+                    borderRadius: 8,
+                    border: "none",
 
-                  fontSize: "0.9rem"
-                }}
-              />
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#fff",
 
-              {/* Filters */}
+                    outline: "none",
+
+                    fontSize: "0.9rem"
+                  }}
+                />
+
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={() => {
+                    setSearch("");
+                    setFilterGroup("all");
+                    setFilterType("all");
+                    setFilterPriority("all");
+                  }}
+                  sx={{
+                    color: "#18e96f",
+                    borderColor: "rgba(255,255,255,0.3)",
+
+                    "&:hover": {
+                      borderColor: "#fff",
+                      background: "rgba(255,255,255,0.05)"
+                    }
+                  }}
+                >
+                  Clear
+                </Button>
+
+              </Stack>
+
+
+              {/* ================= FILTER ROW ================= */}
+
               <Stack direction="row" spacing={1} flexWrap="wrap">
 
                 {/* Group */}
@@ -400,19 +406,6 @@ export default function TodoPage() {
                   <option value="repeat">Repeat</option>
                 </select>
 
-                {/* Status */}
-                <select
-                  value={filterStatus}
-                  onChange={e =>
-                    setFilterStatus(e.target.value as any)
-                  }
-                  className="filter-select"
-                >
-                  <option value="all">All Status</option>
-                  <option value="pending">Active</option>
-                  <option value="on_hold">On Hold</option>
-                </select>
-
                 {/* Priority */}
                 <select
                   value={filterPriority}
@@ -433,20 +426,8 @@ export default function TodoPage() {
                   <option value={1}>Trivial</option>
                 </select>
 
-                {/* Reset */}
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setSearch("");
-                    setFilterGroup("all");
-                    setFilterType("all");
-                    setFilterStatus("pending");
-                    setFilterPriority("all");
-                  }}
-                >
-                  Clear
-                </Button>
               </Stack>
+
             </Stack>
           </Paper>
 
@@ -506,7 +487,6 @@ export default function TodoPage() {
 
         {/* ================= FLOATING ACTIONS ================= */}
 
-        hookup to GitHub
         <Stack
           direction="row"
           spacing={1}
