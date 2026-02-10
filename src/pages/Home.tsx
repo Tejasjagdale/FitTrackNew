@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Container,
   Typography,
@@ -6,157 +6,320 @@ import {
   Grid,
   Card,
   CardContent,
-  Button
+  Button,
+  Stack
 } from '@mui/material'
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import TodayIcon from '@mui/icons-material/Today'
 import ChecklistIcon from '@mui/icons-material/Checklist'
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import FormatQuoteIcon from '@mui/icons-material/FormatQuote'
 import { useNavigate } from 'react-router-dom'
+import { scheduleAllForTasks, initNotifications } from '../data/notificationService'
+import { loadTodoData, getTodoData } from '../data/todoDataService'
 
 export default function Home() {
   const navigate = useNavigate()
+  const [quote, setQuote] = useState<{ text: string; author: string } | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      try {
+        await loadTodoData()
+
+        if (cancelled) return
+
+        const db = getTodoData()
+        // initialize notifications and schedule current pending tasks
+        initNotifications().catch(() => null)
+        scheduleAllForTasks(db.tasks).catch(() => null)
+      } catch (err) {
+        console.error('Failed to initialize:', err)
+      }
+    }
+
+    load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Fetch motivational quote - one per day
+  useEffect(() => {
+    const fetchQuote = async () => {
+      try {
+        const today = new Date().toDateString()
+        const cached = localStorage.getItem('daily_quote')
+        const cachedDate = localStorage.getItem('daily_quote_date')
+
+        // Use cached quote if it's the same day
+        if (cached && cachedDate === today) {
+          setQuote(JSON.parse(cached))
+          return
+        }
+
+        // Fetch new quote
+        const response = await fetch('https://api.quotable.io/random?tags=fitness,inspirational,motivational')
+        const data = await response.json()
+
+        const quoteData = {
+          text: data.content,
+          author: data.author.split(',')[0] // Get first name only
+        }
+
+        setQuote(quoteData)
+        localStorage.setItem('daily_quote', JSON.stringify(quoteData))
+        localStorage.setItem('daily_quote_date', today)
+      } catch (err) {
+        console.error('Failed to fetch quote:', err)
+        // Fallback quote
+        setQuote({
+          text: 'The only way to do great work is to love what you do.',
+          author: 'Steve Jobs'
+        })
+      }
+    }
+
+    fetchQuote()
+  }, [])
 
   return (
-    <Container sx={{ py: 6 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
-      <Box sx={{ textAlign: 'center', mb: 5 }}>
-        <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-          FitTrack
-        </Typography>
-
-        <Typography
-          variant="body1"
-          sx={{ color: 'text.secondary', maxWidth: 520, mx: 'auto' }}
-        >
-          Your fitness companion. Track workouts, plan tasks, measure progress,
-          and stay consistent.
+      <Box sx={{ mb: 5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <LocalFireDepartmentIcon sx={{ fontSize: 32, color: '#ff6b6b' }} />
+          <Typography variant="h3" sx={{ fontWeight: 'bold', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            FitTrack
+          </Typography>
+        </Box>
+        <Typography variant="body1" color="textSecondary" sx={{ ml: 0.5 }}>
+          Achieve your fitness goals with style
         </Typography>
       </Box>
 
-      {/* Quick Actions */}
-      <Box sx={{ textAlign: 'center', mb: 5 }}>
-        <Button
-          variant="contained"
-          size="large"
-          sx={{ px: 4, py: 1.4, borderRadius: 2 }}
-          onClick={() => navigate('/today')}
-          startIcon={<TodayIcon />}
+      {/* Daily Motivational Quote */}
+      {quote && (
+        <Card
+          sx={{
+            mb: 5,
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+            border: '2px solid rgba(102, 126, 234, 0.3)',
+            borderRadius: 2
+          }}
         >
-          Start Today’s Workout
-        </Button>
-      </Box>
+          <CardContent sx={{ py: 3, px: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+              <FormatQuoteIcon sx={{ fontSize: 32, color: '#667eea', opacity: 0.6, mt: 0.5, flexShrink: 0 }} />
+              <Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontStyle: 'italic',
+                    fontWeight: 500,
+                    mb: 1.5,
+                    color: 'text.primary',
+                    lineHeight: 1.6
+                  }}
+                >
+                  "{quote.text}"
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: '#667eea'
+                  }}
+                >
+                  — {quote.author}
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Feature Grid */}
-      <Grid container spacing={3} justifyContent="center">
-        {/* Workout Variants */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              cursor: 'pointer',
-              transition: '0.2s',
-              '&:hover': { boxShadow: 4 }
-            }}
-            onClick={() => navigate('/variant')}
-          >
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <FitnessCenterIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Workout Variants</Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', mt: 1 }}
-              >
-                Browse and switch between your stored workout routines.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Playlists */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            className="glass-card"
-            onClick={() => navigate('/workout-playlist')}
-            sx={{
-              borderRadius: 3,
-              cursor: 'pointer',
-              transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-              '&:hover': {
-                transform: 'scale(1.03)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.25)'
-              }
-            }}
-          >
-            <CardContent
+      {/* Quick Start Section */}
+      <Box sx={{ mb: 5 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Let's Go
+        </Typography>
+        <Grid container spacing={1.5}>
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="contained"
+              fullWidth
+              startIcon={<FitnessCenterIcon />}
+              size="large"
+              onClick={() => navigate('/today')}
               sx={{
-                textAlign: 'center',
-                py: 5,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 16px rgba(102, 126, 234, 0.4)'
+                },
+                transition: 'all 0.3s'
               }}
             >
-              <TodayIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Workout Playlists</Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', mt: 1, maxWidth: 280 }}
-              >
-                View curated workout playlists and start guided training.
-              </Typography>
-            </CardContent>
-          </Card>
+              Start Today's Workout
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <Button
+              variant="outlined"
+              fullWidth
+              startIcon={<ChecklistIcon />}
+              size="large"
+              onClick={() => navigate('/todo')}
+              sx={{
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 600,
+                borderWidth: 2,
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  borderWidth: 2,
+                  background: 'rgba(102, 126, 234, 0.08)'
+                },
+                transition: 'all 0.3s'
+              }}
+            >
+              Manage Tasks
+            </Button>
+          </Grid>
         </Grid>
+      </Box>
 
-        {/* Progress */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              cursor: 'pointer',
-              transition: '0.2s',
-              '&:hover': { boxShadow: 4 }
-            }}
-            onClick={() => navigate('/progress')}
-          >
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <ShowChartIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Progress Dashboard</Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', mt: 1 }}
-              >
-                Monitor your weight, BMI, measurements and trends.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+      {/* Main Features Grid */}
+      <Box>
+        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2.5, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Features
+        </Typography>
+        <Grid container spacing={2}>
+          {/* Workout Variants */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                border: '1px solid rgba(102, 126, 234, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(102, 126, 234, 0.15)',
+                  borderColor: 'rgba(102, 126, 234, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/variant')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <FitnessCenterIcon sx={{ fontSize: 40, mb: 1.5, color: '#667eea' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Workout Variants
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Create & customize exercises
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
-        {/* ✅ TODO APP */}
-        <Grid item xs={12} sm={6} md={4}>
-          <Card
-            sx={{
-              borderRadius: 3,
-              cursor: 'pointer',
-              transition: '0.2s',
-              '&:hover': { boxShadow: 4 }
-            }}
-            onClick={() => navigate('/todo')}
-          >
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <ChecklistIcon sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h6">Task Planner</Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'text.secondary', mt: 1 }}
-              >
-                Plan your day, track priorities, and stay consistent with tasks.
-              </Typography>
-            </CardContent>
-          </Card>
+          {/* Playlists */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
+                border: '1px solid rgba(255, 107, 107, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(255, 107, 107, 0.15)',
+                  borderColor: 'rgba(255, 107, 107, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/workout-playlist')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <TodayIcon sx={{ fontSize: 40, mb: 1.5, color: '#ff6b6b' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Playlists
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Organize workout routines
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Progress Dashboard */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%)',
+                border: '1px solid rgba(76, 175, 80, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(76, 175, 80, 0.15)',
+                  borderColor: 'rgba(76, 175, 80, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/progress')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <ShowChartIcon sx={{ fontSize: 40, mb: 1.5, color: '#4caf50' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Progress
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Track your improvement
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Exercise Database */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 169, 244, 0.1) 100%)',
+                border: '1px solid rgba(33, 150, 243, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(33, 150, 243, 0.15)',
+                  borderColor: 'rgba(33, 150, 243, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/exercise-database')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <ChecklistIcon sx={{ fontSize: 40, mb: 1.5, color: '#2196f3' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Exercise DB
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Browse all exercises
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </Container>
   )
 }

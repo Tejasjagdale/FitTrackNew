@@ -1,17 +1,207 @@
 {
-  "groups": [
-    {
-      "id": "grp_001",
-      "name": "Health"
+    "hits": [
+        {
+            "display_location": "Budapest",
+            "ats_requisition_id": "2025-2514",
+            "county": "Pest",
+            "region": "Hungary",
+            "objectID": "146767864",
+            "about_company": "What we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride &amp; Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the assistance needed. Please note, this e-mail is intended only for individuals who are requesting a reasonable workplace accommodation; it is not intended for other inquiries.To all recruitment agenciesMSCI does not accept unsolicited CVs/Resumes. Please do not forward CVs/Resumes to any MSCI employee, location, or website. MSCI is not responsible for any fees related to unsolicited",
+            "brand": "MSCI Inc.",
+            "qualifications": "Bachelor / graduate degree in science, technology, engineering, mathematics, quantitative finance or other highly quantitative subject5-8 years of experience in software and algorithm development, data scientist / data engineer background is a plusExcellent programming skills, experience in the Python ecosystemExperience with Java is a strong plusExperience in library development and API designGood knowledge of DevOps practices (version control systems, testing, continuous integration and delivery, containers), Linux command line, system administration basics is a plusGood interpersonal, communication and presentation skills",
+            "town_city_country": "Budapest | Hungary",
+            "type": "Employee",
+            "_highlightResult": {
+                "ats_requisition_id": {
+                    "value": "2025-2514",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "category": {
+                    "value": "Technology",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "role_category": {
+                    "value": "Hybrid",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "solution": {
+                    "value": "Indexes",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "title": {
+                    "value": "Senior Python Developer",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                }
+            },
+            "title": "Senior Python Developer",
+            "location_full": "Budapest - Budapest Kassak Lajos utca 19-25 Budapest, Pest 1134 Hungary Hungary,",
+            "position_type": "Regular",
+            "solution": "Indexes",
+            "contract_type": "Full-Time",
+            "display_salary": "Competitive",
+            "role_category": "Hybrid",
+            "_geoloc": {
+                "lat": 51.519812,
+                "lng": -0.077316
+            },
+            "jd_url": "/job/technology/budapest/senior-python-developer/2025-2514",
+            "work_level": 0,
+            "apply_url": "https://globalcareers-msci.icims.com/jobs/2514/login",
+            "category": "Technology",
+            "country": "Hungary",
+            "department": "Technology",
+            "description": "Your Team ResponsibilitiesMSCI is looking for an exceptional individual to join the Index Engineering team in Budapest. The goals and responsibilities of the team include the development of the MSCI Index Calculation & Delivery Platform.The group is part of MSCI's Global Technology organization and works closely with other engineering, research, product management and client coverage teams to implement the engineering agenda and benefit from the substantial resources and expertise available within the global MSCI organization.Your Key ResponsibilitiesDevelopment of Python modules for MSCIs Index Calculation and Delivery Engine, using state of the art technologies and techniques (python, numpy, pandas and the associated tools)Involvement in developing incremental deployment units (such as additional data points and algorithmic components) within an existing framework and contribution to their post-deployment supportYour skills and experience that will help you excelBachelor / graduate degree in science, technology, engineering, mathematics, quantitative finance or other highly quantitative subject5-8 years of experience in software and algorithm development, data scientist / data engineer background is a plusExcellent programming skills, experience in the Python ecosystemExperience with Java is a strong plusExperience in library development and API designGood knowledge of DevOps practices (version control systems, testing, continuous integration and delivery, containers), Linux command line, system administration basics is a plusGood interpersonal, communication and presentation skillsAbout MSCIWhat we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride & Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the assistance needed. Please note, this e-mail is intended only for individuals who are requesting a reasonable workplace accommodation; it is not intended for other inquiries.To all recruitment agenciesMSCI does not accept unsolicited CVs/Resumes. Please do not forward CVs/Resumes to any MSCI employee, location, or website. MSCI is not responsible for any fees related to unsolicited",
+            "location": "Budapest",
+            "postalcode": "1134"
+        },
+        {
+            "contract_type": "Full-Time",
+            "description": "Your Team ResponsibilitiesCollaborate with cross-functional teams to understand product requirements and translate them into effective test plans and test cases. Work closely with developers to identify and resolve defects and ensure that software meets the highest quality standards. Participate in code reviews and provide feedback on testability and quality. Stay up-to-date with industry trends and best practices in software testing and quality assurance. Your Key ResponsibilitiesExperience or interest in using modern AI-assisted testing tools (e.g., Cursor) to enhance productivity and test coverage. Design, plan, and execute both automated and manual testing for UI and API layers. Candidates should be capable of building and maintaining reliable test cases, with a focus on functional accuracy, stability, and test coverage.Experience with performance testing is a plus. Develop and maintain test environments, test data, and test tools. Execute automated and manual tests, analyze results, and report defects and issues. Continuously improve testing processes, tools, and methodologies to enhance the efficiency and effectiveness of the QA team. Your skills and experience that will help you excelExperience in using modern AI-assisted testing tools (e.g., Cursor) to enhance test coverage, productivity, and efficiency. Proven experience as a Software Engineer in Test, QA Engineer, or similar role. Ability to write, debug, and maintain automated test scripts in languages such as JavaScript, TypeScript, Python, or C#, with a strong understanding of coding principles such as the Page Object Model. Experience with test automation tools and frameworks such as Selenium, JUnit, TestNG, or similar. Proficiency with Playwright for both UI and API test automation. Familiarity with tools like Postman for manual API testing. Familiarity with continuous integration and continuous deployment (CI/CD) pipelines and tools such as Azure DevOps or similar. Knowledge of software development methodologies, including Agile and Scrum. Strong analytical and problem-solving skills, with a keen attention to detail. Excellent communication and collaboration skills. Ability to work independently and as part of a team in a fast-paced, dynamic environment. About MSCIWhat we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride & Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the assistance needed. Please note, this e-mail is inten",
+            "work_level": 0,
+            "title": "Associate, QA Automation Engineer / Software Developer In Test",
+            "_geoloc": {
+                "lat": 19.1525827,
+                "lng": 72.85592679999999
+            },
+            "display_location": "Mumbai",
+            "locality": "Mumbai",
+            "role_category": "Hybrid",
+            "apply_url": "https://globalcareers-msci.icims.com/jobs/2545/login",
+            "category": "Technology",
+            "county": "Maharashtra",
+            "location_full": "Mumbai - 12th Floor, IT Building No. 3 Nesco IT Park Goregaon Mumbai, Maharashtra 400063 India",
+            "position_type": "Regular",
+            "qualifications": "Experience in using modern AI-assisted testing tools (e.g., Cursor) to enhance test coverage, productivity, and efficiency. Proven experience as a Software Engineer in Test, QA Engineer, or similar role. Ability to write, debug, and maintain automated test scripts in languages such as JavaScript, TypeScript, Python, or C#, with a strong understanding of coding principles such as the Page Object Model. Experience with test automation tools and frameworks such as Selenium, JUnit, TestNG, or similar. P",
+            "ats_requisition_id": "2025-2545",
+            "department": "Technology",
+            "town_city_country": "Mumbai | India",
+            "brand": "MSCI Inc.",
+            "display_salary": "Competitive",
+            "type": "Employee",
+            "objectID": "146767862",
+            "town_city": "Mumbai",
+            "jd_url": "/job/technology/mumbai/associate-qa-automation-engineer-software-developer-in-test/2025-2545",
+            "postalcode": "400063",
+            "region": "India",
+            "solution": "Private Assets",
+            "country": "India",
+            "location": "Mumbai",
+            "_highlightResult": {
+                "ats_requisition_id": {
+                    "value": "2025-2545",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "category": {
+                    "value": "Technology",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "role_category": {
+                    "value": "Hybrid",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "solution": {
+                    "value": "Private Assets",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "title": {
+                    "value": "Associate, QA Automation Engineer / Software Developer In Test",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                }
+            },
+            "about_company": "What we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride &amp; Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the assistance needed. Please note, this e-mail is inten"
+        },
+        {
+            "brand": "MSCI Inc.",
+            "display_location": "Mumbai",
+            "town_city_country": "Mumbai | India",
+            "apply_url": "https://globalcareers-msci.icims.com/jobs/2546/login",
+            "country": "India",
+            "county": "Maharashtra",
+            "location_full": "Mumbai - 12th Floor, IT Building No. 3 Nesco IT Park Goregaon Mumbai, Maharashtra 400063 India",
+            "position_type": "Regular",
+            "title": "Senior Software Engineer (Full-stack with focus on back end)",
+            "department": "Technology",
+            "locality": "Mumbai",
+            "solution": "Private Assets",
+            "objectID": "146767861",
+            "_geoloc": {
+                "lat": 19.1525827,
+                "lng": 72.85592679999999
+            },
+            "about_company": "What we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride &amp; Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the ",
+            "description": "Your Team ResponsibilitiesCollaborate with cross-functional teams to gather and analyze requirements, and translate them into technical specifications and solutions.Perform code reviews and provide constructive feedback to ensure code quality and adherence to standards.Mentor and guide junior developers, helping them to grow their skills and knowledge.Participate in the full software development lifecycle, including planning, design, development, testing, deployment, and maintenance.Stay up-to-date with the latest industry trends and technologies, and continuously improve your skills and knowledge.Contribute to the continuous improvement of development processes, tools, and methodologies.Your Key ResponsibilitiesDesign, develop, and maintain high-quality software solutions using .NET and C#.Build new RESTful APIs using .NET Core and build new Angular components for our core SPA.Build PDF and Excel reports.Write clean, maintainable, and efficient code following best practices and coding standards.Write and troubleshoot SQL queries and stored procedures.Troubleshoot and resolve complex technical issues and bugs.Your skills and experience that will help you excelQualifications:Proven experience as a Senior Software Engineer or similar role, with a strong focus on .NET and C# development.Extensive experience with the .NET framework, .NET Core, and ASP.NET.Strong understanding of object-oriented programming (OOP) principles and design patterns.Experience with front-end technologies such as HTML, CSS, JavaScript, and popular frameworks like Angular, or React.Proficiency in database design and development, with experience in SQL Server, Entity Framework, or other ORM tools.Familiarity with cloud platforms such as GCP or Azure.Experience with version control systems such as Git.Strong problem-solving skills and the ability to troubleshoot complex technical issues.Excellent communication and collaboration skills.Ability to work independently and as part of a team in a fast-paced, dynamic environment.About MSCIWhat we offer youTransparent compensation schemes and comprehensive employee benefits, tailored to your location, ensuring your financial security, health, and overall wellbeing.Flexible working arrangements, advanced technology, and collaborative workspaces.A culture of high performance and innovation where we experiment with new ideas and take responsibility for achieving results.A global network of talented colleagues, who inspire, support, and share their expertise to innovate and deliver for our clients.Global Orientation program to kickstart your journey, followed by access to our Learning@MSCI platform, LinkedIn Learning Pro and tailored learning opportunities for ongoing skills development.Multi-directional career paths that offer professional growth and development through new challenges, internal mobility and expanded roles.We actively nurture an environment that builds a sense of inclusion belonging and connection, including eight Employee Resource Groups. All Abilities, Asian Support Network, Black Leadership Network, Climate Action Network, Hola! MSCI, Pride & Allies, Women in Tech, and Womens Leadership Forum.At MSCI we are passionate about what we do, and we are inspired by our purpose  to power better investment decisions. Youll be part of an industry-leading network of creative, curious, and entrepreneurial pioneers. This is a space where you can challenge yourself, set new standards and perform beyond expectations for yourself, our clients, and our industry.MSCI is a leading provider of critical decision support tools and services for the global investment community. With over 50 years of expertise in research, data, and technology, we power better investment decisions by enabling clients to understand and analyze key drivers of risk and return and confidently build more effective portfolios. We create industry-leading research-enhanced solutions that clients use to gain insight into and improve transparency across the investment process.MSCI Inc. is an equal opportunity employer. It is the policy of the firm to ensure equal employment opportunity without discrimination or harassment on the basis of race, color, religion, creed, age, sex, gender, gender identity, sexual orientation, national origin, citizenship, disability, marital and civil partnership/union status, pregnancy (including unlawful discrimination on the basis of a legally protected parental leave), veteran status, or any other characteristic protected by law. MSCI is also committed to working with and providing reasonable accommodations to individuals with disabilities. If you are an individual with a disability and would like to request a reasonable accommodation for any part of the application process, please email Disability.Assistance@msci.com and indicate the specifics of the ",
+            "display_salary": "Competitive",
+            "region": "India",
+            "work_level": 0,
+            "_highlightResult": {
+                "ats_requisition_id": {
+                    "value": "2025-2546",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "category": {
+                    "value": "Technology",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "role_category": {
+                    "value": "Hybrid",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "solution": {
+                    "value": "Private Assets",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                },
+                "title": {
+                    "value": "Senior Software Engineer (Full-stack with focus on back end)",
+                    "matchLevel": "none",
+                    "matchedWords": []
+                }
+            },
+            "location": "Mumbai",
+            "category": "Technology",
+            "contract_type": "Full-Time",
+            "jd_url": "/job/technology/mumbai/senior-software-engineer-full-stack-with-focus-on-back-end/2025-2546",
+            "postalcode": "400063",
+            "qualifications": "Qualifications:Proven experience as a Senior Software Engineer or similar role, with a strong focus on .NET and C# development.Extensive experience with the .NET framework, .NET Core, and ASP.NET.Strong understanding of object-oriented programming (OOP) principles and design patterns.Experience with front-end technologies such as HTML, CSS, JavaScript, and popular frameworks like Angular, or React.Proficiency in database design and development, with experience in SQL Server, Entity Framework, or other ORM tools.Familiarity with cloud platforms such as GCP or Azure.Experience with version control systems such as Git.Strong problem-solving skills and the ability to troubleshoot complex technical issues.Excellent communication and collaboration skills.Ability to work independently and as part of a team in a fast-paced, dynamic environment.",
+            "ats_requisition_id": "2025-2546",
+            "role_category": "Hybrid",
+            "town_city": "Mumbai",
+            "type": "Employee"
+        }
+    ],
+    "nbHits": 62,
+    "hitsPerPage": 3,
+    "page": 0,
+    "nbPages": 21,
+    "processingTimeMS": 3,
+    "processingTimingsMS": {
+        "total": 3,
+        "_request": {
+            "roundTrip": 8
+        },
+        "getIdx": {
+            "total": 1
+        }
     },
-    {
-      "id": "grp_002",
-      "name": "Office"
-    },
-    {
-      "id": "grp_004",
-      "name": "Finance"
+    "exhaustiveNbHits": true,
+    "exhaustiveTypo": true,
+    "query": "",
+    "params": "query&filters=%28category%3A%27Technology%27%29&hitsPerPage=3&x-algolia-agent=Algolia+for+JavaScript+%284.23.3%29%3B+Browser+%28lite%29&x-algolia-api-key=629e647c6a9a8b542fb1022001313a7e&x-algolia-application-id=RVMOB42DFH",
+    "exhaustive": {
+        "nbHits": true,
+        "typo": true
     }
-  ],
-  "tasks": []
 }

@@ -73,64 +73,61 @@ export function getRepeatDiff(task: Task): number {
   );
 }
 
-/* ================= LEVEL ENGINE ================= */
+/* ================= LEVEL ENGINE - NEW PRIORITY SYSTEM ================= */
 
 /*
-LEVELS (STRICT)
+STRICT PRIORITY ORDER (User Requirements):
 
-0 → Deadline overdue
-1 → Repeat non-daily overdue / due
-2 → Deadline 0–2 days
-3 → Daily pending
-4 → Deadline far
-5 → Repeat far
+0 → Deadline overdue (date < today) - RED, blinking
+1 → Repeat non-daily overdue/due (every > 1, diff <= 0) - RED (includes lastCompleted null)
+2 → Deadline due soon (0-2 days, sorted: 0→1→2)
+3 → Daily repeat pending (every === 1)
+4 → Deadline far (>2 days)
+5 → Repeat non-daily pending (every > 1, diff > 0)
 */
 
 function getLevel(task: Task): number {
 
   if (task.status !== "pending") return 99;
 
-
-  /* ===== DEADLINE ===== */
+  /* ===== DEADLINE TASKS ===== */
 
   if (task.type === "deadline" && task.deadline) {
 
     const d = getDaysDiff(task.deadline);
 
-    // 1. Overdue
+    // Level 0: Deadline OVERDUE (d < 0)
     if (d < 0) return 0;
 
-    // 3. 0–2 days
-    if (d <= 2) return 2;
+    // Level 2: Deadline due SOON (0-2 days: today, tomorrow, day after)
+    if (d >= 0 && d <= 2) return 2;
 
-    // 5. Far
+    // Level 4: Deadline FAR (>2 days)
     return 4;
   }
 
-
-  /* ===== REPEAT ===== */
+  /* ===== REPEAT TASKS ===== */
 
   if (task.type === "repeat") {
 
     const every = task.repeatEveryDays || 1;
-
     const diff = getRepeatDiff(task);
 
-    // 4. Daily
+    // Level 3: Daily repeat (every === 1)
     if (every === 1) return 3;
 
-    // 2. Non-daily due / missed / new
-    if (diff <= 0) return 1;
+    // Level 1: Non-daily OVERDUE/DUE (diff <= 0)
+    // This includes: lastCompleted null (due today) OR actually overdue (diff < 0)
+    if (every > 1 && diff <= 0) return 1;
 
-    // 6. Far
+    // Level 5: Non-daily pending (every > 1, diff > 0)
     return 5;
   }
-
 
   return 98;
 }
 
-/* ================= SORT ================= */
+/* ================= SORT WITH NEW PRIORITY ================= */
 
 export function sortTasksByPriority(
   tasks: Task[]
@@ -141,27 +138,63 @@ export function sortTasksByPriority(
     const la = getLevel(a);
     const lb = getLevel(b);
 
-    /* 1️⃣ MAIN LEVEL */
+    /* 1️⃣ MAIN LEVEL - Strict ordering */
     if (la !== lb) return la - lb;
 
-
-    /* 2️⃣ INSIDE LEVEL: DEADLINE SOONER FIRST */
-    if (a.deadline && b.deadline) {
-
+    /* 2️⃣ WITHIN LEVEL 0 (Overdue deadlines) - Oldest first */
+    if (la === 0 && a.deadline && b.deadline) {
       const da = new Date(a.deadline).getTime();
       const db = new Date(b.deadline).getTime();
-
       return da - db;
     }
 
-
-    /* 3️⃣ PRIORITY */
-    if (a.priority !== b.priority) {
-      return b.priority - a.priority;
+    /* 3️⃣ WITHIN LEVEL 1 (Overdue repeats) - By priority then name */
+    if (la === 1) {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.title.localeCompare(b.title);
     }
 
+    /* 4️⃣ WITHIN LEVEL 2 (Due soon) - By days (0→1→2) then priority */
+    if (la === 2 && a.deadline && b.deadline) {
+      const da = getDaysDiff(a.deadline);
+      const db = getDaysDiff(b.deadline);
+      if (da !== db) return da - db; // 0 days first
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.title.localeCompare(b.title);
+    }
 
-    /* 4️⃣ STABLE */
+    /* 5️⃣ WITHIN LEVEL 3 (Daily tasks) - By priority */
+    if (la === 3) {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.title.localeCompare(b.title);
+    }
+
+    /* 6️⃣ WITHIN LEVEL 4 (Far deadlines) - By days then priority */
+    if (la === 4 && a.deadline && b.deadline) {
+      const da = getDaysDiff(a.deadline);
+      const db = getDaysDiff(b.deadline);
+      if (da !== db) return da - db;
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.title.localeCompare(b.title);
+    }
+
+    /* 7️⃣ WITHIN LEVEL 5 (Far repeats) - By priority */
+    if (la === 5) {
+      if (a.priority !== b.priority) {
+        return b.priority - a.priority;
+      }
+      return a.title.localeCompare(b.title);
+    }
+
+    /* 8️⃣ FALLBACK */
     return a.title.localeCompare(b.title);
   });
 }

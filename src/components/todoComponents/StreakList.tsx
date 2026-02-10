@@ -2,11 +2,12 @@ import {
   Box,
   Typography,
   Stack,
-  useTheme,
-  useMediaQuery
+  Paper,
+  LinearProgress,
+  Chip
 } from "@mui/material";
 
-import WhatshotIcon from "@mui/icons-material/Whatshot";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 
 import { Task } from "../../types/todoModels";
 
@@ -23,18 +24,12 @@ function getTier(days: number) {
 
 function getTierColor(tier: string) {
   switch (tier) {
-    case "Legend":
-      return "#f5c542";
-    case "Master":
-      return "#9c27b0";
-    case "Elite":
-      return "#2196f3";
-    case "Pro":
-      return "#4caf50";
-    case "Rising":
-      return "#ff9800";
-    default:
-      return "#90a4ae";
+    case "Legend": return { primary: "#f5c542", bg: "rgba(245, 197, 66, 0.1)" };
+    case "Master": return { primary: "#9c27b0", bg: "rgba(156, 39, 176, 0.1)" };
+    case "Elite": return { primary: "#2196f3", bg: "rgba(33, 150, 243, 0.1)" };
+    case "Pro": return { primary: "#4caf50", bg: "rgba(76, 175, 80, 0.1)" };
+    case "Rising": return { primary: "#ff9800", bg: "rgba(255, 152, 0, 0.1)" };
+    default: return { primary: "#90a4ae", bg: "rgba(144, 164, 174, 0.1)" };
   }
 }
 
@@ -54,8 +49,6 @@ export default function StreakList({
 }: {
   tasks: Task[];
 }) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const streakTasks = tasks
     .filter(
@@ -70,237 +63,129 @@ export default function StreakList({
         (a.streak?.current || 0)
     );
 
-  const topId = streakTasks[0]?.id;
-
   if (!streakTasks.length) {
     return (
-      <Typography color="text.secondary">
-        No streaks yet. Start today 🔥
-      </Typography>
+      <Paper
+        sx={{
+          p: 4,
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 87, 34, 0.05) 100%)',
+          border: '1px dashed rgba(255, 152, 0, 0.2)',
+          borderRadius: 2
+        }}
+      >
+        <LocalFireDepartmentIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
+          No streaks yet
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          Start completing tasks to build streaks 🔥
+        </Typography>
+      </Paper>
     );
   }
 
   return (
-    <Box
-      sx={{
-        display: "grid",
-
-        gridTemplateColumns: {
-          xs: "repeat(auto-fill, minmax(90px,1fr))",
-          sm: "repeat(auto-fill, minmax(120px,1fr))"
-        },
-
-        gap: { xs: 1, sm: 2 }
-      }}
-    >
-      {streakTasks.map(task => {
+    <Stack spacing={2} pb={4}>
+      {streakTasks.map((task, idx) => {
         const days = task.streak!.current;
-
         const tier = getTier(days);
-        const color = getTierColor(tier);
-
+        const colors = getTierColor(tier);
         const target = getNextTarget(days);
-
-        const progress =
-          Math.min(days / target, 1) * 360;
-
-        const isTop = task.id === topId;
-
-        const isNear = days / target > 0.85;
+        const progress = Math.min((days / target) * 100, 100);
 
         return (
-          <Box
+          <Paper
             key={task.id}
             sx={{
-              position: "relative",
-
-              borderRadius: "50%",
-              aspectRatio: "1 / 1",
-
-              background: `
-                radial-gradient(
-                  circle at 30% 20%,
-                  ${color}25,
-                  #020617 70%
-                )
-              `,
-
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-
-              transition: "all .2s ease",
-
-              transform: isTop
-                ? "scale(1.05)"
-                : "none",
-
-              boxShadow: isTop
-                ? `0 0 25px ${color}`
-                : `0 0 12px ${color}40`,
-
-              animation: isNear
-                ? "pulse 1.5s infinite"
-                : "none",
-
-              "@keyframes pulse": {
-                "0%": {
-                  boxShadow: `0 0 12px ${color}40`
-                },
-                "50%": {
-                  boxShadow: `0 0 25px ${color}`
-                },
-                "100%": {
-                  boxShadow: `0 0 12px ${color}40`
-                }
-              },
-
-              "&:hover": {
-                transform: "scale(1.06)"
+              p: 2.5,
+              background: colors.bg,
+              border: `1.5px solid ${colors.primary}20`,
+              borderRadius: 1.5,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                borderColor: `${colors.primary}40`,
+                boxShadow: `0 4px 12px ${colors.primary}15`,
+                transform: 'translateY(-2px)'
               }
             }}
           >
-            {/* ================= PROGRESS RING ================= */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <LocalFireDepartmentIcon sx={{ color: colors.primary, fontSize: 18 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                    {task.title}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                  {task.type === 'repeat' ? `Every ${task.repeatEveryDays}d` : 'One-time'}
+                </Typography>
+              </Box>
 
-            <Box
-              sx={{
-                position: "absolute",
-
-                inset: {
-                  xs: 4,
-                  sm: 6
-                },
-
-                borderRadius: "50%",
-
-                background: `conic-gradient(
-                  ${color} ${progress}deg,
-                  rgba(255,255,255,0.1) 0deg
-                )`
-              }}
-            />
-
-            {/* ================= INNER CORE ================= */}
-
-            <Box
-              sx={{
-                position: "absolute",
-
-                inset: {
-                  xs: 9,
-                  sm: 14
-                },
-
-                borderRadius: "50%",
-
-                background:
-                  "linear-gradient(135deg,#020617,#020617)",
-
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              <Stack
-                alignItems="center"
-                spacing={0.15}
-              >
-                <WhatshotIcon
-                  sx={{
-                    color,
-
-                    fontSize: {
-                      xs: 18,
-                      sm: 26
-                    },
-
-                    filter:
-                      `drop-shadow(0 0 5px ${color})`
-                  }}
-                />
-
-                <Typography
-                  fontWeight={700}
-                  fontSize={{
-                    xs: "0.7rem",
-                    sm: "0.9rem"
-                  }}
-                >
+              <Box sx={{ textAlign: 'right', pl: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: colors.primary }}>
                   {days}
                 </Typography>
-
-                {!isMobile && (
-                  <Typography
-                    fontSize="0.55rem"
-                    color="rgba(255,255,255,0.6)"
-                  >
-                    / {target}
-                  </Typography>
-                )}
-              </Stack>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                  {tier}
+                </Typography>
+              </Box>
             </Box>
 
-            {/* ================= TIER BADGE ================= */}
-
-            {!isMobile && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: -6,
-
-                  px: 1,
-                  py: 0.2,
-
-                  borderRadius: 2,
-
-                  background: color,
-
-                  color: "#000",
-
-                  fontSize: "0.55rem",
-
-                  fontWeight: 700,
-
-                  textTransform: "uppercase",
-
-                  boxShadow:
-                    "0 2px 6px rgba(0,0,0,.5)"
-                }}
-              >
-                {tier}
+            {/* Progress Bar */}
+            <Box sx={{ mb: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                  Progress to {target} days
+                </Typography>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: colors.primary, fontSize: '0.75rem' }}>
+                  {Math.round(progress)}%
+                </Typography>
               </Box>
-            )}
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: `${colors.primary}15`,
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: colors.primary,
+                    borderRadius: 2
+                  }
+                }}
+              />
+            </Box>
 
-            {/* ================= TITLE ================= */}
-
-            <Typography
-              sx={{
-                position: "absolute",
-                top: "100%",
-
-                mt: 0.4,
-
-                width: "100%",
-
-                textAlign: "center",
-
-                fontSize: {
-                  xs: "0.6rem",
-                  sm: "0.7rem"
-                },
-
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-
-                color: "#aaa"
-              }}
-            >
-              {task.title}
-            </Typography>
-          </Box>
+            {/* Info */}
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip
+                label={tier}
+                size="small"
+                sx={{
+                  height: 22,
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  backgroundColor: colors.primary,
+                  color: tier === 'Legend' ? '#000' : '#fff'
+                }}
+              />
+              <Chip
+                label={`${days} days 🔥`}
+                size="small"
+                variant="outlined"
+                sx={{
+                  height: 22,
+                  fontSize: '0.75rem',
+                  borderColor: colors.primary,
+                  color: colors.primary
+                }}
+              />
+            </Box>
+          </Paper>
         );
       })}
-    </Box>
+    </Stack>
   );
 }

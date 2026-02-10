@@ -12,9 +12,9 @@ export default function TabsHeader({ value, onChange }: Props) {
   return (
     <Box
       sx={{
-        background: "linear-gradient(135deg,#020617,#020617)",
-        borderRadius: 2,
-
+        background: 'linear-gradient(135deg, rgba(66, 133, 244, 0.04) 0%, rgba(52, 168, 224, 0.04) 100%)',
+        border: '1px solid rgba(66, 133, 244, 0.1)',
+        borderRadius: 1.5,
         px: { xs: 0.5, sm: 1 },
         py: 0.5
       }}
@@ -22,23 +22,18 @@ export default function TabsHeader({ value, onChange }: Props) {
       <Tabs
         value={value}
         onChange={(_, v) => onChange(v)}
-
-        /* Responsive behavior */
         variant={isMobile ? "scrollable" : "fullWidth"}
         scrollButtons={isMobile ? "auto" : false}
         allowScrollButtonsMobile
-
         TabIndicatorProps={{
           style: {
-            height: 3,
-            borderRadius: 2,
-            background:
-              "linear-gradient(90deg,#38bdf8,#6366f1)"
+            height: 2,
+            borderRadius: 1,
+            background: '#4285f4'
           }
         }}
-
         sx={{
-          minHeight: { xs: 40, sm: 44 }
+          minHeight: { xs: 44, sm: 48 }
         }}
       >
         {renderTab("Pending", value === 0)}
@@ -50,40 +45,27 @@ export default function TabsHeader({ value, onChange }: Props) {
   );
 }
 
-
-/* ================= HELPERS ================= */
-
 function renderTab(label: string, active: boolean) {
   return (
     <Tab
       label={label}
       disableRipple
-
       sx={{
-        minHeight: { xs: 40, sm: 44 },
-
-        px: { xs: 1.5, sm: 2 },
-
-        fontSize: { xs: "0.75rem", sm: "0.85rem" },
-        fontWeight: 600,
-
+        minHeight: { xs: 44, sm: 48 },
+        px: { xs: 1.75, sm: 2.5 },
+        fontSize: { xs: "0.8rem", sm: "0.9rem" },
+        fontWeight: active ? 700 : 600,
         textTransform: "none",
-
-        borderRadius: 2,
-
+        borderRadius: 1,
         whiteSpace: "nowrap",
-
-        color: active ? "#fff" : "rgba(255,255,255,0.6)",
-
-        transition: "all 0.2s ease",
-
+        color: active ? '#4285f4' : 'rgba(0, 0, 0, 0.6)',
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
-          color: "#fff",
-          background: "rgba(255,255,255,0.05)"
+          color: '#4285f4',
+          background: "rgba(66, 133, 244, 0.08)"
         },
-
         "&.Mui-selected": {
-          color: "#fff"
+          color: '#4285f4'
         }
       }}
     />

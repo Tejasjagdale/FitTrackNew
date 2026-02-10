@@ -91,6 +91,7 @@ export default function TaskModal({
 
     const newTask: Task = {
       id: task?.id || crypto.randomUUID(),
+      createdAt: task?.createdAt || new Date().toISOString(),
 
       title,
       priority,
@@ -111,6 +112,8 @@ export default function TaskModal({
 
       lastCompleted: task?.lastCompleted || null,
 
+      // ensure createdAt exists for type
+
       status: status
     };
 
@@ -120,8 +123,27 @@ export default function TaskModal({
   /* ================= RENDER ================= */
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogContent sx={{ minWidth: 450 }}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          backdropFilter: "blur(10px)"
+        }
+      }}
+    >
+      <DialogContent
+        sx={{
+          minHeight: "auto",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          p: { xs: 2, sm: 3 },
+          width: { xs: "100%", sm: "auto" }
+        }}
+      >
         <Stack spacing={2}>
           <Typography variant="h6">
             {task ? "Edit Task" : "New Task"}

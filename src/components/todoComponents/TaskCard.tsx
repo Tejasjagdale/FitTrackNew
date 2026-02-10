@@ -24,11 +24,11 @@ const priorityMeta: Record<
   number,
   { label: string; color: string }
 > = {
-  1: { label: "Low", color: "#90A4AE" },
-  2: { label: "Normal", color: "#66BB6A" },
-  3: { label: "Focused", color: "#42A5F5" },
-  4: { label: "High", color: "#FFA726" },
-  5: { label: "Critical", color: "#EF5350" }
+  1: { label: "Low", color: "#A0A0A0" },
+  2: { label: "Normal", color: "#808080" },
+  3: { label: "Focused", color: "#606060" },
+  4: { label: "High", color: "#404040" },
+  5: { label: "Critical", color: "#202020" }
 };
 
 /* ================= COMPONENT ================= */
@@ -77,28 +77,32 @@ export default function TaskCard({
 
   /* ================= VISUAL MODE ================= */
 
-  let border = "rgba(255,255,255,0.06)";
+  let border = "rgba(255,255,255,0.1)";
   let shadow = "none";
   let animation = "none";
 
-  /* 🚨 OVERDUE = EMERGENCY */
-  if (isOverdue) {
-    border = "#f44336";
-    shadow = "0 0 18px rgba(244,67,54,.8)";
-    animation = "alarm 0.5s infinite";
+  /* Don't animate completed tasks */
+  if (task.status === "completed") {
+    border = "rgba(255,255,255,0.08)";
+    shadow = "none";
+    animation = "none";
   }
-
+  /* 🚨 OVERDUE = EMERGENCY */
+  else if (isOverdue) {
+    border = "rgba(255,255,255,0.15)";
+    shadow = "0 0 12px rgba(255,255,255,.15)";
+    animation = "subtle-pulse 3s ease-in-out infinite";
+  }
   /* ⚠️ DUE / MISSED = IMPORTANT */
   else if (isToday && !isDaily) {
-    border = "#ff9800";
-    shadow = "0 0 14px rgba(255,152,0,.6)";
-    animation = "pulse 2.5s ease-in-out infinite";
+    border = "rgba(255,255,255,0.12)";
+    shadow = "0 0 8px rgba(255,255,255,.1)";
+    animation = "subtle-pulse 3s ease-in-out infinite";
   }
-
   /* ⏳ TOMORROW = WARNING */
   else if (isTomorrow) {
-    border = "rgba(255,152,0,.5)";
-    shadow = "0 0 10px rgba(255,152,0,.3)";
+    border = "rgba(255,255,255,0.1)";
+    shadow = "none";
   }
 
 
@@ -138,6 +142,19 @@ export default function TaskCard({
           }
         },
 
+        /* Subtle pulse animation */
+        "@keyframes subtle-pulse": {
+          "0%": {
+            boxShadow: shadow
+          },
+          "50%": {
+            boxShadow: "0 0 10px rgba(255,255,255,.2)"
+          },
+          "100%": {
+            boxShadow: shadow
+          }
+        },
+
         /* Soft attention pulse */
         "@keyframes pulse": {
           "0%": {
@@ -145,7 +162,7 @@ export default function TaskCard({
           },
           "50%": {
             boxShadow:
-              "0 0 22px rgba(255,152,0,.8)"
+              "0 0 8px rgba(255,255,255,.15)"
           },
           "100%": {
             boxShadow: shadow

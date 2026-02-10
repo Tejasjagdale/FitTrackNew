@@ -21,6 +21,7 @@ export type TaskStatus =
   | "on_hold";
 
 export interface Task {
+  createdAt: any;
   id: string;
 
   title: string;
