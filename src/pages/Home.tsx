@@ -18,6 +18,8 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote'
 import { useNavigate } from 'react-router-dom'
 import { scheduleAllForTasks, initNotifications } from '../data/notificationService'
 import { loadTodoData, getTodoData } from '../data/todoDataService'
+import { QUOTES } from '../data/quotes'
+
 
 export default function Home() {
   const navigate = useNavigate()
@@ -49,58 +51,21 @@ export default function Home() {
   }, [])
 
   // Fetch motivational quote - one per day
-  useEffect(() => {
-    const fetchQuote = async () => {
-      try {
-        const today = new Date().toDateString()
-        const cached = localStorage.getItem('daily_quote')
-        const cachedDate = localStorage.getItem('daily_quote_date')
+useEffect(() => {
+  // deterministic quote of the day
+  const today = new Date().toISOString().split('T')[0]
 
-        // Use cached quote if it's the same day
-        if (cached && cachedDate === today) {
-          setQuote(JSON.parse(cached))
-          return
-        }
+  const hash = today
+    .split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0)
 
-        // Fetch new quote
-        const response = await fetch('https://api.quotable.io/random?tags=fitness,inspirational,motivational')
-        const data = await response.json()
+  const index = hash % QUOTES.length
 
-        const quoteData = {
-          text: data.content,
-          author: data.author.split(',')[0] // Get first name only
-        }
-
-        setQuote(quoteData)
-        localStorage.setItem('daily_quote', JSON.stringify(quoteData))
-        localStorage.setItem('daily_quote_date', today)
-      } catch (err) {
-        console.error('Failed to fetch quote:', err)
-        // Fallback quote
-        setQuote({
-          text: 'The only way to do great work is to love what you do.',
-          author: 'Steve Jobs'
-        })
-      }
-    }
-
-    fetchQuote()
-  }, [])
+  setQuote(QUOTES[index])
+}, [])
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
-          <LocalFireDepartmentIcon sx={{ fontSize: 32, color: '#ff6b6b' }} />
-          <Typography variant="h3" sx={{ fontWeight: 'bold', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            FitTrack
-          </Typography>
-        </Box>
-        <Typography variant="body1" color="textSecondary" sx={{ ml: 0.5 }}>
-          Achieve your fitness goals with style
-        </Typography>
-      </Box>
 
       {/* Daily Motivational Quote */}
       {quote && (

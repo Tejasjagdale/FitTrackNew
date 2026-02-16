@@ -132,13 +132,23 @@ export default function WorkoutPlayer({
         ((currentStepIndex + 1) / variant.exerciseOrder.length) * 100
 
     return (
-        <Card sx={{ p: 4, textAlign: 'center', mb: 3, borderRadius: 3 }}>
+        <Card sx={{
+            p: 4,
+            textAlign: 'center',
+            mb: 3,
+            borderRadius: 2.5,
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease'
+        }}>
 
             {/* --- EQUIPMENT --- */}
             {!isResting && (
-                <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1 }}>
-                        Equipment Needed:
+                <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 1.5, fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Equipment
                     </Typography>
 
                     <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: 'wrap' }}>
@@ -146,9 +156,15 @@ export default function WorkoutPlayer({
                             <Chip
                                 key={item}
                                 label={item}
-                                color="secondary"
-                                variant="outlined"
-                                sx={{ mb: 1 }}
+                                sx={{
+                                    mb: 0.5,
+                                    height: 28,
+                                    fontSize: '0.8rem',
+                                    fontWeight: 500,
+                                    background: 'linear-gradient(135deg, rgba(66,133,244,0.15) 0%, rgba(52,168,224,0.1) 100%)',
+                                    border: '1px solid rgba(66,133,244,0.3)',
+                                    color: 'text.primary'
+                                }}
                             />
                         ))}
                     </Stack>
@@ -158,51 +174,102 @@ export default function WorkoutPlayer({
             {/* ACTIVE EXERCISE */}
             {!isResting && (
                 <>
-                    <LinearProgress
-                        variant="determinate"
-                        value={progress}
-                        sx={{ mb: 2, borderRadius: 2, height: 6 }}
-                    />
-
-                    <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                        Step {currentStepIndex + 1} of {variant.exerciseOrder.length}
-                    </Typography>
+                    <Box sx={{ mb: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.8rem', fontWeight: 600 }}>
+                                Progress
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.8rem' }}>
+                                {currentStepIndex + 1}/{variant.exerciseOrder.length}
+                            </Typography>
+                        </Box>
+                        <LinearProgress
+                            variant="determinate"
+                            value={progress}
+                            sx={{
+                                borderRadius: 20,
+                                height: 7,
+                                background: 'rgba(255,255,255,0.1)',
+                                '& .MuiLinearProgress-bar': {
+                                    borderRadius: 20,
+                                    background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`
+                                }
+                            }}
+                        />
+                    </Box>
 
                     <Typography
                         variant="h4"
-                        sx={{ fontWeight: 700, mb: 3, color: theme.palette.primary.main }}
+                        sx={{
+                            fontWeight: 800,
+                            mb: 2.5,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            letterSpacing: '-0.5px'
+                        }}
                     >
                         {currentStep.name}
                     </Typography>
 
                     {/* ADDITIVE: timer display only when running */}
                     {isTimerRunning && (
-                        <TimerCircle timeLeft={timeLeft} totalTime={timerTotal} />
+                        <Box sx={{ mb: 2.5 }}>
+                            <TimerCircle timeLeft={timeLeft} totalTime={timerTotal} />
+                        </Box>
                     )}
 
-                    <Stack spacing={2} sx={{ mb: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-                            <Chip
-                                label={`Set ${currentStep.set}`}
-                                color="primary"
-                                variant="filled"
-                                sx={{ fontSize: 18, px: 3, py: 1, borderRadius: 2, fontWeight: 700 }}
-                            />
-                            <Chip
-                                label={`${currentStep.reps} reps`}
-                                variant="outlined"
-                                sx={{ fontSize: 18, px: 3, py: 1, borderRadius: 2, fontWeight: 700 }}
-                            />
+                    <Stack spacing={1.5} sx={{ mb: 3.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                            <Box sx={{
+                                px: 2,
+                                py: 1,
+                                borderRadius: 1.5,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.primary.main}10 100%)`,
+                                border: `1.5px solid ${theme.palette.primary.main}40`,
+                                minWidth: 90
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                                    Set {currentStep.set}
+                                </Typography>
+                            </Box>
+                            <Box sx={{
+                                px: 2,
+                                py: 1,
+                                borderRadius: 1.5,
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                minWidth: 90
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
+                                    {currentStep.reps}
+                                </Typography>
+                            </Box>
                         </Box>
                     </Stack>
 
-                    {/* BUTTONS — NOTHING REMOVED */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2 }}>
+                    {/* BUTTONS */}
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
                         <Button
                             variant="contained"
                             size="medium"
                             onClick={handleCompleteSet}
-                            sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 15, fontWeight: 600 }}
+                            sx={{
+                                borderRadius: 1.5,
+                                px: 3.5,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontSize: '0.95rem',
+                                fontWeight: 700,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                                boxShadow: `0 4px 15px ${theme.palette.primary.main}40`,
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: `0 6px 20px ${theme.palette.primary.main}60`
+                                }
+                            }}
                         >
                             Complete Set
                         </Button>
@@ -212,7 +279,21 @@ export default function WorkoutPlayer({
                                 variant="outlined"
                                 size="medium"
                                 onClick={handleStartTimer}
-                                sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 14 }}
+                                sx={{
+                                    borderRadius: 1.5,
+                                    px: 3.5,
+                                    py: 1.2,
+                                    textTransform: 'none',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 700,
+                                    border: `1.5px solid ${theme.palette.primary.main}40`,
+                                    color: 'text.primary',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: `${theme.palette.primary.main}15`,
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
                             >
                                 Start Timer
                             </Button>
@@ -224,7 +305,21 @@ export default function WorkoutPlayer({
                                 startIcon={<ArrowBackIcon />}
                                 onClick={handleUndoStep}
                                 size="medium"
-                                sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontSize: 14 }}
+                                sx={{
+                                    borderRadius: 1.5,
+                                    px: 3,
+                                    py: 1.2,
+                                    textTransform: 'none',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 700,
+                                    border: '1.5px solid rgba(255,255,255,0.2)',
+                                    color: 'text.secondary',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: 'rgba(255,255,255,0.08)',
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
                             >
                                 Undo
                             </Button>
@@ -233,90 +328,143 @@ export default function WorkoutPlayer({
                 </>
             )}
 
-            {/* REST TIMER (UNCHANGED) */}
+            {/* REST TIMER */}
             {isResting && (
                 <>
-                    <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2 }}>
-                        Rest before next set
+                    <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2, fontWeight: 600, letterSpacing: '0.5px' }}>
+                        RECOVER
                     </Typography>
 
-                    {/* NEXT EXERCISE PREVIEW — UNCHANGED */}
+                    {/* NEXT EXERCISE PREVIEW */}
                     {nextStep && (
                         <Box
                             sx={{
-                                mb: 3,
-                                p: 2.5,
-                                borderRadius: '20px',
-                                width: '260px',
+                                mb: 2.5,
+                                p: 3,
+                                borderRadius: 2,
+                                width: '100%',
+                                maxWidth: '300px',
                                 mx: 'auto',
                                 textAlign: 'center',
-                                background: 'rgba(255, 255, 255, 0.12)',
-                                backdropFilter: 'blur(18px)',
-                                WebkitBackdropFilter: 'blur(18px)',
-                                border: '1px solid rgba(255, 255, 255, 0.28)',
-                                boxShadow: `
-                  0 8px 28px rgba(0, 0, 0, 0.25),
-                  inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                  inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-                  inset 0 0 25px 12px rgba(255, 255, 255, 0.25)
-                `,
+                                background: 'linear-gradient(135deg, rgba(66,133,244,0.1) 0%, rgba(52,168,224,0.05) 100%)',
+                                backdropFilter: 'blur(12px)',
+                                WebkitBackdropFilter: 'blur(12px)',
+                                border: '1px solid rgba(66,133,244,0.25)',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                 position: 'relative',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                transition: 'all 0.3s ease'
                             }}
                         >
-                            <Typography variant="subtitle2" sx={{ opacity: 0.7, fontSize: 14, mb: 0.5 }}>
-                                Next:
+                            <Typography variant="caption" sx={{ opacity: 0.7, fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Next Exercise
                             </Typography>
 
-                            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: 22, mb: 1 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800, fontSize: '1.3rem', my: 0.8, background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`, backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                                 {nextStep.name}
                             </Typography>
 
-                            <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                                Set {nextStep.set} — {nextStep.reps} reps
+                            <Typography variant="caption" sx={{ opacity: 0.85, mb: 1, display: 'block', fontWeight: 500 }}>
+                                Set {nextStep.set} • {nextStep.reps}
                             </Typography>
 
-                            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 0.5 }}>
-                                {nextStep.equipment?.map(item => (
-                                    <Chip
-                                        key={item}
-                                        label={item}
-                                        size="small"
-                                        sx={{
-                                            fontSize: 12,
-                                            color: 'white',
-                                            background: 'rgba(255,255,255,0.2)',
-                                            border: '1px solid rgba(255,255,255,0.4)'
-                                        }}
-                                    />
-                                ))}
-                            </Stack>
+                            {nextStep.equipment && nextStep.equipment.length > 0 && (
+                                <Stack direction="row" spacing={0.75} justifyContent="center" sx={{ mt: 1 }}>
+                                    {nextStep.equipment.map(item => (
+                                        <Chip
+                                            key={item}
+                                            label={item}
+                                            size="small"
+                                            sx={{
+                                                fontSize: '0.7rem',
+                                                height: 22,
+                                                background: 'rgba(255,255,255,0.15)',
+                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                fontWeight: 600
+                                            }}
+                                        />
+                                    ))}
+                                </Stack>
+                            )}
                         </Box>
                     )}
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, mb: 2 }}>
-                        <Button size="small" variant="outlined" onClick={() => adjustTime(-10)}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 3 }}>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => adjustTime(-10)}
+                            sx={{
+                                borderRadius: 1,
+                                minWidth: 50,
+                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                transition: 'all 0.2s ease',
+                                '&:hover': { background: 'rgba(255,255,255,0.08)' }
+                            }}
+                        >
                             -10s
                         </Button>
 
                         <TimerCircle timeLeft={timeLeft} totalTime={currentStep.restSeconds} />
 
-                        <Button size="small" variant="outlined" onClick={() => adjustTime(10)}>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => adjustTime(10)}
+                            sx={{
+                                borderRadius: 1,
+                                minWidth: 50,
+                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                transition: 'all 0.2s ease',
+                                '&:hover': { background: 'rgba(255,255,255,0.08)' }
+                            }}
+                        >
                             +10s
                         </Button>
                     </Box>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-around', gap: 2, mb: 2 }}>
-                        <Button variant="outlined" onClick={() => handleNextStep(true)}>
-                            Skip Rest
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
+                        <Button
+                            variant="contained"
+                            onClick={() => handleNextStep(true)}
+                            sx={{
+                                borderRadius: 1.5,
+                                px: 3,
+                                py: 1.2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.9rem',
+                                background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                                boxShadow: `0 4px 15px ${theme.palette.success.main}40`,
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: `0 6px 20px ${theme.palette.success.main}60`
+                                }
+                            }}
+                        >
+                            Next Set
                         </Button>
 
                         {currentStepIndex > 0 && (
                             <Button
                                 variant="outlined"
-                                color="warning"
                                 startIcon={<ArrowBackIcon />}
                                 onClick={handleUndoStep}
+                                sx={{
+                                    borderRadius: 1.5,
+                                    px: 2.5,
+                                    py: 1.2,
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    fontSize: '0.9rem',
+                                    border: '1.5px solid rgba(255,255,255,0.2)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: 'rgba(255,255,255,0.08)',
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
                             >
                                 Undo
                             </Button>
@@ -326,12 +474,23 @@ export default function WorkoutPlayer({
             )}
 
             <Button
-                variant="contained"
-                color="error"
+                variant="text"
                 onClick={() => onFinishWorkout(false)}
-                sx={{ borderRadius: 2, textTransform: 'none', mt: 1 }}
+                sx={{
+                    borderRadius: 1.5,
+                    textTransform: 'none',
+                    mt: 1,
+                    color: 'error.main',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                        background: 'rgba(211, 47, 47, 0.08)',
+                        transform: 'translateY(-1px)'
+                    }
+                }}
             >
-                Finish Workout
+                End Workout Early
             </Button>
         </Card>
     )
