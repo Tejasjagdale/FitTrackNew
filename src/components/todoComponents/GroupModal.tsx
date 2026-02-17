@@ -1,10 +1,10 @@
 import {
   Dialog,
+  DialogTitle,
   DialogContent,
-  Stack,
   TextField,
-  Button,
-  Typography
+  DialogActions,
+  Button
 } from "@mui/material";
 
 import { useState } from "react";
@@ -13,40 +13,42 @@ import { Group } from "../../types/todoModels";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSave: (group: Group) => void;
+  onSave: (g: Group) => void;
 }
 
-export default function GroupModal({ open, onClose, onSave }: Props) {
+export default function GroupModal({
+  open,
+  onClose,
+  onSave
+}: Props) {
   const [name, setName] = useState("");
 
-  const save = () => {
-    if (!name.trim()) return;
-
+  const handleSave = () => {
     onSave({
       id: crypto.randomUUID(),
       name
     });
-
     setName("");
   };
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogContent sx={{ minWidth: 350 }}>
-        <Stack spacing={2}>
-          <Typography variant="h6">New Group</Typography>
+      <DialogTitle>Create Group</DialogTitle>
 
-          <TextField
-            label="Group Name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-
-          <Button variant="contained" onClick={save}>
-            Add
-          </Button>
-        </Stack>
+      <DialogContent>
+        <TextField
+          label="Group Name"
+          fullWidth
+          value={name}
+          onChange={e => setName(e.target.value)}
+          sx={{ mt: 1 }}
+        />
       </DialogContent>
+
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave}>Save</Button>
+      </DialogActions>
     </Dialog>
   );
 }

@@ -1,52 +1,58 @@
-/* ================= GROUP ================= */
-
 export interface Group {
   id: string;
   name: string;
 }
 
-/* ================= STREAK ================= */
+export type Priority = "low" | "medium" | "high";
 
 export interface Streak {
   current: number;
   longest: number;
 }
 
-/* ================= TASK ================= */
+/* ================= ROUTINE ================= */
 
-export type TaskType = "repeat" | "deadline";
-export type TaskStatus =
-  | "pending"
-  | "completed"
-  | "on_hold";
-
-export interface Task {
-  createdAt: any;
+export interface Routine {
   id: string;
-
   title: string;
-  priority: number; // 1–5
-
+  priority: Priority;
   groupIds: string[];
 
-  type: TaskType;
+  repeatEveryDays: number;
+
+  completeByTime?: string | null;
+
+  trackStreak: boolean;
+  streak: Streak | null;
+
+  completedToday?: string | null;
+}
+
+/* ================= TODO ================= */
+
+export type TodoStatus =
+  | "pending"
+  | "completed";
+
+export interface Todo {
+  id: string;
+  title: string;
+  priority: Priority;
+  groupIds: string[];
 
   deadline: string | null;
 
-  repeatEveryDays: number | null;
+  createdAt: string;
 
-  trackStreak: boolean;
+  completedAt: string | null;
 
-  streak: Streak | null;
-
-  lastCompleted: string | null;
-
-  status: TaskStatus;
+  status: TodoStatus;
 }
 
 /* ================= ROOT ================= */
 
 export interface TodoDatabase {
   groups: Group[];
-  tasks: Task[];
+  routines: Routine[];
+  todos: Todo[];
 }

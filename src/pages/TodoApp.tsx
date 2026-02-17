@@ -2,27 +2,16 @@ import {
   Container,
   Box,
   Stack,
-  Fab,
-  CircularProgress,
-  Typography,
-  Button,
   Paper,
-  Checkbox,
-  Chip,
-  TextField,
-  MenuItem,
-  FormControl,
-  Select,
-  InputAdornment,
-  IconButton,
-  LinearProgress
+  Typography,
+  Tabs,
+  Tab,
+  Button
 } from "@mui/material";
-import { useTheme, useMediaQuery } from '@mui/material';
 
 import AddIcon from "@mui/icons-material/Add";
 import CategoryIcon from "@mui/icons-material/Category";
-import SearchIcon from "@mui/icons-material/Search";
-import ClearIcon from "@mui/icons-material/Clear";
+import SyncIcon from "@mui/icons-material/Sync";
 
 import { useEffect, useState } from "react";
 
@@ -33,772 +22,393 @@ import {
   syncTodoToGitHub
 } from "../data/todoDataService";
 
-import { Task, Group } from "../types/todoModels";
-
 import {
-  resetRepeatTasks,
-  toggleCompleteTask
-} from "../engine/taskEngine";
+  Routine,
+  Todo,
+  Group,
+  TodoStatus
+} from "../types/todoModels";
 
-import { getDaysDiff, getRepeatDiff } from "../engine/taskPriorityEngine";
-
-import TabsHeader from "../components/todoComponents/TabsHeader";
-import TaskList from "../components/todoComponents/TaskList";
-import StreakList from "../components/todoComponents/StreakList";
-import TaskModal from "../components/todoComponents/TaskModal";
+import PremiumTaskCard from "../components/todoComponents/PremiumTaskCard";
+import TaskEditorModal from "../components/todoComponents/TaskEditorModal";
 import GroupModal from "../components/todoComponents/GroupModal";
-import ConfirmDialog from "../components/todoComponents/ConfirmDialog";
-import GroupList from "../components/todoComponents/GroupList";
-import HomeDashboard from "../components/todoComponents/HomeDashboard";
 
-/* ================= PAGE ================= */
+/* ===== PRIORITY ENGINES ===== */
+import { buildTodoPriorityLists } from "../engine/todoPriorityEngine";
+import { buildRoutinePriorityLists } from "../engine/routinePriorityEngine";
 
-export default function TodoPage() {
-
-  /* ================= STATE ================= */
-
-  const [isDirty, setIsDirty] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [syncSuccess, setSyncSuccess] = useState(false);
-  const [view, setView] = useState<'pending' | 'completed' | 'streaks' | 'groups'>('pending');
-
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+export default function TodoApp() {
 
   const [loading, setLoading] = useState(true);
 
-  const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  const [tab, setTab] = useState(0);
+
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<"routine" | "todo">("todo");
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   const [groupModalOpen, setGroupModalOpen] = useState(false);
 
-  const [editingTask, setEditingTask] =
-    useState<Task | null>(null);
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const [confirmConfig, setConfirmConfig] = useState<{
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  } | null>(null);
-
-  
-
-
-  /* ================= FILTER STATE ================= */
-
-  const [search, setSearch] = useState("");
-
-  const [filterGroup, setFilterGroup] =
-    useState<string>("all");
-
-  const [filterType, setFilterType] =
-    useState<"all" | "deadline" | "repeat">("all");
-
-  const [filterPriority, setFilterPriority] =
-    useState<number | "all">("all");
-
-  /* ================= HOOKS ================= */
-
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   /* ================= LOAD ================= */
 
   useEffect(() => {
-    let cancelled = false;
-
     async function load() {
-      try {
-        setLoading(true);
-
-        await loadTodoData();
-
-        if (cancelled) return;
-
-        const db = getTodoData();
-
-        const fixed = resetRepeatTasks(db.tasks);
-
-        setTasks(fixed);
-        setGroups(db.groups);
-
-        setTodoData({
-          ...db,
-          tasks: fixed
-        });
-
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      await loadTodoData();
+      const db = getTodoData();
+      setRoutines(db.routines);
+      setTodos(db.todos);
+      setGroups(db.groups);
+      setLoading(false);
     }
-
     load();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
-
-
-  /* ================= CONFIRM ================= */
-
-  const openConfirm = (
-    title: string,
-    message: string,
-    action: () => void
-  ) => {
-    setConfirmConfig({ title, message, onConfirm: action });
-    setConfirmOpen(true);
-  };
-
 
   /* ================= SAVE ================= */
 
-  const saveToDb = (
-    nextTasks: Task[],
-    nextGroups: Group[] | null
-  ) => {
+  const saveDb = (nextRoutines: Routine[], nextTodos: Todo[], nextGroups?: Group[]) => {
 
     const db = getTodoData();
 
     const updated = {
       ...db,
-      tasks: nextTasks,
+      routines: nextRoutines,
+      todos: nextTodos,
       groups: nextGroups ?? db.groups
     };
 
-    setTasks(nextTasks);
-
+    setRoutines(nextRoutines);
+    setTodos(nextTodos);
     if (nextGroups) setGroups(nextGroups);
 
     setTodoData(updated);
-
-    setIsDirty(true);
   };
 
+  /* ================= TOGGLES ================= */
 
-  /* ================= TASK ================= */
+  const toggleRoutine = (r: Routine) => {
 
-  const handleToggleComplete = (task: Task) => {
+    const done = r.completedToday === todayStr;
 
-    const done = task.status === "completed";
-
-    openConfirm(
-      done ? "Reopen Task" : "Complete Task",
-
-      done
-        ? "Move this task back to active?"
-        : "Mark this task as done?",
-
-      async () => {
-
-        const next = tasks.map(t =>
-          t.id === task.id
-            ? toggleCompleteTask(t)
-            : t
-        );
-
-        saveToDb(next, null);
-
-        setConfirmOpen(false);
-      }
+    const next = routines.map(x =>
+      x.id === r.id
+        ? { ...x, completedToday: done ? null : todayStr }
+        : x
     );
+
+    saveDb(next, todos);
   };
 
+  const toggleTodo = (t: Todo) => {
 
-  const handleSaveTask = async (task: Task) => {
+    const done = t.status === "completed";
 
-    const exists = tasks.some(t => t.id === task.id);
-
-    const next = exists
-      ? tasks.map(t =>
-        t.id === task.id ? task : t
-      )
-      : [...tasks, task];
-
-    saveToDb(next, null);
-
-    setTaskModalOpen(false);
-    setEditingTask(null);
-  };
-
-
-  const handleDeleteTask = (id: string) => {
-
-    openConfirm(
-      "Delete Task",
-      "This cannot be undone. Continue?",
-
-      async () => {
-
-        const next = tasks.filter(t => t.id !== id);
-
-        saveToDb(next, null);
-
-        setTaskModalOpen(false);
-        setEditingTask(null);
-
-        setConfirmOpen(false);
-      }
+    const next: Todo[] = todos.map(x =>
+      x.id === t.id
+        ? {
+          ...x,
+          status: (done ? "pending" : "completed") as TodoStatus,
+          completedAt: done ? null : new Date().toISOString()
+        }
+        : x
     );
+
+    saveDb(routines, next);
   };
 
+  /* ================= SAVE ITEM ================= */
+
+  const handleSaveItem = (item: any) => {
+
+    if (editorMode === "routine") {
+
+      const exists = routines.some(r => r.id === item.id);
+
+      const next = exists
+        ? routines.map(r => r.id === item.id ? item : r)
+        : [...routines, item];
+
+      saveDb(next, todos);
+
+    } else {
+
+      const exists = todos.some(t => t.id === item.id);
+
+      const next: Todo[] = exists
+        ? todos.map(t => t.id === item.id ? item : t)
+        : [...todos, item];
+
+      saveDb(routines, next);
+    }
+
+    setEditorOpen(false);
+  };
 
   const handleSync = async () => {
+    await syncTodoToGitHub("Manual sync");
+  };
 
-    try {
+  /* ================= FORMATTERS ================= */
 
-      setSyncing(true);
+  const formatRoutineTime = (timeStr?: string) => {
+    if (!timeStr) return "";
 
-      await syncTodoToGitHub("Manual sync");
+    if (timeStr.includes("AM") || timeStr.includes("PM")) return timeStr;
 
-      setIsDirty(false);
+    const [h, m] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m, 0, 0);
 
-      setSyncSuccess(true);
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
+  };
 
-      setTimeout(() => {
-        setSyncSuccess(false);
-      }, 2000);
+  const getTimeLeftLabel = (deadline: string | null) => {
 
-    } catch (err) {
+    if (!deadline) return "";
 
-      console.error("Sync failed:", err);
-      alert("Sync failed. Check console.");
+    const now = new Date();
+    const end = new Date(deadline + "T23:59:59");
 
-    } finally {
-      setSyncing(false);
+    let diff = Math.floor((end.getTime() - now.getTime()) / 60000);
+
+    if (diff <= 0) return "Overdue";
+
+    const minutes = diff;
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+
+    if (hours < 24) {
+      const h = hours;
+      const m = minutes % 60;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
     }
+
+    if (days < 30) {
+      const d = days;
+      const h = hours % 24;
+      if (h > 0) return `${d}d ${h}h`;
+      return `${d}d`;
+    }
+
+    const mo = months;
+    const d = days % 30;
+
+    if (d > 0) return `${mo}mo ${d}d`;
+    return `${mo}mo`;
   };
 
+  /* ================= PRIORITY ENGINE OUTPUT ================= */
 
-  /* ================= GROUP ================= */
+  const { urgentTodos, normalTodos } =
+    buildTodoPriorityLists(todos);
 
-  const handleSaveGroup = (group: Group) => {
+  const { next3Hours, laterRoutines } =
+    buildRoutinePriorityLists(routines);
 
-    const nextGroups = [...groups, group];
+  /* ================= ROWS ================= */
 
-    saveToDb(tasks, nextGroups);
-
-    setGroupModalOpen(false);
-  };
-
-
-  /* ================= FILTER ENGINE ================= */
-
-  const filteredTasks = tasks.filter(t => {
-
-    /* Search */
-    if (
-      search &&
-      !t.title
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-      return false;
-
-    /* Group */
-    if (
-      filterGroup !== "all" &&
-      !t.groupIds.includes(filterGroup)
-    )
-      return false;
-
-    /* Type */
-    if (filterType !== "all" && t.type !== filterType)
-      return false;
-
-    /* Priority */
-    if (
-      filterPriority !== "all" &&
-      t.priority !== filterPriority
-    )
-      return false;
-
-    return true;
-  });
-
-
-  const completedTasks = tasks.filter(
-    t => t.status === "completed"
+  const RoutineRow = (r: Routine) => (
+    <PremiumTaskCard
+      title={r.title}
+      done={r.completedToday === todayStr}
+      meta={formatRoutineTime(r.completeByTime ?? "")}
+      groups={groups}
+      groupIds={r.groupIds}
+      onToggle={() => toggleRoutine(r)}
+      onEdit={() => {
+        setEditorMode("routine");
+        setEditingItem(r);
+        setEditorOpen(true);
+      }}
+    />
   );
 
-
-  /* ================= LOADING ================= */
+  const TodoRow = (t: Todo) => (
+    <PremiumTaskCard
+      title={t.title}
+      done={t.status === "completed"}
+      meta={getTimeLeftLabel(t.deadline)}
+      groups={groups}
+      groupIds={t.groupIds}
+      onToggle={() => toggleTodo(t)}
+      onEdit={() => {
+        setEditorMode("todo");
+        setEditingItem(t);
+        setEditorOpen(true);
+      }}
+    />
+  );
 
   if (loading) {
-    return (
-      <Container>
-        <Box py={6} textAlign="center">
-          <CircularProgress />
-          <Typography mt={2}>Loading…</Typography>
-        </Box>
-      </Container>
-    );
+    return <Container><Typography>Loading...</Typography></Container>;
   }
 
-  /* ================= RENDER ================= */
-
-  const showFilters = view === 'pending' || view === 'completed';
-
-  // Pending stats for progress bars (completed vs total)
-  const pendingTasksList = tasks.filter(t => t.status === 'pending');
-  const totalPending = pendingTasksList.length;
-
-  const todaysList = tasks.filter(t => {
-    if (t.type === 'deadline' && t.deadline) return getDaysDiff(t.deadline) === 0;
-    if (t.type === 'repeat') {
-      const every = t.repeatEveryDays || 1;
-      if (every === 1) return true;
-      return getRepeatDiff(t) <= 0;
-    }
-    return false;
-  });
-
-  const todaysTotal = todaysList.length;
-  const todaysCompleted = todaysList.filter(t => t.status === 'completed').length;
-  const todaysPercent = todaysTotal === 0 ? 0 : Math.round((todaysCompleted / todaysTotal) * 100);
-
-  const overallTotal = tasks.length;
-  const overallCompleted = tasks.filter(t => t.status === 'completed').length;
-  const overallPercent = overallTotal === 0 ? 0 : Math.round((overallCompleted / overallTotal) * 100);
-
   return (
-    <Container maxWidth="md" sx={{ p: 0 }}>
+    <Container maxWidth="sm" >
 
-      <Box>
-
-        <Stack spacing={2}>
-
-          {/* ================= UNIFIED FILTER BAR ================= */}
-
-          <Paper
-            elevation={0}
-            sx={{
-              p: 1.5,
-              borderRadius: 1,
-              background: "linear-gradient(135deg,#1e293b,#0f172a)",
-              color: "#fff"
-            }}
-          >
-            <Stack spacing={1.5}>
-              {/* View Selector */}
-              <Box sx={{ minWidth: 160 }}>
-                <TextField
-                  select
-                  size="small"
-                  value={view}
-                  onChange={e => setView(e.target.value as any)}
-                  sx={{ width: '100%', '& .MuiOutlinedInput-root': { color: '#fff' } }}
-                >
-                  <MenuItem value="pending">Pending Tasks</MenuItem>
-                  <MenuItem value="completed">Completed Tasks</MenuItem>
-                  <MenuItem value="streaks">Streaks</MenuItem>
-                  <MenuItem value="groups">Groups</MenuItem>
-                </TextField>
-              </Box>
-
-              {/* Additional Filters - Show when viewing pending or completed */}
-              {showFilters && (
-                <>
-                  {/* Search Row */}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                  >
-                    <input
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                      placeholder="🔍 Search tasks..."
-                      style={{
-                        flex: 1,
-                        padding: "8px 12px",
-                        borderRadius: 8,
-                        border: "none",
-                        background: "rgba(255,255,255,0.08)",
-                        color: "#fff",
-                        outline: "none",
-                        fontSize: "0.9rem"
-                      }}
-                    />
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => {
-                        setSearch("");
-                        setFilterGroup("all");
-                        setFilterType("all");
-                        setFilterPriority("all");
-                      }}
-                      sx={{
-                        color: "#18e96f",
-                        "&:hover": {
-                          background: "rgba(255,255,255,0.05)"
-                        }
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  </Stack>
-
-                  {/* Filter Dropdowns */}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    flexWrap="wrap"
-                  >
-                    <select
-                      value={filterGroup}
-                      onChange={e =>
-                        setFilterGroup(e.target.value)
-                      }
-                      className="filter-select"
-                    >
-                      <option value="all">All Groups</option>
-                      {groups.map(g => (
-                        <option key={g.id} value={g.id}>
-                          {g.name}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={filterType}
-                      onChange={e =>
-                        setFilterType(e.target.value as any)
-                      }
-                      className="filter-select"
-                    >
-                      <option value="all">All Types</option>
-                      <option value="deadline">Deadline</option>
-                      <option value="repeat">Repeat</option>
-                    </select>
-
-                    <select
-                      value={filterPriority}
-                      onChange={e =>
-                        setFilterPriority(
-                          e.target.value === "all"
-                            ? "all"
-                            : Number(e.target.value)
-                        )
-                      }
-                      className="filter-select"
-                    >
-                      <option value="all">All Priority</option>
-                      <option value={5}>Critical</option>
-                      <option value={4}>High</option>
-                      <option value={3}>Medium</option>
-                      <option value={2}>Low</option>
-                      <option value={1}>Trivial</option>
-                    </select>
-                  </Stack>
-                </>
-              )}
-            </Stack>
-          </Paper>
-
-
-          {/* ================= CONTENT ================= */}
-
-          <Box>
-
-            {view === 'pending' && (
-              <>
-                <Paper sx={{ p: 2, mb: 1.5, borderRadius: 1.5, display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-                  <Box sx={{ flex: 1, minWidth: 180 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Today's Progress</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <LinearProgress variant="determinate" value={todaysPercent} sx={{ height: 8, borderRadius: 2 }} />
-                      </Box>
-                      <Typography variant="subtitle2" sx={{ minWidth: 120, textAlign: 'right' }}>{todaysCompleted} of {todaysTotal} completed</Typography>
-                    </Box>
-                  </Box>
-
-                  <Box sx={{ width: 12 }} />
-
-                  <Box sx={{ flex: 1, minWidth: 180 }}>
-                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>Overall Progress</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Box sx={{ flex: 1 }}>
-                        <LinearProgress variant="determinate" value={overallPercent} sx={{ height: 8, borderRadius: 2 }} />
-                      </Box>
-                      <Typography variant="subtitle2" sx={{ minWidth: 120, textAlign: 'right' }}>{overallCompleted} of {overallTotal} completed</Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-
-                <HomeDashboard
-                  tasks={tasks}
-                  groups={groups}
-                  onSelectTask={t => {
-                    setEditingTask(t);
-                    setTaskModalOpen(true);
-                  }}
-                  onComplete={handleToggleComplete}
-                />
-              </>
-            )}
-
-            {/* {tab === 0 && (
-              <TaskList
-                tasks={filteredTasks.filter(
-                  t => t.status === "pending"
-                )}
-                onComplete={handleToggleComplete}
-                onEdit={t => {
-                  setEditingTask(t);
-                  setTaskModalOpen(true);
-                }}
-              />
-            )} */}
-
-
-            {view === 'completed' && (
-              <>
-                {filteredTasks.filter(t => t.status === "completed").length > 0 ? (
-                  <Stack spacing={1.5}>
-                    {filteredTasks.filter(t => t.status === "completed").map((task) => (
-                      <Paper
-                        key={task.id}
-                        sx={{
-                          p: 1.75,
-                          background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.04) 0%, rgba(56, 142, 60, 0.04) 100%)',
-                          border: '1.5px solid rgba(76, 175, 80, 0.15)',
-                          borderRadius: 1.5,
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            borderColor: '#4caf50',
-                            boxShadow: '0 4px 12px rgba(76, 175, 80, 0.15)',
-                            transform: 'translateY(-2px)'
-                          }
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                          <Checkbox
-                            size="small"
-                            checked
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleComplete(task);
-                            }}
-                            sx={{
-                              p: 0.5,
-                              color: '#4caf50',
-                              '&.Mui-checked': {
-                                color: '#4caf50'
-                              }
-                            }}
-                          />
-
-                          <Box sx={{ flex: 1 }} onClick={() => {
-                            setEditingTask(task);
-                            setTaskModalOpen(true);
-                          }}>
-                            <Box sx={{ mb: 0.75 }}>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  fontWeight: 500,
-                                  color: 'text.secondary',
-                                  textDecoration: 'line-through'
-                                }}
-                              >
-                                {task.title}
-                              </Typography>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center' }}>
-                              <Chip
-                                label="Completed"
-                                size="small"
-                                sx={{
-                                  height: 22,
-                                  fontSize: '0.75rem',
-                                  fontWeight: 600,
-                                  backgroundColor: '#4caf50',
-                                  color: '#fff',
-                                  '& .MuiChip-label': {
-                                    px: 1
-                                  }
-                                }}
-                              />
-                            </Box>
-                          </Box>
-                        </Box>
-                      </Paper>
-                    ))}
-                  </Stack>
-                ) : (
-                  <Paper
-                    sx={{
-                      p: 4,
-                      textAlign: 'center',
-                      background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(56, 142, 60, 0.05) 100%)',
-                      border: '1px dashed rgba(76, 175, 80, 0.2)',
-                      borderRadius: 2
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
-                      No completed tasks
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Complete tasks to see them here
-                    </Typography>
-                  </Paper>
-                )}
-              </>
-            )}
-
-            {view === 'streaks' && (
-              <StreakList tasks={tasks} />
-            )}
-
-            {view === 'groups' && (
-              <GroupList
-                groups={groups}
-                tasks={tasks}
-                onSelect={() => setView('pending')}
-              />
-            )}
-
-          </Box>
-
-        </Stack>
-
-
-        {/* ================= FLOATING ACTIONS ================= */}
-
-        <Stack
-          direction="row"
-          spacing={1}
+      <Box
+        sx={{
+          mb: 3,
+          p: 0.6,
+          borderRadius: 999,
+          background: "rgba(0,255,170,0.06)",
+          border: "1px solid rgba(0,255,170,0.15)",
+          backdropFilter: "blur(12px)"
+        }}
+      >
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          variant="fullWidth"
+          TabIndicatorProps={{
+            style: { display: "none" }
+          }}
           sx={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            zIndex: 50
-          }}
-        >
-
-          <Fab
-            color="secondary"
-            size="small"
-            onClick={() => setGroupModalOpen(true)}
-          >
-            <CategoryIcon />
-          </Fab>
-
-
-          <Fab
-            color="primary"
-            onClick={() => {
-              setEditingTask(null);
-              setTaskModalOpen(true);
-            }}
-          >
-            <AddIcon />
-          </Fab>
-
-
-          <Fab
-            color={isDirty ? "warning" : "success"}
-            onClick={handleSync}
-            disabled={syncing}
-          >
-            {syncing ? (
-              <CircularProgress
-                size={22}
-                color="inherit"
-              />
-            ) : (
-              "⟳"
-            )}
-          </Fab>
-
-        </Stack>
-
-
-        {/* ================= MODALS ================= */}
-
-        <TaskModal
-          open={taskModalOpen}
-          task={editingTask}
-          groups={groups}
-          onClose={() => {
-            setTaskModalOpen(false);
-            setEditingTask(null);
-          }}
-          onSave={handleSaveTask}
-          onDelete={handleDeleteTask}
-        />
-
-
-        <GroupModal
-          open={groupModalOpen}
-          onClose={() => setGroupModalOpen(false)}
-          onSave={handleSaveGroup}
-        />
-
-
-        <ConfirmDialog
-          open={confirmOpen}
-          title={confirmConfig?.title || ""}
-          message={confirmConfig?.message || ""}
-          confirmText="Yes"
-          cancelText="Cancel"
-          onConfirm={() =>
-            confirmConfig?.onConfirm()
-          }
-          onCancel={() => {
-            setConfirmOpen(false);
-            setConfirmConfig(null);
-          }}
-        />
-
-      </Box>
-
-
-      {/* ================= SYNC TOAST ================= */}
-
-      {syncSuccess && (
-
-        <Paper
-          elevation={6}
-          sx={{
-            position: "fixed",
-            bottom: 90,
-            right: 24,
-
-            px: 2,
-            py: 1,
-
-            borderRadius: 2,
-
-            background:
-              "linear-gradient(135deg,#1b5e20,#2e7d32)",
-
-            color: "#fff",
-
-            animation: "fadeIn .3s",
-
-            "@keyframes fadeIn": {
-              from: {
-                opacity: 0,
-                transform: "translateY(10px)"
-              },
-              to: {
-                opacity: 1,
-                transform: "translateY(0)"
-              }
+            minHeight: 44,
+            "& .MuiTabs-flexContainer": {
+              gap: 0.5
             }
           }}
         >
-          ✅ Synced to GitHub
+          {["HOME", "TODOS", "ROUTINES", "COMPLETED"].map((label, index) => (
+            <Tab
+              key={label}
+              label={label}
+              disableRipple
+              sx={{
+                minHeight: 36,
+                borderRadius: 999,
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                letterSpacing: 0.5,
+                transition: "all .25s ease",
+                color: tab === index
+                  ? "#00ffa6"
+                  : "rgba(255,255,255,0.6)",
+
+                background:
+                  tab === index
+                    ? "rgba(0,255,170,0.12)"
+                    : "transparent",
+
+                "&:hover": {
+                  background: "rgba(0,255,170,0.08)"
+                }
+              }}
+            />
+          ))}
+        </Tabs>
+      </Box>
+
+      {/* ================= HOME ================= */}
+      {tab === 0 && (
+        <Stack spacing={2}>
+
+          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+            <Typography fontWeight={700} mb={1}>🔥 Priority Todos</Typography>
+            <Stack spacing={1.2}>
+              {urgentTodos.map(TodoRow)}
+            </Stack>
+          </Paper>
+
+          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+            <Typography fontWeight={700} mb={1}>⏱ Next 3 Hours</Typography>
+            <Stack spacing={1.2}>
+              {next3Hours.map(RoutineRow)}
+            </Stack>
+          </Paper>
+
+        </Stack>
+      )}
+
+      {/* ================= TODOS ================= */}
+      {tab === 1 && (
+        <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+          <Stack spacing={1.5}>
+            {normalTodos.map(TodoRow)}
+          </Stack>
         </Paper>
       )}
+
+      {/* ================= ROUTINES ================= */}
+      {tab === 2 && (
+        <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+          <Stack spacing={1.5}>
+            {laterRoutines.map(RoutineRow)}
+          </Stack>
+        </Paper>
+      )}
+
+      {/* ================= COMPLETED ================= */}
+      {tab === 3 && (
+        <Stack spacing={2}>
+
+          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+            <Typography fontWeight={700} mb={1}>Completed Daily Routines</Typography>
+            <Stack spacing={1.2}>
+              {routines.filter(r => r.completedToday === todayStr).map(RoutineRow)}
+            </Stack>
+          </Paper>
+
+          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
+            <Typography fontWeight={700} mb={1}>Completed Todos</Typography>
+            <Stack spacing={1.2}>
+              {todos.filter(t => t.status === "completed").map(TodoRow)}
+            </Stack>
+          </Paper>
+
+        </Stack>
+      )}
+
+      <Box sx={{ position: "fixed", bottom: 24, right: 24, display: "flex", gap: 1 }}>
+
+        <Button variant="contained" size="small" startIcon={<AddIcon />}
+          onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}
+        >Todo</Button>
+
+        <Button variant="contained" size="small"
+          onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}
+        >Routine</Button>
+
+        <Button variant="outlined" size="small" startIcon={<CategoryIcon />}
+          onClick={() => setGroupModalOpen(true)}
+        >Group</Button>
+
+        <Button variant="outlined" size="small" startIcon={<SyncIcon />}
+          onClick={handleSync}
+        >Sync</Button>
+
+      </Box>
+
+      <TaskEditorModal
+        open={editorOpen}
+        mode={editorMode}
+        item={editingItem}
+        groups={groups}
+        onClose={() => setEditorOpen(false)}
+        onSave={handleSaveItem}
+      />
+
+      <GroupModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        onSave={(g) => {
+          const next = [...groups, g];
+          saveDb(routines, todos, next);
+          setGroupModalOpen(false);
+        }}
+      />
 
     </Container>
   );

@@ -12,6 +12,13 @@ export async function loadTodoData(): Promise<TodoDatabase> {
 
   const data = await github.fetchTodoData();
 
+  // Expecting structure:
+  // {
+  //   groups: [],
+  //   routines: [],
+  //   todos: []
+  // }
+
   inMemoryTodo = data as TodoDatabase;
 
   return inMemoryTodo;
@@ -29,11 +36,16 @@ export function setTodoData(data: TodoDatabase) {
   inMemoryTodo = data;
 }
 
-export async function syncTodoToGitHub(commitMessage = "Update todo data") {
+export async function syncTodoToGitHub(
+  commitMessage = "Update todo data"
+) {
   const github = getGitHubService();
 
   if (!github) throw new Error("GitHub not configured");
   if (!inMemoryTodo) throw new Error("No todo data loaded");
 
-  await github.updateTodoData(inMemoryTodo, commitMessage);
+  await github.updateTodoData(
+    inMemoryTodo,
+    commitMessage
+  );
 }
