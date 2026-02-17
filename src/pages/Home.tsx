@@ -16,7 +16,6 @@ import ChecklistIcon from '@mui/icons-material/Checklist'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote'
 import { useNavigate } from 'react-router-dom'
-import { scheduleAllForTasks, initNotifications } from '../data/notificationService'
 import { loadTodoData, getTodoData } from '../data/todoDataService'
 import { QUOTES } from '../data/quotes'
 
@@ -35,9 +34,6 @@ export default function Home() {
         if (cancelled) return
 
         const db = getTodoData()
-        // initialize notifications and schedule current pending tasks
-        initNotifications().catch(() => null)
-        scheduleAllForTasks(db.tasks).catch(() => null)
       } catch (err) {
         console.error('Failed to initialize:', err)
       }
