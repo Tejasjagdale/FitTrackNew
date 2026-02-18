@@ -69,6 +69,28 @@ export default function TodoApp() {
     load();
   }, []);
 
+  useEffect(() => {
+
+    const interval = setInterval(() => {
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      setRoutines(prev =>
+        prev.map(r =>
+          r.completedToday &&
+            r.completedToday !== today
+            ? { ...r, completedToday: null }
+            : r
+        )
+      );
+
+    }, 60000); // check every minute
+
+    return () => clearInterval(interval);
+
+  }, []);
+
+
   /* ================= SAVE ================= */
 
   const saveDb = (nextRoutines: Routine[], nextTodos: Todo[], nextGroups?: Group[]) => {
@@ -231,24 +253,52 @@ export default function TodoApp() {
         setEditingItem(r);
         setEditorOpen(true);
       }}
+      isUrgent={(r as any).isUrgent}
     />
   );
 
-  const TodoRow = (t: Todo) => (
-    <PremiumTaskCard
-      title={t.title}
-      done={t.status === "completed"}
-      meta={getTimeLeftLabel(t.deadline)}
-      groups={groups}
-      groupIds={t.groupIds}
-      onToggle={() => toggleTodo(t)}
-      onEdit={() => {
-        setEditorMode("todo");
-        setEditingItem(t);
-        setEditorOpen(true);
-      }}
-    />
-  );
+  const formatCompletedDate = (date?: string | null) => {
+    if (!date) return "";
+
+    const d = new Date(date);
+
+    return d.toLocaleDateString([], {
+      day: "numeric",
+      month: "short"
+    });
+  };
+
+  const TodoRow = (t: Todo) => {
+
+    const isDone = t.status === "completed";
+
+    return (
+      <PremiumTaskCard
+        title={t.title}
+        done={isDone}
+
+        /* ✅ META LOGIC FIXED */
+        meta={
+          isDone
+            ? `Done ${formatCompletedDate(t.completedAt)}`
+            : getTimeLeftLabel(t.deadline)
+        }
+
+        groups={groups}
+        groupIds={t.groupIds}
+
+        /* 🚫 completed items never urgent */
+        isOverdue={!isDone && (t as any).isOverdue}
+
+        onToggle={() => toggleTodo(t)}
+        onEdit={() => {
+          setEditorMode("todo");
+          setEditingItem(t);
+          setEditorOpen(true);
+        }}
+      />
+    );
+  };
 
   if (loading) {
     return <Container><Typography>Loading...</Typography></Container>;

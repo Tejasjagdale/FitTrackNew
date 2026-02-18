@@ -27,7 +27,6 @@ export function buildRoutinePriorityLists(
   const todayStr = new Date().toISOString().slice(0, 10);
   const now = new Date();
 
-  /* ✅ REMOVE COMPLETED TODAY */
   const pending = routines.filter(
     r => r.completedToday !== todayStr
   );
@@ -47,6 +46,9 @@ export function buildRoutinePriorityLists(
     const diffMinutes =
       (routineDate.getTime() - now.getTime()) / 60000;
 
+    /* 🔥 URGENT = 15 MIN */
+    (r as any).isUrgent = diffMinutes >= 0 && diffMinutes <= 15;
+
     if (diffMinutes >= 0 && diffMinutes <= 180) {
       next3.push(r);
     } else {
@@ -55,13 +57,8 @@ export function buildRoutinePriorityLists(
   });
 
   const sortByTime = (a: Routine, b: Routine) => {
-
-    if (!a.completeByTime) return 1;
-    if (!b.completeByTime) return -1;
-
-    const ta = parseRoutineTime(a.completeByTime).getTime();
-    const tb = parseRoutineTime(b.completeByTime).getTime();
-
+    const ta = parseRoutineTime(a.completeByTime!).getTime();
+    const tb = parseRoutineTime(b.completeByTime!).getTime();
     return ta - tb;
   };
 

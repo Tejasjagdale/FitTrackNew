@@ -11,6 +11,19 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
+interface Props {
+  title: string;
+  done: boolean;
+  meta?: string;
+  onToggle: () => void;
+  onEdit: () => void;
+  groups?: any[];
+  groupIds?: string[];
+
+  isOverdue?: boolean;
+  isUrgent?: boolean;
+}
+
 export default function PremiumTaskCard({
   title,
   done,
@@ -18,12 +31,16 @@ export default function PremiumTaskCard({
   onToggle,
   onEdit,
   groups = [],
-  groupIds = []
-}: any) {
+  groupIds = [],
+  isOverdue = false,
+  isUrgent = false
+}: Props) {
 
   const groupLabels = groups.filter((g: any) =>
     groupIds.includes(g.id)
   );
+
+  const isActive = isOverdue || isUrgent;
 
   return (
     <Paper
@@ -32,8 +49,58 @@ export default function PremiumTaskCard({
         px: 2,
         py: 1.2,
         borderRadius: 2,
+        position: "relative",
+        overflow: "hidden",
+
         background: "#0c1411",
-        border: "1px solid rgba(0,255,170,0.15)"
+        border: isOverdue
+          ? "1px solid rgba(255,80,80,0.35)"
+          : "1px solid rgba(0,255,170,0.15)",
+
+        transition: "all .35s ease",
+
+        /* 🔥 PREMIUM BREATHING EFFECT */
+        animation: (isActive && !done)
+  ? "premiumPulse 3s ease-in-out infinite"
+  : "none",
+
+        "@keyframes premiumPulse": {
+          "0%": {
+            boxShadow: isOverdue
+              ? "0 0 0px rgba(255,80,80,0.15)"
+              : "0 0 0px rgba(0,255,170,0.12)",
+            transform: "translateY(0px)"
+          },
+          "50%": {
+            boxShadow: isOverdue
+              ? "0 0 22px rgba(255,80,80,0.45)"
+              : "0 0 18px rgba(0,255,170,0.35)",
+            transform: "translateY(-1px)"
+          },
+          "100%": {
+            boxShadow: isOverdue
+              ? "0 0 0px rgba(255,80,80,0.15)"
+              : "0 0 0px rgba(0,255,170,0.12)",
+            transform: "translateY(0px)"
+          }
+        },
+
+        /* ✨ SHIMMER OVERLAY FOR URGENT */
+        ...(isUrgent && !isOverdue && !done && {
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(120deg, transparent 0%, rgba(0,255,170,0.12) 50%, transparent 100%)",
+            animation: "shimmer 2.8s linear infinite"
+          },
+
+          "@keyframes shimmer": {
+            "0%": { transform: "translateX(-120%)" },
+            "100%": { transform: "translateX(120%)" }
+          }
+        })
       }}
     >
       <Stack direction="row" alignItems="center" spacing={1.2}>
@@ -41,7 +108,7 @@ export default function PremiumTaskCard({
         <Checkbox
           checked={done}
           onChange={onToggle}
-          sx={{ p: .4 }}
+          sx={{ p: 0.4 }}
         />
 
         <Box sx={{ flex: 1 }}>
@@ -56,7 +123,7 @@ export default function PremiumTaskCard({
             {title}
           </Typography>
 
-          {/* META + GROUP CHIPS INLINE */}
+          {/* META + GROUP CHIPS */}
           <Stack
             direction="row"
             spacing={0.6}
@@ -73,7 +140,9 @@ export default function PremiumTaskCard({
                 sx={{
                   height: 18,
                   fontSize: 10,
-                  background: "rgba(0,255,170,0.18)"
+                  background: isOverdue
+                    ? "rgba(255,80,80,0.25)"
+                    : "rgba(0,255,170,0.18)"
                 }}
               />
             )}

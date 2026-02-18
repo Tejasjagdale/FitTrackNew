@@ -1,13 +1,5 @@
 import { Todo } from "../types/todoModels";
 
-/*
-  OUTPUT STRUCTURE
-
-  urgentTodos   -> deadline <= 2 days
-  normalTodos   -> rest pending todos
-
-*/
-
 export interface TodoPriorityResult {
   urgentTodos: Todo[];
   normalTodos: Todo[];
@@ -26,7 +18,6 @@ export function buildTodoPriorityLists(
   todos: Todo[]
 ): TodoPriorityResult {
 
-  /* ===== REMOVE COMPLETED ===== */
   const pending = todos.filter(t => t.status === "pending");
 
   const urgent: Todo[] = [];
@@ -41,22 +32,21 @@ export function buildTodoPriorityLists(
 
     const daysLeft = getDaysLeft(todo.deadline);
 
+    /* 🔥 OVERDUE OR <=2 DAYS */
     if (daysLeft <= 2) {
+      (todo as any).isOverdue = daysLeft < 0;
       urgent.push(todo);
     } else {
       normal.push(todo);
     }
   });
 
-  /* ===== SORT BY NEAREST DEADLINE ===== */
   const sortByDeadline = (a: Todo, b: Todo) => {
     if (!a.deadline) return 1;
     if (!b.deadline) return -1;
 
-    return (
-      new Date(a.deadline).getTime() -
-      new Date(b.deadline).getTime()
-    );
+    return new Date(a.deadline).getTime() -
+           new Date(b.deadline).getTime();
   };
 
   urgent.sort(sortByDeadline);
