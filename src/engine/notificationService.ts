@@ -118,9 +118,9 @@ export async function scheduleRoutineNotifications(routines: Routine[]) {
         Math.floor(Math.random() * 999999),
 
       /* ⭐ PREMIUM CONTENT */
-      title: `${r.title} `,
+      title: `Routine : ${r.title}`,
       body: `🔥 Streak at risk starts in 5 minutes`,
-      largeBody: `Your ${r.title} routine is scheduled soon. Stay consistent and protect your streak.`,
+      largeBody: `Your ${r.title} routine is scheduled for ${r.completeByTime}. Stay consistent and protect your streak.`,
 
       /* ⭐ VISUAL POLISH */
       color: "#00ffa6",

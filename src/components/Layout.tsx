@@ -93,7 +93,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => navigate("/")}
                 sx={{
                     position: "fixed",
-                    bottom: 25,
+                    bottom: 50,
                     right: 20,
                     zIndex: 2000,
 

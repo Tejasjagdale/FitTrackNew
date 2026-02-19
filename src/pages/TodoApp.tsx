@@ -332,8 +332,9 @@ export default function TodoApp() {
             <Button variant="contained"
               sx={{
                 cursor: "pointer",
-                background: "#00ffa6"
+                background: "#00ffa6",
               }}
+              size="small"
               onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
               Todo
             </Button>
@@ -581,7 +582,7 @@ export default function TodoApp() {
         open={syncSuccess}
         autoHideDuration={3000}
         onClose={() => setSyncSuccess(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity="success"
