@@ -412,7 +412,10 @@ export default function TodoApp() {
         )}
 
         {tab === 5 && (
-          <DashboardView routines={routines} />
+          <DashboardView
+            routines={routines}
+            todos={todos}
+          />
         )}
 
         {/* ⭐ GROUPS TAB */}

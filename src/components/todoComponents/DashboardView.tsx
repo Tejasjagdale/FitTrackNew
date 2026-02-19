@@ -12,16 +12,19 @@ import {
 import InsightsIcon from "@mui/icons-material/Insights";
 
 import { useState } from "react";
-import { Routine } from "../../types/todoModels";
+import { Routine, Todo } from "../../types/todoModels";
 import RoutineHeatmap from "./RoutineHeatmap";
+import RoutineMonthCalendar from "./RoutineMonthCalendar";
+import TodoMonthCalendar from "./TodoMonthCalendar";
+import CheckIcon from "@mui/icons-material/Checklist";
 
 type Props = {
   routines: Routine[];
+  todos: Todo[];   // ✅ add this
 };
-
 type RangeType = "1m" | "3m" | "6m" | "1y" | "5y";
 
-export default function DashboardView({ routines }: Props) {
+export default function DashboardView({ routines, todos }: Props) {
 
   const [selectedId, setSelectedId] = useState<string>(
     routines[0]?.id ?? "all"
@@ -179,12 +182,12 @@ export default function DashboardView({ routines }: Props) {
   ====================================================== */
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} mb={5}>
 
       {/* HEADER */}
       <Stack direction="row" spacing={1} alignItems="center">
         <InsightsIcon sx={{ opacity: .8 }} />
-        <Typography fontWeight={700} fontSize={18}>
+        <Typography fontWeight={700} variant="h5">
           Routine Intelligence
         </Typography>
       </Stack>
@@ -316,107 +319,7 @@ export default function DashboardView({ routines }: Props) {
                     </Typography>
                   </Stack>
                   {/* ===== TIME BAND — TRUE DATE VISUAL ===== */}
-                  <Box
-                    sx={{
-                      mt: .6,
-                      borderRadius: 2,
-                      px: .6,
-                      py: .5,
-                      background:
-                        "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      overflow:"scroll",
-                      "&::-webkit-scrollbar": { display: "none" },
-                      scrollbarWidth: "none"
-                    }}
-                  >
-                    {/* ===== MONTH LABELS ===== */}
-                    <Stack
-                      direction="row"
-                      sx={{
-                        overflowX: "auto",
-                        "&::-webkit-scrollbar": { display: "none" },
-                        scrollbarWidth: "none",
-                        mb: .4
-                      }}
-                    >
-                      {stats.timeline.map((d, i) => {
-
-                        const date = new Date(d.date);
-
-                        const showMonth =
-                          i === 0 ||
-                          date.getDate() === 1; // show label when month starts
-
-                        if (!showMonth) {
-                          return <Box key={i} sx={{ width: 6 }} />;
-                        }
-
-                        return (
-                          <Typography
-                            key={i}
-                            variant="caption"
-                            sx={{
-                              width: 40,
-                              fontSize: 10,
-                              opacity: .55
-                            }}
-                          >
-                            {date.toLocaleDateString("en-IN", { month: "short" })}
-                          </Typography>
-                        );
-                      })}
-                    </Stack>
-
-                    {/* ===== DAILY COMPLETION BAND ===== */}
-                    <Stack
-                      direction="row"
-                      alignItems="flex-end"
-                      sx={{
-                        overflowX: "auto",
-                        "&::-webkit-scrollbar": { display: "none" },
-                        scrollbarWidth: "none",
-                        gap: "2px"
-                      }}
-                    >
-                      {stats.timeline.map((d, i) => {
-
-                        const prettyDate = new Date(d.date).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric"
-                        });
-
-                        return (
-                          <Tooltip
-                            key={i}
-                            arrow
-                            title={
-                              d.done
-                                ? `✔ Completed on ${prettyDate}`
-                                : `✖ Missed on ${prettyDate}`
-                            }
-                          >
-                            <Box
-                              sx={{
-                                width: 5,
-                                height: d.done ? 20 : 8,
-                                borderRadius: 1,
-                                background: d.done
-                                  ? "linear-gradient(#00ffa6,#0bbf87)"
-                                  : "rgba(255,255,255,0.15)",
-                                transition: "all .15s ease",
-                                "&:hover": {
-                                  transform: "scaleY(1.2)"
-                                }
-                              }}
-                            />
-                          </Tooltip>
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-
+                  <RoutineMonthCalendar routine={r} />
                 </Stack>
 
               </Stack>
@@ -424,6 +327,15 @@ export default function DashboardView({ routines }: Props) {
           );
         })}
       </Stack>
+
+      <Stack direction="row" spacing={1} alignItems="center">
+        <CheckIcon sx={{ opacity: .8 }} />
+        <Typography fontWeight={700} variant="h5">
+          Todo Tasks Calender
+        </Typography>
+      </Stack>
+
+      <TodoMonthCalendar todos={todos} />
 
     </Stack>
   );
