@@ -1,9 +1,22 @@
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { Capacitor } from "@capacitor/core";
 import { Routine, Todo } from "../types/todoModels";
+
+/* =========================================================
+   PLATFORM GUARD
+   ========================================================= */
+
+const isNative = () => Capacitor.getPlatform() !== "web";
 
 /* ================= PERMISSION + CHANNELS ================= */
 
 export async function initNotifications() {
+
+  // ⭐ Skip everything on web build
+  if (!isNative()) {
+    console.log("LocalNotifications skipped on web");
+    return;
+  }
 
   const perm = await LocalNotifications.requestPermissions();
 
@@ -11,7 +24,7 @@ export async function initNotifications() {
     console.warn("Notification permission not granted");
   }
 
-  /* ⭐ PREMIUM CHANNELS */
+  /* ⭐ PREMIUM CHANNELS (ANDROID ONLY SAFE) */
   await LocalNotifications.createChannel({
     id: "routine_channel",
     name: "Routine Reminders",
@@ -68,6 +81,8 @@ const minutesBefore = (date: Date, min: number) => {
 
 export async function clearAllNotifications() {
 
+  if (!isNative()) return;
+
   const pending = await LocalNotifications.getPending();
 
   if (!pending.notifications.length) return;
@@ -80,6 +95,8 @@ export async function clearAllNotifications() {
 /* ================= ROUTINE NOTIFICATIONS ================= */
 
 export async function scheduleRoutineNotifications(routines: Routine[]) {
+
+  if (!isNative()) return;
 
   const today = todayStr();
   const notifications: any[] = [];
@@ -127,6 +144,8 @@ export async function scheduleRoutineNotifications(routines: Routine[]) {
 /* ================= TODO NOTIFICATIONS ================= */
 
 export async function scheduleTodoNotifications(todos: Todo[]) {
+
+  if (!isNative()) return;
 
   const today = todayStr();
   const notifications: any[] = [];
@@ -201,6 +220,9 @@ export async function rescheduleAllNotifications(
   routines: Routine[],
   todos: Todo[]
 ) {
+
+  // ⭐ Prevent web crashes
+  if (!isNative()) return;
 
   await clearAllNotifications();
 
