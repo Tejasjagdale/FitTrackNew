@@ -73,7 +73,7 @@ useEffect(() => {
             borderRadius: 2
           }}
         >
-          <CardContent sx={{ py: 3, px: 3 }}>
+          <CardContent sx={{ py: 2, px: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
               <FormatQuoteIcon sx={{ fontSize: 32, color: '#667eea', opacity: 0.6, mt: 0.5, flexShrink: 0 }} />
               <Box>
