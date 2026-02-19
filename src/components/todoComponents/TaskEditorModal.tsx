@@ -7,7 +7,11 @@ import {
   Button,
   Typography,
   Chip,
-  Box
+  Box,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Select
 } from "@mui/material";
 
 import {
@@ -156,16 +160,56 @@ export default function TaskEditorModal({
               onChange={e => setTitle(e.target.value)}
             />
 
-            <TextField
-              select
-              label="Priority"
-              value={priority}
-              onChange={e => setPriority(e.target.value as Priority)}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </TextField>
+            <FormControl fullWidth size="small">
+              <InputLabel
+                sx={{
+                  color: "rgba(255,255,255,0.6)",
+                  "&.Mui-focused": { color: "#00ffa6" }
+                }}
+              >
+                Priority
+              </InputLabel>
+
+              <Select
+                label="Priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority)}
+                sx={{
+                  borderRadius: 2,
+                  background:
+                    "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))",
+                  backdropFilter: "blur(12px)",
+
+                  ".MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(0,255,170,0.15)"
+                  },
+
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "rgba(0,255,170,0.35)"
+                  },
+
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#00ffa6"
+                  }
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      mt: 1,
+                      borderRadius: 2,
+                      background: "#07130f",
+                      border: "1px solid rgba(0,255,170,0.18)",
+                      backdropFilter: "blur(16px)"
+                    }
+                  }
+                }}
+              >
+                <MenuItem value="low">🟢 Low</MenuItem>
+                <MenuItem value="medium">🟡 Medium</MenuItem>
+                <MenuItem value="high">🔴 High</MenuItem>
+              </Select>
+            </FormControl>
+
 
             <Typography variant="caption">Groups</Typography>
 
