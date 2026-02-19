@@ -16,7 +16,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import { useState } from "react";
 
 interface Props {
@@ -32,6 +32,7 @@ interface Props {
 
   isOverdue?: boolean;
   isUrgent?: boolean;
+  streak?: number;
 }
 
 export default function PremiumTaskCard({
@@ -44,7 +45,8 @@ export default function PremiumTaskCard({
   groups = [],
   groupIds = [],
   isOverdue = false,
-  isUrgent = false
+  isUrgent = false,
+  streak
 }: Props) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -66,9 +68,9 @@ export default function PremiumTaskCard({
           position: "relative",
 
           /* NEW PREMIUM GREEN SURFACE */
-          background:isActive
+          background: isActive
             ? 'linear-gradient(160deg, rgba(255,80,80,0.20) 0%, rgba(255,80,80,0.10) 100%)'
-            :  'linear-gradient(160deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.05) 100%)',
+            : 'linear-gradient(160deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.05) 100%)',
 
           backdropFilter: "blur(12px)",
 
@@ -141,6 +143,24 @@ export default function PremiumTaskCard({
               flexWrap="wrap"
             >
 
+              {/* 🔥 STREAK CHIP */}
+              {streak && (streak >= 0) && !done && (
+                <Chip
+                  size="small"
+                  icon={<LocalFireDepartmentIcon sx={{ fontSize: 14 }} />}
+                  label={streak}
+                  sx={{
+                    height: 18,
+                    fontSize: 10,
+                    background:
+                      "linear-gradient(135deg,rgba(255,120,40,0.25),rgba(255,80,0,0.15))",
+                    border: "1px solid rgba(255,140,60,0.35)",
+                    color: "#ffb36b"
+                  }}
+                />
+              )}
+
+              {/* TIME CHIP */}
               {meta && (
                 <Chip
                   size="small"
@@ -155,6 +175,7 @@ export default function PremiumTaskCard({
                   }}
                 />
               )}
+
 
               {groupLabels.map((g: any) => (
                 <Chip

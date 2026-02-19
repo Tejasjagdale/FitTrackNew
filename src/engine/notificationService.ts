@@ -1,14 +1,33 @@
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { Routine, Todo } from "../types/todoModels";
 
-/* ================= PERMISSION ================= */
+/* ================= PERMISSION + CHANNELS ================= */
 
 export async function initNotifications() {
+
   const perm = await LocalNotifications.requestPermissions();
 
   if (perm.display !== "granted") {
     console.warn("Notification permission not granted");
   }
+
+  /* ⭐ PREMIUM CHANNELS */
+  await LocalNotifications.createChannel({
+    id: "routine_channel",
+    name: "Routine Reminders",
+    description: "Daily routine alerts",
+    importance: 4,
+    visibility: 1,
+    sound: "default"
+  });
+
+  await LocalNotifications.createChannel({
+    id: "todo_channel",
+    name: "Todo Alerts",
+    description: "Today's task reminders",
+    importance: 3,
+    visibility: 1
+  });
 }
 
 /* ================= HELPERS ================= */
@@ -22,7 +41,6 @@ const parseTime = (dateStr: string, time?: string | null) => {
 
   const d = new Date(dateStr);
 
-  // supports "02:18 PM" or "14:18"
   const match = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
   if (!match) return null;
 
@@ -49,6 +67,7 @@ const minutesBefore = (date: Date, min: number) => {
 /* ================= CLEAR ALL ================= */
 
 export async function clearAllNotifications() {
+
   const pending = await LocalNotifications.getPending();
 
   if (!pending.notifications.length) return;
@@ -74,16 +93,27 @@ export async function scheduleRoutineNotifications(routines: Routine[]) {
     if (!target) return;
 
     const notifyAt = minutesBefore(target, 5);
-
     if (notifyAt.getTime() < Date.now()) return;
 
     notifications.push({
-      id: Number(r.id.replace(/\D/g, "").slice(0, 9)) || Math.floor(Math.random()*999999),
-      title: "Routine Reminder",
-      body: `${r.title} in 5 minutes`,
+      id:
+        Number(r.id.replace(/\D/g, "").slice(0, 9)) ||
+        Math.floor(Math.random() * 999999),
+
+      /* ⭐ PREMIUM CONTENT */
+      title: `${r.title} `,
+      body: `🔥 Streak at risk starts in 5 minutes`,
+      largeBody: `Your ${r.title} routine is scheduled soon. Stay consistent and protect your streak.`,
+
+      /* ⭐ VISUAL POLISH */
+      color: "#00ffa6",
+      smallIcon: "ic_notification",
+      channelId: "routine_channel",
+      group: "routine_group",
+
       schedule: {
         at: notifyAt,
-        allowWhileIdle: true   // ⭐ ANDROID DOZE FIX
+        allowWhileIdle: true
       }
     });
 
@@ -107,12 +137,12 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
     if (t.status === "completed") return;
     if (t.deadline !== today) return;
 
-    // ⭐ Force LOCAL timezone
+    /* ⭐ LOCAL TIMEZONE SAFE */
     const midnight = new Date();
-    midnight.setHours(0,0,10,0);
+    midnight.setHours(0, 0, 10, 0);
 
     const ninePM = new Date();
-    ninePM.setHours(21,0,0,0); // 9 PM IST
+    ninePM.setHours(21, 0, 0, 0);
 
     const baseId =
       Number(t.id.replace(/\D/g, "").slice(0, 6)) ||
@@ -121,8 +151,16 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
     if (midnight.getTime() > Date.now()) {
       notifications.push({
         id: baseId + 100000,
-        title: "Today's Task",
+
+        title: `${t.title} 📌 Today’s Focus`,
         body: t.title,
+        largeBody: `Your task for today: ${t.title}`,
+
+        color: "#00ffa6",
+        smallIcon: "ic_notification",
+        channelId: "todo_channel",
+        group: "todo_group",
+
         schedule: {
           at: midnight,
           allowWhileIdle: true
@@ -133,8 +171,16 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
     if (ninePM.getTime() > Date.now()) {
       notifications.push({
         id: baseId + 200000,
-        title: "Reminder",
+
+        title: `${t.title} ⏱ Still Pending`,
         body: `Don't forget: ${t.title}`,
+        largeBody: `You still have an unfinished task today: ${t.title}`,
+
+        color: "#00ffa6",
+        smallIcon: "ic_notification",
+        channelId: "todo_channel",
+        group: "todo_group",
+
         schedule: {
           at: ninePM,
           allowWhileIdle: true
@@ -156,8 +202,8 @@ export async function rescheduleAllNotifications(
   todos: Todo[]
 ) {
 
-  await clearAllNotifications();   // ⭐ REAL cancel
+  await clearAllNotifications();
+
   await scheduleRoutineNotifications(routines);
   await scheduleTodoNotifications(todos);
-
 }

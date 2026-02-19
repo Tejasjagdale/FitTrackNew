@@ -61,14 +61,13 @@ export default function TodoApp() {
   const { urgentTodos, normalTodos } = buildTodoPriorityLists(todos);
   const { next3Hours, laterRoutines } = buildRoutinePriorityLists(routines);
 
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(1);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"routine" | "todo">("todo");
   const [editingItem, setEditingItem] = useState<any>(null);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const theme = useTheme();
@@ -190,6 +189,7 @@ export default function TodoApp() {
         saveDb(next, todos);
         setIsDirty(true);
       }}
+      streak={r.streak?.current} 
     />
   );
 
@@ -224,6 +224,7 @@ export default function TodoApp() {
   }
 
   const sidebar = [
+    { icon: <></>, label: "" },
     { icon: <HomeIcon />, label: "Home" },
     { icon: <CheckIcon />, label: "Todos" },
     { icon: <RepeatIcon />, label: "Routines" },
@@ -234,11 +235,11 @@ export default function TodoApp() {
   const sidebarContent = (
     <Box
       sx={{
-        width: 64,
+        width: 70,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        pt: 1,
+        pt: 10,
         gap: 2
       }}
     >
@@ -277,12 +278,12 @@ export default function TodoApp() {
             open={mobileSidebarOpen}
             onClose={() => setMobileSidebarOpen(false)}
             onOpen={() => setMobileSidebarOpen(true)}
-            swipeAreaWidth={24}      // ⭐ gesture detection zone
+            swipeAreaWidth={50}      // ⭐ gesture detection zone
             disableBackdropTransition={!isMobile}
             disableDiscovery={false}
             PaperProps={{
               sx: {
-                width: 72,
+                width: 80,
                 background: "#06110d",
                 borderRight: "1px solid rgba(255,255,255,0.06)"
               }
@@ -326,7 +327,7 @@ export default function TodoApp() {
       <Container maxWidth="sm">
 
         {/* ACTION BAR */}
-        {tab !== 4 && (
+        {tab !== 5 && (
           <Stack direction="row" spacing={1} mb={1}>
             <Button variant="contained"
               sx={{
@@ -398,7 +399,7 @@ export default function TodoApp() {
         )}
 
         {/* ================= HOME TAB ================= */}
-        {tab === 0 && (
+        {tab === 1 && (
           <Stack spacing={2}>
 
             {/* PROGRESS CARDS 50/50 */}
@@ -486,9 +487,9 @@ export default function TodoApp() {
         )}
 
         {/* TODOS TAB */}
-        {tab === 1 && (
+        {tab === 2 && (
           <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-            <Typography fontWeight={700}> All Todos</Typography>
+            <Typography fontWeight={700} mb={1}> All Todos</Typography>
             <Stack spacing={1.5}>
               {normalTodos.map(TodoRow)}
             </Stack>
@@ -496,9 +497,9 @@ export default function TodoApp() {
         )}
 
         {/* ROUTINES TAB */}
-        {tab === 2 && (
+        {tab === 3 && (
           <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-            <Typography fontWeight={700}>All Routines</Typography>
+            <Typography fontWeight={700} mb={1}>All Routines</Typography>
             <Stack spacing={1.5}>
               {laterRoutines.map(RoutineRow)}
             </Stack>
@@ -507,7 +508,7 @@ export default function TodoApp() {
 
         {/* COMPLETED */}
         {/* COMPLETED TAB — RESTORED TWO CARDS */}
-        {tab === 3 && (
+        {tab === 4 && (
           <Stack spacing={2}>
 
             {/* COMPLETED ROUTINES */}
@@ -553,7 +554,7 @@ export default function TodoApp() {
 
 
         {/* DASHBOARD */}
-        {tab === 4 && (
+        {tab === 5 && (
           <DashboardView routines={routines} />
         )}
 

@@ -26,9 +26,14 @@ import {
 import { ProfileData, ProgressDataFile } from '../data/progressTypes'
 import { isGitHubConfigured } from '../data/githubService'
 
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import { Fab } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
+
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { mode, toggleMode } = useThemeMode()
-
+    const navigate = useNavigate();
     const [profileDialogOpen, setProfileDialogOpen] = useState(false)
     const [profile, setProfile] = useState<ProfileData>({})
     const [cachedData, setCachedData] = useState<ProgressDataFile | null>(null)
@@ -83,6 +88,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
     return (
         <>
+            <Fab
+                size="small"
+                onClick={() => navigate("/")}
+                sx={{
+                    position: "fixed",
+                    bottom: 25,
+                    right: 20,
+                    zIndex: 2000,
+
+                    background:
+                        "linear-gradient(135deg,#00ffa6 0%,#00c781 100%)",
+                    color: "#03140d",
+
+                    boxShadow:
+                        "0 10px 25px rgba(0,255,170,0.35)",
+
+                    "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow:
+                            "0 14px 35px rgba(0,255,170,0.55)"
+                    }
+                }}
+            >
+                <HomeRoundedIcon fontSize="small" />
+            </Fab>
             <AppBar
                 position="sticky"
                 sx={{
