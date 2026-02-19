@@ -181,8 +181,8 @@ export default function WorkoutPlaylist() {
   // -----------------------------
   return (
     <Container>
-      <Box sx={{ py: 4, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ mb: 3 }}>
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
           Choose a Workout
         </Typography>
 

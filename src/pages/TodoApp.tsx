@@ -8,7 +8,11 @@ import {
   LinearProgress,
   Tooltip,
   Snackbar,
-  Alert
+  Alert,
+  useTheme,
+  useMediaQuery,
+  Drawer,
+  SwipeableDrawer
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -20,6 +24,9 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import InsightsIcon from "@mui/icons-material/Insights";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+
 
 import { useState, useMemo, useEffect, useRef } from "react";
 
@@ -32,6 +39,8 @@ import { useTodoStore } from "../components/hooks/useTodoStore";
 import { buildTodoPriorityLists } from "../engine/todoPriorityEngine";
 import { buildRoutinePriorityLists } from "../engine/routinePriorityEngine";
 import DashboardView from "../components/todoComponents/DashboardView";
+import { initNotifications, rescheduleAllNotifications } from "../engine/notificationService";
+
 
 export default function TodoApp() {
 
@@ -59,6 +68,16 @@ export default function TodoApp() {
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    initNotifications();
+  }, []);
+
 
   /* ================= ANALYTICS ================= */
 
@@ -78,6 +97,17 @@ export default function TodoApp() {
   const todoProgress =
     analytics.todoTotal === 0 ? 0 :
       (analytics.todoDone / analytics.todoTotal) * 100;
+
+  useEffect(() => {
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      return;
+    }
+
+    rescheduleAllNotifications(routines, todos);
+
+  }, [routines, todos]);
+
 
   /* ================= HELPERS ================= */
 
@@ -201,36 +231,96 @@ export default function TodoApp() {
     { icon: <InsightsIcon />, label: "Dashboard" }
   ];
 
-  return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-
-      {/* SIDEBAR */}
-      <Box sx={{
+  const sidebarContent = (
+    <Box
+      sx={{
         width: 64,
-        borderRight: "1px solid rgba(255,255,255,0.06)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         pt: 1,
         gap: 2
-      }}>
-        {sidebar.map((s, i) => (
-          <Tooltip title={s.label} placement="right" key={i}>
-            <Box
-              onClick={() => setTab(i)}
-              sx={{
-                p: 1.5,
-                borderRadius: 2,
-                cursor: "pointer",
-                color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
-                background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
-              }}
-            >
-              {s.icon}
-            </Box>
-          </Tooltip>
-        ))}
-      </Box>
+      }}
+    >
+      {sidebar.map((s, i) => (
+        <Tooltip title={s.label} placement="right" key={i}>
+          <Box
+            onClick={() => {
+              setTab(i);
+              if (isMobile) setMobileSidebarOpen(false); // ⭐ auto close mobile
+            }}
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              cursor: "pointer",
+              color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
+              background:
+                tab === i ? "rgba(0,255,170,0.12)" : "transparent"
+            }}
+          >
+            {s.icon}
+          </Box>
+        </Tooltip>
+      ))}
+    </Box>
+  );
+
+  return (
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+
+      {/* COLLAPSABLE SIDEBAR */}
+      {isMobile ? (
+
+        <>
+          <SwipeableDrawer
+            anchor="left"
+            open={mobileSidebarOpen}
+            onClose={() => setMobileSidebarOpen(false)}
+            onOpen={() => setMobileSidebarOpen(true)}
+            swipeAreaWidth={24}      // ⭐ gesture detection zone
+            disableBackdropTransition={!isMobile}
+            disableDiscovery={false}
+            PaperProps={{
+              sx: {
+                width: 72,
+                background: "#06110d",
+                borderRight: "1px solid rgba(255,255,255,0.06)"
+              }
+            }}
+          >
+            {sidebarContent}
+          </SwipeableDrawer>
+
+        </>
+
+      ) : (
+        <Box sx={{
+          width: 64,
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          pt: 1,
+          gap: 2
+        }}>
+          {sidebar.map((s, i) => (
+            <Tooltip title={s.label} placement="right" key={i}>
+              <Box
+                onClick={() => setTab(i)}
+                sx={{
+                  p: 1.5,
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
+                  background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
+                }}
+              >
+                {s.icon}
+              </Box>
+            </Tooltip>
+          ))}
+        </Box>
+      )}
 
       {/* MAIN CONTENT */}
       <Container maxWidth="sm">
@@ -238,7 +328,7 @@ export default function TodoApp() {
         {/* ACTION BAR */}
         {tab !== 4 && (
           <Stack direction="row" spacing={1} mb={1}>
-            <Button startIcon={<AddIcon />} variant="contained"
+            <Button variant="contained"
               sx={{
                 cursor: "pointer",
                 background: "#00ffa6"
@@ -247,7 +337,7 @@ export default function TodoApp() {
               Todo
             </Button>
 
-            <Button startIcon={<RepeatIcon />} variant="contained" sx={{
+            <Button variant="contained" sx={{
               cursor: "pointer",
               background: "#00ffa6"
             }}
@@ -255,7 +345,7 @@ export default function TodoApp() {
               Routine
             </Button>
 
-            <Button startIcon={<CategoryIcon />} variant="outlined" sx={{
+            <Button variant="outlined" sx={{
               cursor: "pointer",
               color: "#00ffa6",
               background: "rgba(0,255,170,0.12)"
@@ -274,7 +364,6 @@ export default function TodoApp() {
               }}
               sx={{
                 textTransform: "none",
-                fontWeight: 600,
                 borderRadius: 2,
 
                 /* GitHub black button */
@@ -366,24 +455,29 @@ export default function TodoApp() {
             </Stack>
 
             {/* PRIORITY TODOS */}
-            <Paper sx={{ ...premiumSurface, p: 2.2, borderRadius: 2 }}>
+            <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
               <Typography fontWeight={700} sx={{
                 color: "#c6ffe6",
-                textShadow: "0 0 12px rgba(0,255,170,0.25)"
+                textShadow: "0 0 12px rgba(0,255,170,0.25)",
+                pb: 1
               }}>
                 🔥 Priority Todos
               </Typography>
 
-              <Stack spacing={1.2}>
+              <Stack spacing={1}>
                 {urgentTodos.map(TodoRow)}
               </Stack>
             </Paper>
 
             {/* NEXT 3 HOURS */}
-            <Paper sx={{ ...premiumSurface, p: 2.2, borderRadius: 2 }}>
-              <Typography fontWeight={700}>⏱ Next 3 Hours</Typography>
+            <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
+              <Typography fontWeight={700} sx={{
+                color: "#c6ffe6",
+                textShadow: "0 0 12px rgba(0,255,170,0.25)",
+                pb: 1
+              }}>⏱ Next 3 Hours</Typography>
 
-              <Stack spacing={1.2}>
+              <Stack spacing={1}>
                 {next3Hours.map(RoutineRow)}
               </Stack>
             </Paper>
