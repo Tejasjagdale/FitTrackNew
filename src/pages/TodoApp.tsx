@@ -6,7 +6,9 @@ import {
   Typography,
   Button,
   LinearProgress,
-  Tooltip
+  Tooltip,
+  Snackbar,
+  Alert
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -56,16 +58,7 @@ export default function TodoApp() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-
-  useEffect(() => {
-
-    if (!hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      return; // ⭐ ignore initial load
-    }
-    setIsDirty(true);
-
-  }, [routines, todos, groups]);
+  const [syncSuccess, setSyncSuccess] = useState(false);
 
   /* ================= ANALYTICS ================= */
 
@@ -129,6 +122,7 @@ export default function TodoApp() {
         : [...routines, item];
 
       saveDb(next, todos);
+      setIsDirty(true);
     } else {
 
       const exists = todos.some(t => t.id === item.id);
@@ -138,6 +132,8 @@ export default function TodoApp() {
         : [...todos, item];
 
       saveDb(routines, next);
+      setIsDirty(true);
+
     }
 
     setEditorOpen(false);
@@ -162,6 +158,7 @@ export default function TodoApp() {
       onDelete={() => {
         const next = routines.filter(x => x.id !== r.id);
         saveDb(next, todos);
+        setIsDirty(true);
       }}
     />
   );
@@ -186,6 +183,7 @@ export default function TodoApp() {
         onDelete={() => {
           const next = todos.filter(x => x.id !== t.id);
           saveDb(routines, next);
+          setIsDirty(true);
         }}
       />
     );
@@ -249,7 +247,7 @@ export default function TodoApp() {
               Todo
             </Button>
 
-            <Button variant="contained" sx={{
+            <Button startIcon={<RepeatIcon />} variant="contained" sx={{
               cursor: "pointer",
               background: "#00ffa6"
             }}
@@ -272,6 +270,7 @@ export default function TodoApp() {
               onClick={async () => {
                 await handleSync();
                 setIsDirty(false);
+                setSyncSuccess(true);
               }}
               sx={{
                 textTransform: "none",
@@ -279,18 +278,18 @@ export default function TodoApp() {
                 borderRadius: 2,
 
                 /* GitHub black button */
-                background: "#24292f",
+                background: isDirty ? "#961717" : "#24292f",
                 color: "#fff",
                 border: "1px solid rgba(255,255,255,0.15)",
 
-                animation: isDirty ? "githubPulse 1.6s ease-in-out infinite" : "none",
+                animation: isDirty ? "githubPulse 1s ease-in-out infinite" : "none",
 
                 "@keyframes githubPulse": {
                   "0%": {
                     boxShadow: "0 0 0 rgba(0,255,170,0)"
                   },
                   "50%": {
-                    boxShadow: "0 0 18px rgba(255, 0, 0, 0.35)"
+                    boxShadow: "0 0 50px rgba(255, 0, 0, 0.85)"
                   },
                   "100%": {
                     boxShadow: "0 0 0 rgba(0,255,170,0)"
@@ -483,6 +482,24 @@ export default function TodoApp() {
           setGroupModalOpen(false);
         }}
       />
+      <Snackbar
+        open={syncSuccess}
+        autoHideDuration={3000}
+        onClose={() => setSyncSuccess(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="filled"
+          sx={{
+            background: "linear-gradient(135deg,#00ffa6,#00c781)",
+            color: "#03140d",
+            fontWeight: 600
+          }}
+        >
+          Synced successfully
+        </Alert>
+      </Snackbar>
 
     </Box>
   );
