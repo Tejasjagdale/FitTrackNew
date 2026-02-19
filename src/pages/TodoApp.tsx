@@ -4,151 +4,124 @@ import {
   Stack,
   Paper,
   Typography,
-  Tabs,
-  Tab,
-  Button
+  Button,
+  LinearProgress,
+  Tooltip
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import CategoryIcon from "@mui/icons-material/Category";
 import SyncIcon from "@mui/icons-material/Sync";
+import HomeIcon from "@mui/icons-material/Home";
+import CheckIcon from "@mui/icons-material/Checklist";
+import RepeatIcon from "@mui/icons-material/Repeat";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import InsightsIcon from "@mui/icons-material/Insights";
+import GitHubIcon from "@mui/icons-material/GitHub";
 
-import { useEffect, useState } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
-import {
-  loadTodoData,
-  getTodoData,
-  setTodoData,
-  syncTodoToGitHub
-} from "../data/todoDataService";
-
-import {
-  Routine,
-  Todo,
-  Group,
-  TodoStatus
-} from "../types/todoModels";
-
+import { premiumSurface, Routine, Todo } from "../types/todoModels";
 import PremiumTaskCard from "../components/todoComponents/PremiumTaskCard";
 import TaskEditorModal from "../components/todoComponents/TaskEditorModal";
 import GroupModal from "../components/todoComponents/GroupModal";
 
-/* ===== PRIORITY ENGINES ===== */
+import { useTodoStore } from "../components/hooks/useTodoStore";
 import { buildTodoPriorityLists } from "../engine/todoPriorityEngine";
 import { buildRoutinePriorityLists } from "../engine/routinePriorityEngine";
+import DashboardView from "../components/todoComponents/DashboardView";
 
 export default function TodoApp() {
 
-  const [loading, setLoading] = useState(true);
+  const {
+    loading,
+    routines,
+    todos,
+    groups,
+    toggleRoutine,
+    toggleTodo,
+    saveDb,
+    setGroups,
+    handleSync,
+    todayStr
+  } = useTodoStore();
 
-  const [routines, setRoutines] = useState<Routine[]>([]);
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const hasLoadedRef = useRef(false);
+  const { urgentTodos, normalTodos } = buildTodoPriorityLists(todos);
+  const { next3Hours, laterRoutines } = buildRoutinePriorityLists(routines);
 
   const [tab, setTab] = useState(0);
-
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"routine" | "todo">("todo");
   const [editingItem, setEditingItem] = useState<any>(null);
-
   const [groupModalOpen, setGroupModalOpen] = useState(false);
-
-  const todayStr = new Date().toISOString().slice(0, 10);
-
-  /* ================= LOAD ================= */
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    async function load() {
-      await loadTodoData();
-      const db = getTodoData();
-      setRoutines(db.routines);
-      setTodos(db.todos);
-      setGroups(db.groups);
-      setLoading(false);
+
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      return; // ⭐ ignore initial load
     }
-    load();
-  }, []);
+    setIsDirty(true);
 
-  useEffect(() => {
+  }, [routines, todos, groups]);
 
-    const interval = setInterval(() => {
+  /* ================= ANALYTICS ================= */
 
-      const today = new Date().toISOString().slice(0, 10);
+  const analytics = useMemo(() => {
+    const routineDone = routines.filter(r => r.completedToday === todayStr).length;
+    const routineTotal = routines.length;
+    const todoDone = todos.filter(t => t.status === "completed").length;
+    const todoTotal = todos.length;
 
-      setRoutines(prev =>
-        prev.map(r =>
-          r.completedToday &&
-            r.completedToday !== today
-            ? { ...r, completedToday: null }
-            : r
-        )
-      );
+    return { routineDone, routineTotal, todoDone, todoTotal };
+  }, [routines, todos, todayStr]);
 
-    }, 60000); // check every minute
+  const routineProgress =
+    analytics.routineTotal === 0 ? 0 :
+      (analytics.routineDone / analytics.routineTotal) * 100;
 
-    return () => clearInterval(interval);
+  const todoProgress =
+    analytics.todoTotal === 0 ? 0 :
+      (analytics.todoDone / analytics.todoTotal) * 100;
 
-  }, []);
+  /* ================= HELPERS ================= */
 
 
-  /* ================= SAVE ================= */
 
-  const saveDb = (nextRoutines: Routine[], nextTodos: Todo[], nextGroups?: Group[]) => {
+  const formatRoutineTime = (timeStr?: string) => {
+    if (!timeStr) return "";
+    if (timeStr.includes("AM") || timeStr.includes("PM")) return timeStr;
 
-    const db = getTodoData();
+    const [h, m] = timeStr.split(":").map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
 
-    const updated = {
-      ...db,
-      routines: nextRoutines,
-      todos: nextTodos,
-      groups: nextGroups ?? db.groups
-    };
-
-    setRoutines(nextRoutines);
-    setTodos(nextTodos);
-    if (nextGroups) setGroups(nextGroups);
-
-    setTodoData(updated);
+    return d.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true
+    });
   };
 
-  /* ================= TOGGLES ================= */
+  const getTimeLeftLabel = (deadline: string | null) => {
+    if (!deadline) return "";
+    const now = new Date();
+    const end = new Date(deadline + "T23:59:59");
 
-  const toggleRoutine = (r: Routine) => {
+    let diff = Math.floor((end.getTime() - now.getTime()) / 60000);
+    if (diff <= 0) return "Overdue";
 
-    const done = r.completedToday === todayStr;
+    const hours = Math.floor(diff / 60);
+    if (hours < 24) return `${hours}h`;
 
-    const next = routines.map(x =>
-      x.id === r.id
-        ? { ...x, completedToday: done ? null : todayStr }
-        : x
-    );
-
-    saveDb(next, todos);
+    return `${Math.floor(hours / 24)}d`;
   };
-
-  const toggleTodo = (t: Todo) => {
-
-    const done = t.status === "completed";
-
-    const next: Todo[] = todos.map(x =>
-      x.id === t.id
-        ? {
-          ...x,
-          status: (done ? "pending" : "completed") as TodoStatus,
-          completedAt: done ? null : new Date().toISOString()
-        }
-        : x
-    );
-
-    saveDb(routines, next);
-  };
-
-  /* ================= SAVE ITEM ================= */
 
   const handleSaveItem = (item: any) => {
 
     if (editorMode === "routine") {
-
       const exists = routines.some(r => r.id === item.id);
 
       const next = exists
@@ -156,7 +129,6 @@ export default function TodoApp() {
         : [...routines, item];
 
       saveDb(next, todos);
-
     } else {
 
       const exists = todos.some(t => t.id === item.id);
@@ -170,73 +142,6 @@ export default function TodoApp() {
 
     setEditorOpen(false);
   };
-
-  const handleSync = async () => {
-    await syncTodoToGitHub("Manual sync");
-  };
-
-  /* ================= FORMATTERS ================= */
-
-  const formatRoutineTime = (timeStr?: string) => {
-    if (!timeStr) return "";
-
-    if (timeStr.includes("AM") || timeStr.includes("PM")) return timeStr;
-
-    const [h, m] = timeStr.split(":").map(Number);
-    const date = new Date();
-    date.setHours(h, m, 0, 0);
-
-    return date.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true
-    });
-  };
-
-  const getTimeLeftLabel = (deadline: string | null) => {
-
-    if (!deadline) return "";
-
-    const now = new Date();
-    const end = new Date(deadline + "T23:59:59");
-
-    let diff = Math.floor((end.getTime() - now.getTime()) / 60000);
-
-    if (diff <= 0) return "Overdue";
-
-    const minutes = diff;
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30);
-
-    if (hours < 24) {
-      const h = hours;
-      const m = minutes % 60;
-      if (h > 0) return `${h}h ${m}m`;
-      return `${m}m`;
-    }
-
-    if (days < 30) {
-      const d = days;
-      const h = hours % 24;
-      if (h > 0) return `${d}d ${h}h`;
-      return `${d}d`;
-    }
-
-    const mo = months;
-    const d = days % 30;
-
-    if (d > 0) return `${mo}mo ${d}d`;
-    return `${mo}mo`;
-  };
-
-  /* ================= PRIORITY ENGINE OUTPUT ================= */
-
-  const { urgentTodos, normalTodos } =
-    buildTodoPriorityLists(todos);
-
-  const { next3Hours, laterRoutines } =
-    buildRoutinePriorityLists(routines);
 
   /* ================= ROWS ================= */
 
@@ -254,47 +159,33 @@ export default function TodoApp() {
         setEditorOpen(true);
       }}
       isUrgent={(r as any).isUrgent}
+      onDelete={() => {
+        const next = routines.filter(x => x.id !== r.id);
+        saveDb(next, todos);
+      }}
     />
   );
 
-  const formatCompletedDate = (date?: string | null) => {
-    if (!date) return "";
-
-    const d = new Date(date);
-
-    return d.toLocaleDateString([], {
-      day: "numeric",
-      month: "short"
-    });
-  };
-
   const TodoRow = (t: Todo) => {
-
     const isDone = t.status === "completed";
 
     return (
       <PremiumTaskCard
         title={t.title}
         done={isDone}
-
-        /* ✅ META LOGIC FIXED */
-        meta={
-          isDone
-            ? `Done ${formatCompletedDate(t.completedAt)}`
-            : getTimeLeftLabel(t.deadline)
-        }
-
+        meta={isDone ? "Done" : getTimeLeftLabel(t.deadline)}
         groups={groups}
         groupIds={t.groupIds}
-
-        /* 🚫 completed items never urgent */
         isOverdue={!isDone && (t as any).isOverdue}
-
         onToggle={() => toggleTodo(t)}
         onEdit={() => {
           setEditorMode("todo");
           setEditingItem(t);
           setEditorOpen(true);
+        }}
+        onDelete={() => {
+          const next = todos.filter(x => x.id !== t.id);
+          saveDb(routines, next);
         }}
       />
     );
@@ -304,142 +195,276 @@ export default function TodoApp() {
     return <Container><Typography>Loading...</Typography></Container>;
   }
 
+  const sidebar = [
+    { icon: <HomeIcon />, label: "Home" },
+    { icon: <CheckIcon />, label: "Todos" },
+    { icon: <RepeatIcon />, label: "Routines" },
+    { icon: <DoneAllIcon />, label: "Completed" },
+    { icon: <InsightsIcon />, label: "Dashboard" }
+  ];
+
   return (
-    <Container maxWidth="sm" >
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
 
-      <Box
-        sx={{
-          mb: 3,
-          p: 0.6,
-          borderRadius: 999,
-          background: "rgba(0,255,170,0.06)",
-          border: "1px solid rgba(0,255,170,0.15)",
-          backdropFilter: "blur(12px)"
-        }}
-      >
-        <Tabs
-          value={tab}
-          onChange={(_, v) => setTab(v)}
-          variant="fullWidth"
-          TabIndicatorProps={{
-            style: { display: "none" }
-          }}
-          sx={{
-            minHeight: 44,
-            "& .MuiTabs-flexContainer": {
-              gap: 0.5
-            }
-          }}
-        >
-          {["HOME", "TODOS", "ROUTINES", "COMPLETED"].map((label, index) => (
-            <Tab
-              key={label}
-              label={label}
-              disableRipple
+      {/* SIDEBAR */}
+      <Box sx={{
+        width: 64,
+        borderRight: "1px solid rgba(255,255,255,0.06)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        pt: 1,
+        gap: 2
+      }}>
+        {sidebar.map((s, i) => (
+          <Tooltip title={s.label} placement="right" key={i}>
+            <Box
+              onClick={() => setTab(i)}
               sx={{
-                minHeight: 36,
-                borderRadius: 999,
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                letterSpacing: 0.5,
-                transition: "all .25s ease",
-                color: tab === index
-                  ? "#00ffa6"
-                  : "rgba(255,255,255,0.6)",
+                p: 1.5,
+                borderRadius: 2,
+                cursor: "pointer",
+                color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
+                background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
+              }}
+            >
+              {s.icon}
+            </Box>
+          </Tooltip>
+        ))}
+      </Box>
 
-                background:
-                  tab === index
-                    ? "rgba(0,255,170,0.12)"
-                    : "transparent",
+      {/* MAIN CONTENT */}
+      <Container maxWidth="sm">
+
+        {/* ACTION BAR */}
+        {tab !== 4 && (
+          <Stack direction="row" spacing={1} mb={1}>
+            <Button startIcon={<AddIcon />} variant="contained"
+              sx={{
+                cursor: "pointer",
+                background: "#00ffa6"
+              }}
+              onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
+              Todo
+            </Button>
+
+            <Button variant="contained" sx={{
+              cursor: "pointer",
+              background: "#00ffa6"
+            }}
+              onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
+              Routine
+            </Button>
+
+            <Button startIcon={<CategoryIcon />} variant="outlined" sx={{
+              cursor: "pointer",
+              color: "#00ffa6",
+              background: "rgba(0,255,170,0.12)"
+            }}
+              onClick={() => setGroupModalOpen(true)}>
+              Group
+            </Button>
+
+            <Button
+              startIcon={<GitHubIcon />}
+              variant="contained"
+              onClick={async () => {
+                await handleSync();
+                setIsDirty(false);
+              }}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                borderRadius: 2,
+
+                /* GitHub black button */
+                background: "#24292f",
+                color: "#fff",
+                border: "1px solid rgba(255,255,255,0.15)",
+
+                animation: isDirty ? "githubPulse 1.6s ease-in-out infinite" : "none",
+
+                "@keyframes githubPulse": {
+                  "0%": {
+                    boxShadow: "0 0 0 rgba(0,255,170,0)"
+                  },
+                  "50%": {
+                    boxShadow: "0 0 18px rgba(255, 0, 0, 0.35)"
+                  },
+                  "100%": {
+                    boxShadow: "0 0 0 rgba(0,255,170,0)"
+                  }
+                },
 
                 "&:hover": {
-                  background: "rgba(0,255,170,0.08)"
+                  background: "#2f363d"
                 }
               }}
-            />
-          ))}
-        </Tabs>
-      </Box>
+            >
+              {isDirty ? "Sync changes" : "Up to date"}
+            </Button>
 
-      {/* ================= HOME ================= */}
-      {tab === 0 && (
-        <Stack spacing={2}>
 
-          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-            <Typography fontWeight={700} mb={1}>🔥 Priority Todos</Typography>
-            <Stack spacing={1.2}>
-              {urgentTodos.map(TodoRow)}
-            </Stack>
-          </Paper>
-
-          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-            <Typography fontWeight={700} mb={1}>⏱ Next 3 Hours</Typography>
-            <Stack spacing={1.2}>
-              {next3Hours.map(RoutineRow)}
-            </Stack>
-          </Paper>
-
-        </Stack>
-      )}
-
-      {/* ================= TODOS ================= */}
-      {tab === 1 && (
-        <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-          <Stack spacing={1.5}>
-            {normalTodos.map(TodoRow)}
           </Stack>
-        </Paper>
-      )}
+        )}
 
-      {/* ================= ROUTINES ================= */}
-      {tab === 2 && (
-        <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-          <Stack spacing={1.5}>
-            {laterRoutines.map(RoutineRow)}
+        {/* ================= HOME TAB ================= */}
+        {tab === 0 && (
+          <Stack spacing={2}>
+
+            {/* PROGRESS CARDS 50/50 */}
+            <Stack direction="row" spacing={2}>
+
+              {/* ROUTINES */}
+              <Paper sx={{
+                ...premiumSurface,
+                flex: 1,
+                p: 2,
+                borderRadius: 4
+              }}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography fontSize={14} sx={{ opacity: 0.7 }}>
+                    Daily Routines
+                  </Typography>
+
+                  <Typography fontWeight={700}>
+                    {analytics.routineDone}/{analytics.routineTotal}
+                  </Typography>
+                </Stack>
+
+                <LinearProgress
+                  value={routineProgress}
+                  variant="determinate"
+                  sx={{ mt: 0.5, height: 5, borderRadius: 99 }}
+                />
+              </Paper>
+
+              {/* TODOS */}
+              <Paper sx={{
+                ...premiumSurface,
+                flex: 1,
+                p: 2,
+                borderRadius: 4
+              }}>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography fontSize={14} sx={{ opacity: 0.7 }}>
+                    Todo Tasks
+                  </Typography>
+
+                  <Typography fontWeight={700}>
+                    {analytics.todoDone}/{analytics.todoTotal}
+                  </Typography>
+                </Stack>
+
+                <LinearProgress
+                  value={todoProgress}
+                  variant="determinate"
+                  sx={{ mt: 0.5, height: 5, borderRadius: 99 }}
+                />
+              </Paper>
+
+            </Stack>
+
+            {/* PRIORITY TODOS */}
+            <Paper sx={{ ...premiumSurface, p: 2.2, borderRadius: 2 }}>
+              <Typography fontWeight={700} sx={{
+                color: "#c6ffe6",
+                textShadow: "0 0 12px rgba(0,255,170,0.25)"
+              }}>
+                🔥 Priority Todos
+              </Typography>
+
+              <Stack spacing={1.2}>
+                {urgentTodos.map(TodoRow)}
+              </Stack>
+            </Paper>
+
+            {/* NEXT 3 HOURS */}
+            <Paper sx={{ ...premiumSurface, p: 2.2, borderRadius: 2 }}>
+              <Typography fontWeight={700}>⏱ Next 3 Hours</Typography>
+
+              <Stack spacing={1.2}>
+                {next3Hours.map(RoutineRow)}
+              </Stack>
+            </Paper>
+
           </Stack>
-        </Paper>
-      )}
+        )}
 
-      {/* ================= COMPLETED ================= */}
-      {tab === 3 && (
-        <Stack spacing={2}>
-
-          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-            <Typography fontWeight={700} mb={1}>Completed Daily Routines</Typography>
-            <Stack spacing={1.2}>
-              {routines.filter(r => r.completedToday === todayStr).map(RoutineRow)}
+        {/* TODOS TAB */}
+        {tab === 1 && (
+          <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
+            <Typography fontWeight={700}> All Todos</Typography>
+            <Stack spacing={1.5}>
+              {normalTodos.map(TodoRow)}
             </Stack>
           </Paper>
+        )}
 
-          <Paper sx={{ p: 2, borderRadius: 3, background: "#041a11", border: "1px solid rgba(0,255,170,0.15)" }}>
-            <Typography fontWeight={700} mb={1}>Completed Todos</Typography>
-            <Stack spacing={1.2}>
-              {todos.filter(t => t.status === "completed").map(TodoRow)}
+        {/* ROUTINES TAB */}
+        {tab === 2 && (
+          <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
+            <Typography fontWeight={700}>All Routines</Typography>
+            <Stack spacing={1.5}>
+              {laterRoutines.map(RoutineRow)}
             </Stack>
           </Paper>
+        )}
 
-        </Stack>
-      )}
+        {/* COMPLETED */}
+        {/* COMPLETED TAB — RESTORED TWO CARDS */}
+        {tab === 3 && (
+          <Stack spacing={2}>
 
-      <Box sx={{ position: "fixed", bottom: 24, right: 24, display: "flex", gap: 1 }}>
+            {/* COMPLETED ROUTINES */}
+            <Paper
+              sx={{
+                ...premiumSurface,
+                p: 2,
+                borderRadius: 2
+              }}
+            >
+              <Typography fontWeight={700} mb={1}>
+                Completed Daily Routines
+              </Typography>
 
-        <Button variant="contained" size="small" startIcon={<AddIcon />}
-          onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}
-        >Todo</Button>
+              <Stack spacing={1.2}>
+                {routines
+                  .filter(r => r.completedToday === todayStr)
+                  .map(RoutineRow)}
+              </Stack>
+            </Paper>
 
-        <Button variant="contained" size="small"
-          onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}
-        >Routine</Button>
+            {/* COMPLETED TODOS */}
+            <Paper
+              sx={{
+                ...premiumSurface,
+                p: 2,
+                borderRadius: 2
+              }}
+            >
+              <Typography fontWeight={700} mb={1}>
+                Completed Todos
+              </Typography>
 
-        <Button variant="outlined" size="small" startIcon={<CategoryIcon />}
-          onClick={() => setGroupModalOpen(true)}
-        >Group</Button>
+              <Stack spacing={1.2}>
+                {todos
+                  .filter(t => t.status === "completed")
+                  .map(TodoRow)}
+              </Stack>
+            </Paper>
 
-        <Button variant="outlined" size="small" startIcon={<SyncIcon />}
-          onClick={handleSync}
-        >Sync</Button>
+          </Stack>
+        )}
 
-      </Box>
+
+        {/* DASHBOARD */}
+        {tab === 4 && (
+          <DashboardView routines={routines} />
+        )}
+
+      </Container>
 
       <TaskEditorModal
         open={editorOpen}
@@ -453,13 +478,12 @@ export default function TodoApp() {
       <GroupModal
         open={groupModalOpen}
         onClose={() => setGroupModalOpen(false)}
-        onSave={(g) => {
-          const next = [...groups, g];
-          saveDb(routines, todos, next);
+        onSave={(g: any) => {
+          setGroups(prev => [...prev, g]);
           setGroupModalOpen(false);
         }}
       />
 
-    </Container>
+    </Box>
   );
 }

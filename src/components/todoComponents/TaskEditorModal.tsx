@@ -24,7 +24,7 @@ import {
 } from "@mui/x-date-pickers/AdapterDayjs";
 
 import dayjs from "dayjs";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 
 import {
   Routine,
@@ -33,126 +33,134 @@ import {
   Priority
 } from "../../types/todoModels";
 
-interface Props{
-  open:boolean;
-  mode:"routine"|"todo";
-  item:Routine|Todo|null;
-  groups:Group[];
-  onClose:()=>void;
-  onSave:(item:any)=>void;
+interface Props {
+  open: boolean;
+  mode: "routine" | "todo";
+  item: Routine | Todo | null;
+  groups: Group[];
+  onClose: () => void;
+  onSave: (item: any) => void;
 }
 
 export default function TaskEditorModal({
-  open,mode,item,groups,onClose,onSave
-}:Props){
+  open, mode, item, groups, onClose, onSave
+}: Props) {
 
-  const [title,setTitle]=useState("");
-  const [priority,setPriority]=useState<Priority>("medium");
-  const [groupIds,setGroupIds]=useState<string[]>([]);
+  const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
+  const [groupIds, setGroupIds] = useState<string[]>([]);
+  const [deadline, setDeadline] = useState<any>(null);
+  const [time, setTime] = useState<any>(null);
+  const [error, setError] = useState("");
 
-  const [deadline,setDeadline]=useState<any>(null);
-  const [time,setTime]=useState<any>(null);
-
-  const [error,setError]=useState("");
-
-  useEffect(()=>{
+  useEffect(() => {
 
     setTitle(item?.title ?? "");
     setPriority((item as any)?.priority ?? "medium");
     setGroupIds((item as any)?.groupIds ?? []);
 
-    if(mode==="todo" && (item as Todo)?.deadline){
+    if (mode === "todo" && (item as Todo)?.deadline) {
       setDeadline(dayjs((item as Todo).deadline));
-    }else{
+    } else {
       setDeadline(null);
     }
 
-    if(mode==="routine" && (item as Routine)?.completeByTime){
+    if (mode === "routine" && (item as Routine)?.completeByTime) {
       setTime(dayjs(`2020-01-01T${(item as Routine).completeByTime}`));
-    }else{
+    } else {
       setTime(null);
     }
 
-  },[item,mode]);
+  }, [item, mode]);
 
-  const toggleGroup=(id:string)=>{
+  const toggleGroup = (id: string) => {
     setGroupIds(prev =>
       prev.includes(id)
-        ? prev.filter(g=>g!==id)
-        : [...prev,id]
+        ? prev.filter(g => g !== id)
+        : [...prev, id]
     );
   };
 
-  const handleSave=()=>{
+  const handleSave = () => {
 
-    if(!title.trim()){
+    if (!title.trim()) {
       setError("Title required");
       return;
     }
 
-    if(mode==="todo" && !deadline){
+    if (mode === "todo" && !deadline) {
       setError("Deadline required");
       return;
     }
 
-    if(mode==="routine" && !time){
+    if (mode === "routine" && !time) {
       setError("Time required");
       return;
     }
 
     setError("");
 
-    if(mode==="routine"){
+    if (mode === "routine") {
       onSave({
-        id:item?.id ?? crypto.randomUUID(),
+        id: item?.id ?? crypto.randomUUID(),
         title,
         priority,
         groupIds,
-        repeatEveryDays:1,
-        completeByTime: time.format("hh:mm A"), // 12hr
-        trackStreak:true,
-        streak:(item as Routine)?.streak ?? {current:0,longest:0},
-        completedToday:(item as Routine)?.completedToday ?? null
+        repeatEveryDays: 1,
+        completeByTime: time.format("hh:mm A"),
+        trackStreak: true,
+        streak: (item as Routine)?.streak ?? { current: 0, longest: 0 },
+        completedToday: (item as Routine)?.completedToday ?? null
       });
-    }else{
+    } else {
       onSave({
-        id:item?.id ?? crypto.randomUUID(),
+        id: item?.id ?? crypto.randomUUID(),
         title,
         priority,
         groupIds,
         deadline: deadline.format("YYYY-MM-DD"),
-        createdAt:(item as Todo)?.createdAt ?? new Date().toISOString(),
-        completedAt:(item as Todo)?.completedAt ?? null,
-        status:(item as Todo)?.status ?? "pending"
+        createdAt: (item as Todo)?.createdAt ?? new Date().toISOString(),
+        completedAt: (item as Todo)?.completedAt ?? null,
+        status: (item as Todo)?.status ?? "pending"
       });
     }
-
   };
 
-  return(
+  return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog open={open} onClose={onClose} fullScreen>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+            backdropFilter: "blur(20px)"
+          }
+        }}
+      >
 
-        <DialogTitle sx={{fontWeight:700}}>
-          {mode==="routine"?"Routine":"Todo"}
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {mode === "routine" ? "Edit Routine" : "Edit Todo"}
         </DialogTitle>
 
         <DialogContent>
 
-          <Stack spacing={3} mt={1}>
+          <Stack spacing={2} mt={1}>
 
             <TextField
               label="Title"
               fullWidth
               value={title}
-              onChange={e=>setTitle(e.target.value)}
+              onChange={e => setTitle(e.target.value)}
             />
 
             <TextField
               select
               label="Priority"
               value={priority}
-              onChange={e=>setPriority(e.target.value as Priority)}
+              onChange={e => setPriority(e.target.value as Priority)}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -161,63 +169,47 @@ export default function TaskEditorModal({
 
             <Typography variant="caption">Groups</Typography>
 
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {groups.map(g=>(
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+              {groups.map(g => (
                 <Chip
                   key={g.id}
                   label={g.name}
-                  onClick={()=>toggleGroup(g.id)}
-                  color={groupIds.includes(g.id)?"primary":"default"}
+                  onClick={() => toggleGroup(g.id)}
+                  color={groupIds.includes(g.id) ? "primary" : "default"}
                 />
               ))}
-            </Stack>
+            </Box>
 
-            {mode==="routine" && (
+            {mode === "routine" && (
               <TimePicker
                 ampm
                 label="Complete by"
                 value={time}
                 onChange={setTime}
+                minutesStep={1}          // ⭐ allows every minute
               />
+
             )}
 
-            {mode==="todo" && (
-              <DatePicker
-                label="Deadline"
-                value={deadline}
-                onChange={setDeadline}
-              />
+            {mode === "todo" && (
+              <DatePicker label="Deadline" value={deadline} onChange={setDeadline} />
             )}
 
             {error && <Typography color="error">{error}</Typography>}
 
-            {/* ACTION BUTTONS */}
-
             <Stack direction="row" spacing={2}>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={onClose}
-                color="error"
-              >
+              <Button fullWidth variant="outlined" onClick={onClose}>
                 Cancel
               </Button>
 
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleSave}
-              >
+              <Button fullWidth variant="contained" onClick={handleSave}>
                 Save
               </Button>
-
             </Stack>
 
           </Stack>
 
         </DialogContent>
-
       </Dialog>
     </LocalizationProvider>
   );

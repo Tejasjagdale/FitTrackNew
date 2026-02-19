@@ -12,6 +12,10 @@ export interface Streak {
 
 /* ================= ROUTINE ================= */
 
+export interface RoutineHistoryEntry {
+  date: string; // "YYYY-MM-DD"
+}
+
 export interface Routine {
   id: string;
   title: string;
@@ -26,6 +30,9 @@ export interface Routine {
   streak: Streak | null;
 
   completedToday?: string | null;
+
+  /* ✅ NEW */
+  history?: RoutineHistoryEntry[];
 }
 
 /* ================= TODO ================= */
@@ -56,3 +63,10 @@ export interface TodoDatabase {
   routines: Routine[];
   todos: Todo[];
 }
+
+export const premiumSurface = {
+  background:
+    "linear-gradient(180deg, rgba(0,255,170,0.06), rgba(0,255,170,0.015))",
+  border: "1px solid rgba(0,255,170,0.18)",
+  backdropFilter: "blur(18px)",
+};
