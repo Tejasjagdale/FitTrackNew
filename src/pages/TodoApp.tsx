@@ -177,7 +177,10 @@ export default function TodoApp() {
       meta={formatRoutineTime(r.completeByTime ?? "")}
       groups={groups}
       groupIds={r.groupIds}
-      onToggle={() => toggleRoutine(r)}
+      onToggle={() => {
+        toggleRoutine(r)
+        setIsDirty(true)
+      }}
       onEdit={() => {
         setEditorMode("routine");
         setEditingItem(r);
@@ -189,7 +192,7 @@ export default function TodoApp() {
         saveDb(next, todos);
         setIsDirty(true);
       }}
-      streak={r.streak?.current} 
+      streak={r.streak?.current}
     />
   );
 
@@ -204,7 +207,10 @@ export default function TodoApp() {
         groups={groups}
         groupIds={t.groupIds}
         isOverdue={!isDone && (t as any).isOverdue}
-        onToggle={() => toggleTodo(t)}
+        onToggle={() => {
+          toggleTodo(t)
+          setIsDirty(true)
+        }}
         onEdit={() => {
           setEditorMode("todo");
           setEditingItem(t);
@@ -328,36 +334,67 @@ export default function TodoApp() {
 
         {/* ACTION BAR */}
         {tab !== 5 && (
-          <Stack direction="row" spacing={1} mb={1}>
-            <Button variant="contained"
+          <Stack
+            direction="row"
+            spacing={0.5}          // less gap between buttons
+            mb={1}
+          >
+            <Button
+              variant="contained"
+              size="small"
               sx={{
                 cursor: "pointer",
                 background: "#00ffa6",
+
+                minHeight: 28,
+                px: 1.2,           // horizontal padding
+                py: 0.2,           // vertical padding
+                fontSize: "0.72rem",
+                lineHeight: 1.2
               }}
-              size="small"
-              onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
+              onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}
+            >
               Todo
             </Button>
 
-            <Button variant="contained" sx={{
-              cursor: "pointer",
-              background: "#00ffa6"
-            }}
-              onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
+            <Button
+              variant="contained"
+              size="small"
+              sx={{
+                cursor: "pointer",
+                background: "#00ffa6",
+
+                minHeight: 28,
+                px: 1.2,
+                py: 0.2,
+                fontSize: "0.72rem"
+              }}
+              onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}
+            >
               Routine
             </Button>
 
-            <Button variant="outlined" sx={{
-              cursor: "pointer",
-              color: "#00ffa6",
-              background: "rgba(0,255,170,0.12)"
-            }}
-              onClick={() => setGroupModalOpen(true)}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{
+                cursor: "pointer",
+                color: "#00ffa6",
+                background: "rgba(0,255,170,0.12)",
+
+                minHeight: 28,
+                px: 1.2,
+                py: 0.2,
+                fontSize: "0.72rem"
+              }}
+              onClick={() => setGroupModalOpen(true)}
+            >
               Group
             </Button>
 
             <Button
-              startIcon={<GitHubIcon />}
+              startIcon={<GitHubIcon sx={{ fontSize: 16 }} />} // smaller icon
+              size="small"
               variant="contained"
               onClick={async () => {
                 await handleSync();
@@ -367,24 +404,21 @@ export default function TodoApp() {
               sx={{
                 textTransform: "none",
                 borderRadius: 2,
-
-                /* GitHub black button */
                 background: isDirty ? "#961717" : "#24292f",
                 color: "#fff",
                 border: "1px solid rgba(255,255,255,0.15)",
 
+                minHeight: 28,
+                px: 1.2,
+                py: 0.2,
+                fontSize: "0.72rem",
+
                 animation: isDirty ? "githubPulse 1s ease-in-out infinite" : "none",
 
                 "@keyframes githubPulse": {
-                  "0%": {
-                    boxShadow: "0 0 0 rgba(0,255,170,0)"
-                  },
-                  "50%": {
-                    boxShadow: "0 0 50px rgba(255, 0, 0, 0.85)"
-                  },
-                  "100%": {
-                    boxShadow: "0 0 0 rgba(0,255,170,0)"
-                  }
+                  "0%": { boxShadow: "0 0 0 rgba(0,255,170,0)" },
+                  "50%": { boxShadow: "0 0 50px rgba(255, 0, 0, 0.85)" },
+                  "100%": { boxShadow: "0 0 0 rgba(0,255,170,0)" }
                 },
 
                 "&:hover": {
@@ -394,10 +428,9 @@ export default function TodoApp() {
             >
               {isDirty ? "Sync changes" : "Up to date"}
             </Button>
-
-
           </Stack>
         )}
+
 
         {/* ================= HOME TAB ================= */}
         {tab === 1 && (
@@ -407,18 +440,21 @@ export default function TodoApp() {
             <Stack direction="row" spacing={2}>
 
               {/* ROUTINES */}
-              <Paper sx={{
-                ...premiumSurface,
-                flex: 1,
-                p: 2,
-                borderRadius: 4
-              }}>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography fontSize={14} sx={{ opacity: 0.7 }}>
+              <Paper
+                sx={{
+                  ...premiumSurface,
+                  flex: 1,
+                  px: 1.2,     // less horizontal padding
+                  py: 0.8,     // less vertical padding
+                  borderRadius: 3
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography fontSize={12} sx={{ opacity: 0.7 }}>
                     Daily Routines
                   </Typography>
 
-                  <Typography fontWeight={700}>
+                  <Typography fontWeight={700} fontSize={12}>
                     {analytics.routineDone}/{analytics.routineTotal}
                   </Typography>
                 </Stack>
@@ -426,23 +462,30 @@ export default function TodoApp() {
                 <LinearProgress
                   value={routineProgress}
                   variant="determinate"
-                  sx={{ mt: 0.5, height: 5, borderRadius: 99 }}
+                  sx={{
+                    mt: 0.4,
+                    height: 3,            // thinner bar
+                    borderRadius: 99
+                  }}
                 />
               </Paper>
 
               {/* TODOS */}
-              <Paper sx={{
-                ...premiumSurface,
-                flex: 1,
-                p: 2,
-                borderRadius: 4
-              }}>
-                <Stack direction="row" justifyContent="space-between">
-                  <Typography fontSize={14} sx={{ opacity: 0.7 }}>
+              <Paper
+                sx={{
+                  ...premiumSurface,
+                  flex: 1,
+                  px: 1.2,
+                  py: 0.8,
+                  borderRadius: 3
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography fontSize={12} sx={{ opacity: 0.7 }}>
                     Todo Tasks
                   </Typography>
 
-                  <Typography fontWeight={700}>
+                  <Typography fontWeight={700} fontSize={12}>
                     {analytics.todoDone}/{analytics.todoTotal}
                   </Typography>
                 </Stack>
@@ -450,9 +493,14 @@ export default function TodoApp() {
                 <LinearProgress
                   value={todoProgress}
                   variant="determinate"
-                  sx={{ mt: 0.5, height: 5, borderRadius: 99 }}
+                  sx={{
+                    mt: 0.4,
+                    height: 3,
+                    borderRadius: 99
+                  }}
                 />
               </Paper>
+
 
             </Stack>
 
