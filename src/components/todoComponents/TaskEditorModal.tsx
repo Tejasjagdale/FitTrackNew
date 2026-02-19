@@ -135,7 +135,7 @@ export default function TaskEditorModal({
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 4,
+            borderRadius: 2,
             backdropFilter: "blur(20px)"
           }
         }}

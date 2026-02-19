@@ -197,7 +197,7 @@ export default function PremiumTaskCard({
         onClose={() => setConfirmOpen(false)}
         PaperProps={{
           sx: {
-            borderRadius: 3,
+            borderRadius: 1,
             background: "#07130f",
             border: "1px solid rgba(255,80,80,0.25)"
           }
