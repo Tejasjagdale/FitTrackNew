@@ -144,7 +144,7 @@ export default function PremiumTaskCard({
             >
 
               {/* 🔥 STREAK CHIP */}
-              { typeof streak === "number" && (streak > 0) && !done && (
+              { typeof streak === "number" && (streak > 0) && (
                 <Chip
                   size="small"
                   icon={<LocalFireDepartmentIcon sx={{ fontSize: 14 }} />}

@@ -1,18 +1,24 @@
 import { Todo } from "../types/todoModels";
+import { nowIST } from "../utils/istTime";
 
 export interface TodoPriorityResult {
   urgentTodos: Todo[];
   normalTodos: Todo[];
 }
 
+/* ================= IST DAYS LEFT ================= */
+
 const getDaysLeft = (deadline: string) => {
-  const now = new Date();
-  const end = new Date(deadline + "T23:59:59");
+
+  const now = nowIST();
+  const end = new Date(deadline + "T23:59:59+05:30");
 
   const diffMs = end.getTime() - now.getTime();
 
   return Math.floor(diffMs / (1000 * 60 * 60 * 24));
 };
+
+/* ================= PRIORITY BUILDER ================= */
 
 export function buildTodoPriorityLists(
   todos: Todo[]
@@ -45,8 +51,8 @@ export function buildTodoPriorityLists(
     if (!a.deadline) return 1;
     if (!b.deadline) return -1;
 
-    return new Date(a.deadline).getTime() -
-           new Date(b.deadline).getTime();
+    return new Date(a.deadline + "T00:00:00+05:30").getTime() -
+           new Date(b.deadline + "T00:00:00+05:30").getTime();
   };
 
   urgent.sort(sortByDeadline);

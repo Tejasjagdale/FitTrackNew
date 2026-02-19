@@ -11,22 +11,17 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
-  Drawer,
   SwipeableDrawer
 } from "@mui/material";
 
-import AddIcon from "@mui/icons-material/Add";
-import CategoryIcon from "@mui/icons-material/Category";
-import SyncIcon from "@mui/icons-material/Sync";
 import HomeIcon from "@mui/icons-material/Home";
 import CheckIcon from "@mui/icons-material/Checklist";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import InsightsIcon from "@mui/icons-material/Insights";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-
+import GroupsIcon from "@mui/icons-material/Groups";
+import AddIcon from "@mui/icons-material/Add";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 
@@ -40,7 +35,8 @@ import { buildTodoPriorityLists } from "../engine/todoPriorityEngine";
 import { buildRoutinePriorityLists } from "../engine/routinePriorityEngine";
 import DashboardView from "../components/todoComponents/DashboardView";
 import { initNotifications, rescheduleAllNotifications } from "../engine/notificationService";
-
+import GroupListView from "../components/todoComponents/GroupListView";
+import { nowIST } from "../utils/istTime";
 
 export default function TodoApp() {
 
@@ -58,6 +54,8 @@ export default function TodoApp() {
   } = useTodoStore();
 
   const hasLoadedRef = useRef(false);
+  const initialSnapshotRef = useRef<string>("");
+
   const { urgentTodos, normalTodos } = buildTodoPriorityLists(todos);
   const { next3Hours, laterRoutines } = buildRoutinePriorityLists(routines);
 
@@ -77,6 +75,33 @@ export default function TodoApp() {
     initNotifications();
   }, []);
 
+  /* ================= INITIAL SNAPSHOT ================= */
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!initialSnapshotRef.current) {
+      initialSnapshotRef.current = JSON.stringify({
+        routines,
+        todos,
+        groups
+      });
+    }
+  }, [loading]);
+
+  /* ================= DIRTY DETECTOR ================= */
+
+  useEffect(() => {
+    if (!initialSnapshotRef.current) return;
+
+    const current = JSON.stringify({
+      routines,
+      todos,
+      groups
+    });
+
+    setIsDirty(current !== initialSnapshotRef.current);
+  }, [routines, todos, groups]);
 
   /* ================= ANALYTICS ================= */
 
@@ -102,22 +127,17 @@ export default function TodoApp() {
       hasLoadedRef.current = true;
       return;
     }
-
     rescheduleAllNotifications(routines, todos);
-
   }, [routines, todos]);
 
-
   /* ================= HELPERS ================= */
-
-
 
   const formatRoutineTime = (timeStr?: string) => {
     if (!timeStr) return "";
     if (timeStr.includes("AM") || timeStr.includes("PM")) return timeStr;
 
     const [h, m] = timeStr.split(":").map(Number);
-    const d = new Date();
+    const d = nowIST();
     d.setHours(h, m, 0, 0);
 
     return d.toLocaleTimeString([], {
@@ -129,8 +149,9 @@ export default function TodoApp() {
 
   const getTimeLeftLabel = (deadline: string | null) => {
     if (!deadline) return "";
-    const now = new Date();
-    const end = new Date(deadline + "T23:59:59");
+
+    const now = nowIST();
+    const end = new Date(deadline + "T23:59:59+05:30");
 
     let diff = Math.floor((end.getTime() - now.getTime()) / 60000);
     if (diff <= 0) return "Overdue";
@@ -140,6 +161,7 @@ export default function TodoApp() {
 
     return `${Math.floor(hours / 24)}d`;
   };
+
 
   const handleSaveItem = (item: any) => {
 
@@ -151,9 +173,7 @@ export default function TodoApp() {
         : [...routines, item];
 
       saveDb(next, todos);
-      setIsDirty(true);
     } else {
-
       const exists = todos.some(t => t.id === item.id);
 
       const next: Todo[] = exists
@@ -161,8 +181,6 @@ export default function TodoApp() {
         : [...todos, item];
 
       saveDb(routines, next);
-      setIsDirty(true);
-
     }
 
     setEditorOpen(false);
@@ -177,10 +195,7 @@ export default function TodoApp() {
       meta={formatRoutineTime(r.completeByTime ?? "")}
       groups={groups}
       groupIds={r.groupIds}
-      onToggle={() => {
-        toggleRoutine(r)
-        setIsDirty(true)
-      }}
+      onToggle={() => toggleRoutine(r)}
       onEdit={() => {
         setEditorMode("routine");
         setEditingItem(r);
@@ -190,7 +205,6 @@ export default function TodoApp() {
       onDelete={() => {
         const next = routines.filter(x => x.id !== r.id);
         saveDb(next, todos);
-        setIsDirty(true);
       }}
       streak={r.streak?.current}
     />
@@ -207,10 +221,7 @@ export default function TodoApp() {
         groups={groups}
         groupIds={t.groupIds}
         isOverdue={!isDone && (t as any).isOverdue}
-        onToggle={() => {
-          toggleTodo(t)
-          setIsDirty(true)
-        }}
+        onToggle={() => toggleTodo(t)}
         onEdit={() => {
           setEditorMode("todo");
           setEditingItem(t);
@@ -219,7 +230,6 @@ export default function TodoApp() {
         onDelete={() => {
           const next = todos.filter(x => x.id !== t.id);
           saveDb(routines, next);
-          setIsDirty(true);
         }}
       />
     );
@@ -229,40 +239,33 @@ export default function TodoApp() {
     return <Container><Typography>Loading...</Typography></Container>;
   }
 
+  /* ================= SIDEBAR ================= */
+
   const sidebar = [
     { icon: <></>, label: "" },
     { icon: <HomeIcon />, label: "Home" },
     { icon: <CheckIcon />, label: "Todos" },
     { icon: <RepeatIcon />, label: "Routines" },
     { icon: <DoneAllIcon />, label: "Completed" },
-    { icon: <InsightsIcon />, label: "Dashboard" }
+    { icon: <InsightsIcon />, label: "Dashboard" },
+    { icon: <GroupsIcon />, label: "Groups" }
   ];
 
   const sidebarContent = (
-    <Box
-      sx={{
-        width: 70,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        pt: 10,
-        gap: 2
-      }}
-    >
+    <Box sx={{ width: 70, display: "flex", flexDirection: "column", alignItems: "center", pt: 10, gap: 2 }}>
       {sidebar.map((s, i) => (
         <Tooltip title={s.label} placement="right" key={i}>
           <Box
             onClick={() => {
               setTab(i);
-              if (isMobile) setMobileSidebarOpen(false); // ⭐ auto close mobile
+              if (isMobile) setMobileSidebarOpen(false);
             }}
             sx={{
               p: 1.5,
               borderRadius: 2,
               cursor: "pointer",
               color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
-              background:
-                tab === i ? "rgba(0,255,170,0.12)" : "transparent"
+              background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
             }}
           >
             {s.icon}
@@ -275,57 +278,26 @@ export default function TodoApp() {
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
 
-      {/* COLLAPSABLE SIDEBAR */}
       {isMobile ? (
-
-        <>
-          <SwipeableDrawer
-            anchor="left"
-            open={mobileSidebarOpen}
-            onClose={() => setMobileSidebarOpen(false)}
-            onOpen={() => setMobileSidebarOpen(true)}
-            swipeAreaWidth={50}      // ⭐ gesture detection zone
-            disableBackdropTransition={!isMobile}
-            disableDiscovery={false}
-            PaperProps={{
-              sx: {
-                width: 80,
-                background: "#06110d",
-                borderRight: "1px solid rgba(255,255,255,0.06)"
-              }
-            }}
-          >
-            {sidebarContent}
-          </SwipeableDrawer>
-
-        </>
-
+        <SwipeableDrawer
+          anchor="left"
+          open={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
+          onOpen={() => setMobileSidebarOpen(true)}
+          swipeAreaWidth={50}
+          PaperProps={{
+            sx: {
+              width: 80,
+              background: "#06110d",
+              borderRight: "1px solid rgba(255,255,255,0.06)"
+            }
+          }}
+        >
+          {sidebarContent}
+        </SwipeableDrawer>
       ) : (
-        <Box sx={{
-          width: 64,
-          borderRight: "1px solid rgba(255,255,255,0.06)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          pt: 1,
-          gap: 2
-        }}>
-          {sidebar.map((s, i) => (
-            <Tooltip title={s.label} placement="right" key={i}>
-              <Box
-                onClick={() => setTab(i)}
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  cursor: "pointer",
-                  color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
-                  background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
-                }}
-              >
-                {s.icon}
-              </Box>
-            </Tooltip>
-          ))}
+        <Box sx={{ width: 64, borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+          {sidebarContent}
         </Box>
       )}
 
@@ -333,278 +305,127 @@ export default function TodoApp() {
       <Container maxWidth="sm">
 
         {/* ACTION BAR */}
-        {tab !== 5 && (
-          <Stack
-            direction="row"
-            spacing={0.5}          // less gap between buttons
-            mb={1}
+
+        <Stack direction="row" spacing={0.5} mb={1}>
+          {tab !== 5 && tab !== 6 && <Button startIcon={<CheckIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
+            onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
+            Todo
+          </Button>}
+
+          {tab !== 5 && tab !== 6 && <Button startIcon={<RepeatIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
+            onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
+            Routine
+          </Button>}
+
+          {tab === 6 && <Button
+            variant="contained"
+            size="small"
+            sx={{ background: "#00ffa6", alignSelf: "flex-start" }}
+            onClick={() => setGroupModalOpen(true)}
+            startIcon={<AddIcon fontSize="small" />}
           >
-            <Button
-              variant="contained"
-              size="small"
-              sx={{
-                cursor: "pointer",
-                background: "#00ffa6",
+            Create Group
+          </Button>}
 
-                minHeight: 28,
-                px: 1.2,           // horizontal padding
-                py: 0.2,           // vertical padding
-                fontSize: "0.72rem",
-                lineHeight: 1.2
-              }}
-              onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}
-            >
-              Todo
-            </Button>
-
-            <Button
-              variant="contained"
-              size="small"
-              sx={{
-                cursor: "pointer",
-                background: "#00ffa6",
-
-                minHeight: 28,
-                px: 1.2,
-                py: 0.2,
-                fontSize: "0.72rem"
-              }}
-              onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}
-            >
-              Routine
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                cursor: "pointer",
-                color: "#00ffa6",
-                background: "rgba(0,255,170,0.12)",
-
-                minHeight: 28,
-                px: 1.2,
-                py: 0.2,
-                fontSize: "0.72rem"
-              }}
-              onClick={() => setGroupModalOpen(true)}
-            >
-              Group
-            </Button>
-
-            <Button
-              startIcon={<GitHubIcon sx={{ fontSize: 16 }} />} // smaller icon
-              size="small"
-              variant="contained"
-              onClick={async () => {
-                await handleSync();
-                setIsDirty(false);
-                setSyncSuccess(true);
-              }}
-              sx={{
-                textTransform: "none",
-                borderRadius: 2,
-                background: isDirty ? "#961717" : "#24292f",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.15)",
-
-                minHeight: 28,
-                px: 1.2,
-                py: 0.2,
-                fontSize: "0.72rem",
-
-                animation: isDirty ? "githubPulse 1s ease-in-out infinite" : "none",
-
-                "@keyframes githubPulse": {
-                  "0%": { boxShadow: "0 0 0 rgba(0,255,170,0)" },
-                  "50%": { boxShadow: "0 0 50px rgba(255, 0, 0, 0.85)" },
-                  "100%": { boxShadow: "0 0 0 rgba(0,255,170,0)" }
-                },
-
-                "&:hover": {
-                  background: "#2f363d"
-                }
-              }}
-            >
-              {isDirty ? "Sync changes" : "Up to date"}
-            </Button>
-          </Stack>
-        )}
+          {tab !== 5 && <Button
+            startIcon={<GitHubIcon sx={{ fontSize: 16 }} />}
+            size="small"
+            variant="contained"
+            onClick={async () => {
+              await handleSync();
+              initialSnapshotRef.current = JSON.stringify({ routines, todos, groups });
+              setIsDirty(false);
+              setSyncSuccess(true);
+            }}
+            sx={{
+              background: isDirty ? "#961717" : "#24292f",
+              animation: isDirty ? "githubPulse 1s ease-in-out infinite" : "none",
+              "@keyframes githubPulse": {
+                "50%": { boxShadow: "0 0 50px rgba(255,0,0,0.85)" }
+              }
+            }}
+          >
+            {isDirty ? "Sync changes" : "Up to date"}
+          </Button>}
 
 
-        {/* ================= HOME TAB ================= */}
+        </Stack>
+
+
+        {/* HOME */}
         {tab === 1 && (
           <Stack spacing={2}>
-
-            {/* PROGRESS CARDS 50/50 */}
             <Stack direction="row" spacing={2}>
-
-              {/* ROUTINES */}
-              <Paper
-                sx={{
-                  ...premiumSurface,
-                  flex: 1,
-                  px: 1.2,     // less horizontal padding
-                  py: 0.8,     // less vertical padding
-                  borderRadius: 3
-                }}
-              >
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography fontSize={12} sx={{ opacity: 0.7 }}>
-                    Daily Routines
-                  </Typography>
-
-                  <Typography fontWeight={700} fontSize={12}>
-                    {analytics.routineDone}/{analytics.routineTotal}
-                  </Typography>
-                </Stack>
-
-                <LinearProgress
-                  value={routineProgress}
-                  variant="determinate"
-                  sx={{
-                    mt: 0.4,
-                    height: 3,            // thinner bar
-                    borderRadius: 99
-                  }}
-                />
+              <Paper sx={{ ...premiumSurface, flex: 1, p: 1 }}>
+                <Typography fontSize={12}>Daily Routines</Typography>
+                <LinearProgress value={routineProgress} variant="determinate" />
               </Paper>
 
-              {/* TODOS */}
-              <Paper
-                sx={{
-                  ...premiumSurface,
-                  flex: 1,
-                  px: 1.2,
-                  py: 0.8,
-                  borderRadius: 3
-                }}
-              >
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography fontSize={12} sx={{ opacity: 0.7 }}>
-                    Todo Tasks
-                  </Typography>
-
-                  <Typography fontWeight={700} fontSize={12}>
-                    {analytics.todoDone}/{analytics.todoTotal}
-                  </Typography>
-                </Stack>
-
-                <LinearProgress
-                  value={todoProgress}
-                  variant="determinate"
-                  sx={{
-                    mt: 0.4,
-                    height: 3,
-                    borderRadius: 99
-                  }}
-                />
+              <Paper sx={{ ...premiumSurface, flex: 1, p: 1 }}>
+                <Typography fontSize={12}>Todo Tasks</Typography>
+                <LinearProgress value={todoProgress} variant="determinate" />
               </Paper>
-
-
             </Stack>
 
-            {/* PRIORITY TODOS */}
-            <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-              <Typography fontWeight={700} sx={{
-                color: "#c6ffe6",
-                textShadow: "0 0 12px rgba(0,255,170,0.25)",
-                pb: 1
-              }}>
-                🔥 Priority Todos
-              </Typography>
-
-              <Stack spacing={1}>
-                {urgentTodos.map(TodoRow)}
-              </Stack>
+            <Paper sx={{ ...premiumSurface, p: 2 }}>
+              <Typography fontWeight={700}>🔥 Priority Todos</Typography>
+              <Stack spacing={1}>{urgentTodos.map(TodoRow)}</Stack>
             </Paper>
 
-            {/* NEXT 3 HOURS */}
-            <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-              <Typography fontWeight={700} sx={{
-                color: "#c6ffe6",
-                textShadow: "0 0 12px rgba(0,255,170,0.25)",
-                pb: 1
-              }}>⏱ Next 3 Hours</Typography>
-
-              <Stack spacing={1}>
-                {next3Hours.map(RoutineRow)}
-              </Stack>
+            <Paper sx={{ ...premiumSurface, p: 2 }}>
+              <Typography fontWeight={700}>⏱ Next 3 Hours</Typography>
+              <Stack spacing={1}>{next3Hours.map(RoutineRow)}</Stack>
             </Paper>
-
           </Stack>
         )}
 
-        {/* TODOS TAB */}
         {tab === 2 && (
-          <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-            <Typography fontWeight={700} mb={1}> All Todos</Typography>
-            <Stack spacing={1.5}>
-              {normalTodos.map(TodoRow)}
-            </Stack>
+          <Paper sx={{ ...premiumSurface, p: 2 }}>
+            <Typography fontWeight={700}>All Todos</Typography>
+            <Stack spacing={1.5}>{normalTodos.map(TodoRow)}</Stack>
           </Paper>
         )}
 
-        {/* ROUTINES TAB */}
         {tab === 3 && (
-          <Paper sx={{ ...premiumSurface, p: 2, borderRadius: 2 }}>
-            <Typography fontWeight={700} mb={1}>All Routines</Typography>
-            <Stack spacing={1.5}>
-              {laterRoutines.map(RoutineRow)}
-            </Stack>
+          <Paper sx={{ ...premiumSurface, p: 2 }}>
+            <Typography fontWeight={700}>All Routines</Typography>
+            <Stack spacing={1.5}>{laterRoutines.map(RoutineRow)}</Stack>
           </Paper>
         )}
 
-        {/* COMPLETED */}
-        {/* COMPLETED TAB — RESTORED TWO CARDS */}
         {tab === 4 && (
           <Stack spacing={2}>
-
-            {/* COMPLETED ROUTINES */}
-            <Paper
-              sx={{
-                ...premiumSurface,
-                p: 2,
-                borderRadius: 2
-              }}
-            >
-              <Typography fontWeight={700} mb={1}>
-                Completed Daily Routines
-              </Typography>
-
+            <Paper sx={{ ...premiumSurface, p: 2 }}>
+              <Typography fontWeight={700} mb={1}>Completed Daily Routines</Typography>
               <Stack spacing={1.2}>
-                {routines
-                  .filter(r => r.completedToday === todayStr)
-                  .map(RoutineRow)}
+                {routines.filter(r => r.completedToday === todayStr).map(RoutineRow)}
               </Stack>
             </Paper>
 
-            {/* COMPLETED TODOS */}
-            <Paper
-              sx={{
-                ...premiumSurface,
-                p: 2,
-                borderRadius: 2
-              }}
-            >
-              <Typography fontWeight={700} mb={1}>
-                Completed Todos
-              </Typography>
-
+            <Paper sx={{ ...premiumSurface, p: 2 }}>
+              <Typography fontWeight={700} mb={1}>Completed Todos</Typography>
               <Stack spacing={1.2}>
-                {todos
-                  .filter(t => t.status === "completed")
-                  .map(TodoRow)}
+                {todos.filter(t => t.status === "completed").map(TodoRow)}
               </Stack>
             </Paper>
-
           </Stack>
         )}
 
-
-        {/* DASHBOARD */}
         {tab === 5 && (
           <DashboardView routines={routines} />
+        )}
+
+        {/* ⭐ GROUPS TAB */}
+        {tab === 6 && (
+          <Paper sx={{ ...premiumSurface, p: 2 }}>
+            <Typography fontWeight={700} mb={1}>Groups</Typography>
+            <GroupListView
+              groups={groups}
+              onDelete={(id) => {
+                setGroups(prev => prev.filter(g => g.id !== id));
+              }}
+            />
+          </Paper>
         )}
 
       </Container>
@@ -626,21 +447,14 @@ export default function TodoApp() {
           setGroupModalOpen(false);
         }}
       />
+
       <Snackbar
         open={syncSuccess}
         autoHideDuration={3000}
         onClose={() => setSyncSuccess(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <Alert
-          severity="success"
-          variant="filled"
-          sx={{
-            background: "linear-gradient(135deg,#00ffa6,#00c781)",
-            color: "#03140d",
-            fontWeight: 600
-          }}
-        >
+        <Alert severity="success" variant="filled">
           Synced successfully
         </Alert>
       </Snackbar>

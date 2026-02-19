@@ -12,10 +12,6 @@ export interface Streak {
 
 /* ================= ROUTINE ================= */
 
-export interface RoutineHistoryEntry {
-  date: string; // "YYYY-MM-DD"
-}
-
 export interface Routine {
   id: string;
   title: string;
@@ -32,7 +28,7 @@ export interface Routine {
   completedToday?: string | null;
 
   /* ✅ NEW */
-  history?: RoutineHistoryEntry[];
+  history?: string[];
 }
 
 /* ================= TODO ================= */

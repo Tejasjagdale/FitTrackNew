@@ -1,31 +1,35 @@
 import { Routine, Streak } from "../types/todoModels";
+import { nowIST, todayISTString } from "../utils/istTime";
 
 export interface RoutinePriorityResult {
   next3Hours: Routine[];
   laterRoutines: Routine[];
 }
 
+/* ================= IST PARSER ================= */
+
 const parseRoutineTime = (timeStr: string) => {
 
   const [time, mer] = timeStr.split(" ");
-
   let [h, m] = time.split(":").map(Number);
 
   if (mer === "PM" && h !== 12) h += 12;
   if (mer === "AM" && h === 12) h = 0;
 
-  const d = new Date();
+  const d = nowIST();
   d.setHours(h, m, 0, 0);
 
   return d;
 };
 
+/* ================= PRIORITY BUILDER ================= */
+
 export function buildRoutinePriorityLists(
   routines: Routine[]
 ): RoutinePriorityResult {
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const now = new Date();
+  const todayStr = todayISTString();
+  const now = nowIST();
 
   const pending = routines.filter(
     r => r.completedToday !== todayStr
@@ -71,14 +75,16 @@ export function buildRoutinePriorityLists(
   };
 }
 
-export function recalcStreak(history: { date: string }[]): Streak {
+/* ================= STREAK ENGINE ================= */
+
+export function recalcStreak(history: string[]): Streak {
 
   if (!history.length) {
     return { current: 0, longest: 0 };
   }
 
   const dates = history
-    .map(h => new Date(h.date))
+    .map(h => new Date(h + "T00:00:00+05:30"))
     .sort((a, b) => a.getTime() - b.getTime());
 
   let current = 1;
@@ -102,8 +108,8 @@ export function recalcStreak(history: { date: string }[]): Streak {
     longest = Math.max(longest, temp);
   }
 
-  const today = new Date().toISOString().slice(0,10);
-  const last = history[history.length - 1].date;
+  const today = todayISTString();
+  const last = history[history.length - 1];
 
   current = last === today ? temp : 0;
 

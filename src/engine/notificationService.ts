@@ -1,6 +1,7 @@
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { Capacitor } from "@capacitor/core";
 import { Routine, Todo } from "../types/todoModels";
+import { nowIST, todayISTString } from "../utils/istTime";
 
 /* =========================================================
    PLATFORM GUARD
@@ -12,7 +13,6 @@ const isNative = () => Capacitor.getPlatform() !== "web";
 
 export async function initNotifications() {
 
-  // ⭐ Skip everything on web build
   if (!isNative()) {
     console.log("LocalNotifications skipped on web");
     return;
@@ -24,7 +24,6 @@ export async function initNotifications() {
     console.warn("Notification permission not granted");
   }
 
-  /* ⭐ PREMIUM CHANNELS (ANDROID ONLY SAFE) */
   await LocalNotifications.createChannel({
     id: "routine_channel",
     name: "Routine Reminders",
@@ -45,14 +44,14 @@ export async function initNotifications() {
 
 /* ================= HELPERS ================= */
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => todayISTString();
 
-/* ---- FIXED TIME PARSER (12hr + 24hr) ---- */
+/* ---- IST SAFE TIME PARSER ---- */
 
 const parseTime = (dateStr: string, time?: string | null) => {
   if (!time) return null;
 
-  const d = new Date(dateStr);
+  const d = new Date(dateStr + "T00:00:00+05:30");
 
   const match = time.match(/(\d+):(\d+)\s*(AM|PM)?/i);
   if (!match) return null;
@@ -110,19 +109,18 @@ export async function scheduleRoutineNotifications(routines: Routine[]) {
     if (!target) return;
 
     const notifyAt = minutesBefore(target, 5);
-    if (notifyAt.getTime() < Date.now()) return;
+
+    if (notifyAt.getTime() < nowIST().getTime()) return;
 
     notifications.push({
       id:
         Number(r.id.replace(/\D/g, "").slice(0, 9)) ||
         Math.floor(Math.random() * 999999),
 
-      /* ⭐ PREMIUM CONTENT */
       title: `Routine : ${r.title}`,
       body: `🔥 Streak at risk starts in 5 minutes`,
       largeBody: `Your ${r.title} routine is scheduled for ${r.completeByTime}. Stay consistent and protect your streak.`,
 
-      /* ⭐ VISUAL POLISH */
       color: "#00ffa6",
       smallIcon: "ic_notification",
       channelId: "routine_channel",
@@ -156,18 +154,17 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
     if (t.status === "completed") return;
     if (t.deadline !== today) return;
 
-    /* ⭐ LOCAL TIMEZONE SAFE */
-    const midnight = new Date();
-    midnight.setHours(0, 0, 10, 0);
+    /* ⭐ IST MIDNIGHT */
+    const midnight = new Date(today + "T00:00:10+05:30");
 
-    const ninePM = new Date();
-    ninePM.setHours(21, 0, 0, 0);
+    /* ⭐ IST 9PM */
+    const ninePM = new Date(today + "T21:00:00+05:30");
 
     const baseId =
       Number(t.id.replace(/\D/g, "").slice(0, 6)) ||
       Math.floor(Math.random() * 999999);
 
-    if (midnight.getTime() > Date.now()) {
+    if (midnight.getTime() > nowIST().getTime()) {
       notifications.push({
         id: baseId + 100000,
 
@@ -187,7 +184,7 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
       });
     }
 
-    if (ninePM.getTime() > Date.now()) {
+    if (ninePM.getTime() > nowIST().getTime()) {
       notifications.push({
         id: baseId + 200000,
 
@@ -221,7 +218,6 @@ export async function rescheduleAllNotifications(
   todos: Todo[]
 ) {
 
-  // ⭐ Prevent web crashes
   if (!isNative()) return;
 
   await clearAllNotifications();

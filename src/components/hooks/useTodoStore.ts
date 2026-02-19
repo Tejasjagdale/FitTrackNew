@@ -14,6 +14,7 @@ import {
   initNotifications,
   rescheduleAllNotifications,
 } from "../../engine/notificationService";
+import { isoNowIST, todayISTString } from "../../utils/istTime";
 
 export function useTodoStore() {
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ export function useTodoStore() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = todayISTString();
 
   /* ================= LOAD ================= */
 
@@ -49,7 +50,7 @@ export function useTodoStore() {
   const saveDb = (
     nextRoutines: Routine[],
     nextTodos: Todo[],
-    nextGroups?: Group[]
+    nextGroups?: Group[],
   ) => {
     const db = getTodoData();
 
@@ -78,11 +79,11 @@ export function useTodoStore() {
     const next = routines.map((x) => {
       if (x.id !== r.id) return x;
 
-      let history = x.history ?? [];
+      let history: string[] = x.history ?? [];
 
-      // ❌ UNCHECK SAME DAY
+      /* ❌ UNCHECK */
       if (done) {
-        history = history.filter((h) => h.date !== todayStr);
+        history = history.filter((d) => d !== todayStr);
 
         return {
           ...x,
@@ -92,9 +93,9 @@ export function useTodoStore() {
         };
       }
 
-      // ✅ CHECK
-      if (!history.some((h) => h.date === todayStr)) {
-        history = [...history, { date: todayStr }];
+      /* ✅ CHECK */
+      if (!history.includes(todayStr)) {
+        history = [...history, todayStr];
       }
 
       return {
@@ -118,9 +119,9 @@ export function useTodoStore() {
         ? {
             ...x,
             status: (done ? "pending" : "completed") as TodoStatus,
-            completedAt: done ? null : new Date().toISOString(),
+            completedAt: done ? null : isoNowIST(),
           }
-        : x
+        : x,
     );
 
     saveDb(routines, next);
@@ -142,19 +143,17 @@ export function useTodoStore() {
 
   const analytics = useMemo(() => {
     const routineDone = routines.filter(
-      (r) => r.completedToday === todayStr
+      (r) => r.completedToday === todayStr,
     ).length;
 
     const routineTotal = routines.length;
 
     const todoDone = todos.filter((t) => t.status === "completed").length;
 
-    const todoPending = todos.filter(
-      (t) => t.status !== "completed"
-    ).length;
+    const todoPending = todos.filter((t) => t.status !== "completed").length;
 
     const todayTodos = todos.filter(
-      (t) => t.deadline === todayStr && t.status !== "completed"
+      (t) => t.deadline === todayStr && t.status !== "completed",
     ).length;
 
     return {
