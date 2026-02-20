@@ -1,5 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { Box, Stack, Typography, Button, Paper } from '@mui/material'
+
 import Home from './pages/Home'
 import VariantPage from './pages/Variant'
 import WorkoutPlaylist from './pages/WorkoutPlaylist'
@@ -8,8 +10,17 @@ import ProgressPage from './pages/ProgressPage'
 import TodayWorkout from './pages/TodayWorkout'
 import ExerciseDatabasePage from './pages/ExerciseDatabasePage'
 import TodoApp from './pages/TodoApp'
+import CrazyProfileUI from './components/CrazyProfileUI'
+import { UserProvider, useUser } from './context/UserContext'
 
-export default function App() {
+function AppInner() {
+
+  const { user, chooseUser } = useUser();
+
+  if (!user) {
+    return <CrazyProfileUI chooseUser={chooseUser} />;
+  }
+
   return (
     <Layout>
       <Routes>
@@ -23,4 +34,12 @@ export default function App() {
       </Routes>
     </Layout>
   )
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <AppInner />
+    </UserProvider>
+  );
 }

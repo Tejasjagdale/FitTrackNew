@@ -291,8 +291,8 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
           {openDay && (
             <Paper sx={{
               p: 1.6,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
+              borderTopLeftRadius: 15,
+              borderTopRightRadius: 15,
               background:
                 "linear-gradient(180deg, rgba(0,255,170,0.10), rgba(0,0,0,0.7))",
               borderTop: "1px solid rgba(255,255,255,0.08)"
@@ -352,7 +352,7 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
                     return (
                       <Paper key={t.id} sx={{
                         p: .9,
-                        borderRadius: 1.2,
+                        borderRadius: 1,
                         background: "rgba(255,255,255,0.04)",
                         border: status.label === "Overdue"
                           ? "1px solid rgba(255,80,80,.5)"

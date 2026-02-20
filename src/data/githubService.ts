@@ -1,14 +1,38 @@
 // src/data/githubService.ts
 import { Octokit } from "octokit";
 
+/* =========================================================
+   USER SYSTEM (SESSION ONLY — NO LOCAL STORAGE)
+========================================================= */
+
+export type AppUser = "TJ" | "KU";
+
+/* session memory only */
+let currentUser: AppUser | null = null;
+
+export function setAppUser(user: AppUser) {
+  currentUser = user;
+}
+
+export function getAppUser(): AppUser | null {
+  return currentUser;
+}
+
+/* Resolve file based on selected user */
+function resolveFile(base: string) {
+  if (currentUser === "KU") {
+    const parts = base.split(".");
+    return `${parts[0]}K.${parts[1]}`;
+  }
+  return base;
+}
+
+/* ========================================================= */
+
 const OWNER = "Tejasjagdale";
 const REPO = "github-db";
 
-const WORKOUT_FILE = "workoutData.json";
-const PROGRESS_FILE = "progressData.json";
 const EXERCISE_DB_FILE = "exerciseDatabase.json";
-const TODO_FILE = "todo.json";
-
 
 let octokit: Octokit | null = null;
 
@@ -26,32 +50,29 @@ export function getGitHubService() {
 
   const _octokit = octokit;
 
-  /**
-   * Fetch ANY JSON file, including large (>1MB).
-   */
+  /* =========================================================
+     FETCH ANY JSON (UNCHANGED)
+  ========================================================= */
+
   async function fetchJSON(path: string) {
     try {
-      // 1) Get metadata
       const res = await _octokit.rest.repos.getContent({
         owner: OWNER,
         repo: REPO,
-        path
+        path,
       });
 
-      // A: If GitHub returns a directory → error
       if (Array.isArray(res.data)) {
         throw new Error(`Expected a file but found a directory at ${path}`);
       }
 
       const file = res.data as any;
 
-      // B: If content field is present (small file)
       if (file.content && file.encoding === "base64") {
         const decoded = decodeURIComponent(escape(atob(file.content)));
         return JSON.parse(decoded);
       }
 
-      // C: If encoding = none → file is too large, fetch using git_url
       if (file.encoding === "none" && file.sha && file.git_url) {
         const blob = await _octokit.request(`GET ${file.git_url}`);
         const base64 = blob.data.content;
@@ -66,22 +87,25 @@ export function getGitHubService() {
     }
   }
 
-  /**
-   * Update any JSON file (small or large).
-   */
+  /* =========================================================
+     UPDATE JSON (UNCHANGED)
+  ========================================================= */
+
   async function updateJSON(path: string, data: any, commitMessage: string) {
     try {
       const content = btoa(
-        unescape(encodeURIComponent(JSON.stringify(data, null, 2)))
+        unescape(encodeURIComponent(JSON.stringify(data, null, 2))),
       );
 
       let sha: string | undefined = undefined;
+
       try {
         const res = await _octokit.rest.repos.getContent({
           owner: OWNER,
           repo: REPO,
-          path
+          path,
         });
+
         if (!Array.isArray(res.data)) sha = res.data.sha;
       } catch {
         console.warn(`File '${path}' does not exist. Creating new file.`);
@@ -93,7 +117,7 @@ export function getGitHubService() {
         path,
         message: commitMessage,
         content,
-        sha
+        sha,
       });
     } catch (err: any) {
       console.error("GitHub update failed:", err);
@@ -101,26 +125,29 @@ export function getGitHubService() {
     }
   }
 
-return {
-  // Workout
-  fetchWorkoutData: () => fetchJSON(WORKOUT_FILE),
-  updateWorkoutData: (data: any, msg: string) =>
-    updateJSON(WORKOUT_FILE, data, msg),
+  /* =========================================================
+     PUBLIC API
+  ========================================================= */
 
-  // Progress
-  fetchProgressData: () => fetchJSON(PROGRESS_FILE),
-  updateProgressData: (data: any, msg: string) =>
-    updateJSON(PROGRESS_FILE, data, msg),
+  return {
+    fetchWorkoutData: () => fetchJSON(resolveFile("workoutData.json")),
 
-  // Exercise DB
-  fetchExerciseDatabase: () => fetchJSON(EXERCISE_DB_FILE),
-  updateExerciseDatabase: (data: any, msg: string) =>
-    updateJSON(EXERCISE_DB_FILE, data, msg),
+    updateWorkoutData: (data: any, msg: string) =>
+      updateJSON(resolveFile("workoutData.json"), data, msg),
 
-  // ✅ TODO (NEW)
-  fetchTodoData: () => fetchJSON(TODO_FILE),
-  updateTodoData: (data: any, msg: string) =>
-    updateJSON(TODO_FILE, data, msg)
-};
+    fetchProgressData: () => fetchJSON(resolveFile("progressData.json")),
 
+    updateProgressData: (data: any, msg: string) =>
+      updateJSON(resolveFile("progressData.json"), data, msg),
+
+    fetchExerciseDatabase: () => fetchJSON(EXERCISE_DB_FILE),
+
+    updateExerciseDatabase: (data: any, msg: string) =>
+      updateJSON(EXERCISE_DB_FILE, data, msg),
+
+    fetchTodoData: () => fetchJSON(resolveFile("todo.json")),
+
+    updateTodoData: (data: any, msg: string) =>
+      updateJSON(resolveFile("todo.json"), data, msg),
+  };
 }

@@ -186,35 +186,64 @@ export default function TodoApp() {
     setEditorOpen(false);
   };
 
+  const isRoutineOverdue = (r: Routine) => {
+
+    if (!r.completeByTime) return false;
+    if (r.completedToday === todayStr) return false;
+
+    const now = nowIST();
+
+    const parts = r.completeByTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!parts) return false;
+
+    let h = Number(parts[1]);
+    const m = Number(parts[2]);
+    const ampm = parts[3].toUpperCase();
+
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+
+    const due = nowIST();
+    due.setHours(h, m, 0, 0);
+
+    return now.getTime() > due.getTime();
+  };
   /* ================= ROWS ================= */
 
-  const RoutineRow = (r: Routine) => (
-    <PremiumTaskCard
-      title={r.title}
-      done={r.completedToday === todayStr}
-      meta={formatRoutineTime(r.completeByTime ?? "")}
-      groups={groups}
-      groupIds={r.groupIds}
-      onToggle={() => toggleRoutine(r)}
-      onEdit={() => {
-        setEditorMode("routine");
-        setEditingItem(r);
-        setEditorOpen(true);
-      }}
-      isUrgent={(r as any).isUrgent}
-      onDelete={() => {
-        const next = routines.filter(x => x.id !== r.id);
-        saveDb(next, todos);
-      }}
-      streak={r.streak?.current}
-    />
-  );
+  const RoutineRow = (r: Routine) => {
 
+    const overdue = isRoutineOverdue(r);
+
+    return (
+      <PremiumTaskCard
+        key={r.id}
+        title={r.title}
+        done={r.completedToday === todayStr}
+        meta={formatRoutineTime(r.completeByTime ?? "")}
+        groups={groups}
+        groupIds={r.groupIds}
+        onToggle={() => toggleRoutine(r)}
+        onEdit={() => {
+          setEditorMode("routine");
+          setEditingItem(r);
+          setEditorOpen(true);
+        }}
+        isUrgent={(r as any).isUrgent}
+        isOverdue={overdue}   // ✅ NEW
+        onDelete={() => {
+          const next = routines.filter(x => x.id !== r.id);
+          saveDb(next, todos);
+        }}
+        streak={r.streak?.current}
+      />
+    );
+  };
   const TodoRow = (t: Todo) => {
     const isDone = t.status === "completed";
 
     return (
       <PremiumTaskCard
+        key={t.id}
         title={t.title}
         done={isDone}
         meta={isDone ? "Done" : getTimeLeftLabel(t.deadline)}
@@ -284,7 +313,7 @@ export default function TodoApp() {
           open={mobileSidebarOpen}
           onClose={() => setMobileSidebarOpen(false)}
           onOpen={() => setMobileSidebarOpen(true)}
-          swipeAreaWidth={50}
+          swipeAreaWidth={100}
           PaperProps={{
             sx: {
               width: 80,
@@ -425,7 +454,8 @@ export default function TodoApp() {
             <GroupListView
               groups={groups}
               onDelete={(id) => {
-                setGroups(prev => prev.filter(g => g.id !== id));
+                const nextGroups = groups.filter(g => g.id !== id);
+                saveDb(routines, todos, nextGroups);   // ✅ persist
               }}
             />
           </Paper>
@@ -446,7 +476,8 @@ export default function TodoApp() {
         open={groupModalOpen}
         onClose={() => setGroupModalOpen(false)}
         onSave={(g: any) => {
-          setGroups(prev => [...prev, g]);
+          const nextGroups = [...groups, g];
+          saveDb(routines, todos, nextGroups);   // ✅ persist
           setGroupModalOpen(false);
         }}
       />
