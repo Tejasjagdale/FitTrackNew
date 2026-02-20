@@ -1,5 +1,6 @@
 import { Box, Stack, Typography, Tooltip } from "@mui/material";
 import { Routine } from "../../types/todoModels";
+import { useEffect, useRef } from "react";
 
 /* ======================================================
    IST SAFE DATE FORMATTERS
@@ -87,9 +88,11 @@ const colors = [
 ];
 
 const months = [
-  "Jan","Feb","Mar","Apr","May","Jun",
-  "Jul","Aug","Sep","Oct","Nov","Dec"
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
+
+
 
 /* ======================================================
    COMPONENT
@@ -100,7 +103,13 @@ export default function RoutineHeatmap({
 }: {
   routines: Routine[];
 }) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+    }
+  }, []);
   const days = buildDailyCompletion(routines);
 
   /* ===== WEEK COLUMNS ===== */
@@ -135,6 +144,7 @@ export default function RoutineHeatmap({
       </Typography>
 
       <Box
+        ref={scrollRef}
         sx={{
           overflowX: "auto",
           WebkitOverflowScrolling: "touch",
@@ -177,8 +187,8 @@ export default function RoutineHeatmap({
 
             {/* WEEKDAY LABELS */}
             <Stack spacing={{ xs: "2px", sm: "3px" }} sx={{ mr: .4 }}>
-              {["Sun","","Tue","","Thu","","Sat"].map((d,i)=>(
-                <Typography key={i} sx={{ fontSize:10, opacity:.5, height:10 }}>
+              {["Sun", "", "Tue", "", "Thu", "", "Sat"].map((d, i) => (
+                <Typography key={i} sx={{ fontSize: 10, opacity: .5, height: 10 }}>
                   {d}
                 </Typography>
               ))}
@@ -229,7 +239,7 @@ export default function RoutineHeatmap({
           Less Tasks
         </Typography>
 
-        {colors.map((c,i)=>(
+        {colors.map((c, i) => (
           <Box
             key={i}
             sx={{
