@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { keyframes } from "@mui/system";
 
 type User = "TJ" | "KU";
@@ -25,10 +25,15 @@ const users: { id: User; label: string }[] = [
 ];
 
 const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
+        px: 2,
+        py: isMobile ? 4 : 0,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -39,20 +44,23 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
       <Paper
         elevation={0}
         sx={{
-          p: 7,
-          borderRadius: "28px",
+          width: "100%",
+          maxWidth: 640,
+          p: isMobile ? 3 : 7,
+          borderRadius: isMobile ? "20px" : "28px",
           backdropFilter: "blur(28px)",
           border: "1px solid rgba(0,255,170,0.2)",
           background:
             "linear-gradient(160deg, rgba(0,255,170,0.08), rgba(0,0,0,0.7))",
         }}
       >
-        <Stack spacing={6} alignItems="center">
+        <Stack spacing={isMobile ? 4 : 6} alignItems="center">
           <Typography
             sx={{
               fontWeight: 900,
-              fontSize: 26,
-              letterSpacing: 3,
+              fontSize: isMobile ? 20 : 26,
+              letterSpacing: isMobile ? 2 : 3,
+              textAlign: "center",
               textTransform: "uppercase",
               background:
                 "linear-gradient(90deg,#00ffa6,#00ffd0,#00ffa6)",
@@ -63,18 +71,25 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
             Select Profile
           </Typography>
 
-          <Stack direction="row" spacing={5}>
+          <Stack
+            direction={isMobile ? "column" : "row"}
+            spacing={isMobile ? 3 : 5}
+            width="100%"
+            alignItems="center"
+            justifyContent="center"
+          >
             {users.map((u, index) => (
               <Box
                 key={u.id}
                 onClick={() => chooseUser(u.id)}
                 sx={{
                   position: "relative",
-                  width: 220,
-                  height: 160,
+                  width: "100%",
+                  maxWidth: isMobile ? "100%" : 240,
+                  height: isMobile ? 120 : 160,
                   borderRadius: "18px",
                   cursor: "pointer",
-                  p: 3,
+                  p: isMobile ? 2.5 : 3,
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -84,7 +99,6 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
                   transition: "all .35s ease",
                   animation: `${float} ${6 + index}s ease-in-out infinite`,
 
-                  // animated neon edge
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -108,20 +122,21 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
                   },
 
                   "&:hover": {
-                    transform: "translateY(-10px) scale(1.04)",
+                    transform: isMobile
+                      ? "scale(1.02)"
+                      : "translateY(-10px) scale(1.04)",
                     border: "1px solid rgba(0,255,170,0.45)",
                     boxShadow:
                       "0 10px 40px rgba(0,255,170,0.25)",
                   },
                 }}
               >
-                {/* subtle glass badge */}
                 <Box
                   sx={{
                     position: "absolute",
-                    top: 14,
-                    right: 14,
-                    fontSize: 12,
+                    top: 12,
+                    right: 12,
+                    fontSize: 11,
                     px: 1.2,
                     py: 0.4,
                     borderRadius: "8px",
@@ -135,7 +150,7 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
 
                 <Typography
                   sx={{
-                    fontSize: 14,
+                    fontSize: 12,
                     opacity: 0.55,
                     letterSpacing: 1,
                   }}
@@ -146,7 +161,7 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
                 <Typography
                   sx={{
                     fontWeight: 900,
-                    fontSize: 28,
+                    fontSize: isMobile ? 22 : 28,
                     letterSpacing: 2,
                     mt: 0.5,
                     color: "#00ffd0",
@@ -157,7 +172,7 @@ const CrazyProfileUI: React.FC<Props> = ({ chooseUser }) => {
 
                 <Typography
                   sx={{
-                    fontSize: 12,
+                    fontSize: 11,
                     opacity: 0.5,
                     mt: 1,
                   }}
