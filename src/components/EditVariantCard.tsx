@@ -151,7 +151,7 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
       onChange={(_, e) => setExpanded(e)}
       sx={{
         mb: 2,
-        borderRadius: 3,
+        borderRadius: 1,
         border: `1px solid ${theme.palette.divider}`,
         boxShadow:
           theme.palette.mode === 'dark'

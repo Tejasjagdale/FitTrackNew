@@ -182,7 +182,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </Toolbar>
             </AppBar>
 
-            <Container sx={{ mt: 4, mb: 6 }}>{children}</Container>
+            <Container sx={{ mt: 0, mb: 1 }}>{children}</Container>
 
             {/* PROFILE DIALOG */}
             <ProfileDialog

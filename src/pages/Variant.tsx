@@ -141,7 +141,7 @@ export default function VariantPage() {
         <Box
           sx={{
             p: 3,
-            mb: 4,
+            mb: 2,
             borderRadius: 3,
             position: 'relative',
             overflow: 'hidden',
@@ -284,7 +284,7 @@ export default function VariantPage() {
         <Box
           sx={{
             p: { xs: 1.5, md: 2.5 },
-            borderRadius: 3,
+            borderRadius: 1,
             background:
               'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
             border: '1px solid rgba(255,255,255,0.08)',

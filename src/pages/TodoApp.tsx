@@ -399,7 +399,7 @@ export default function TodoApp() {
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm" sx={{ marginBottom: 20 }}>
+      <Container maxWidth="sm" sx={{ marginBottom: 20,marginTop:0 }}>
 
         <Tabs
           value={tab}
