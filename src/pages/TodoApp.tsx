@@ -402,8 +402,8 @@ export default function TodoApp() {
       <Box
         sx={{
           position: "fixed",
-          top: 70,
-          right: 20,
+          bottom: 50,
+          right: 80,
           zIndex: 1200
         }}
       >
