@@ -393,6 +393,23 @@ export default function TodoApp() {
     );
   };
 
+  const TAB_COUNT = 6; // total tabs you have
+
+  const handleTabChange = (_: any, next: number) => {
+
+    if (next < 0) {
+      setTab(TAB_COUNT - 1); // go to last tab
+      return;
+    }
+
+    if (next >= TAB_COUNT) {
+      setTab(0); // go back to first tab
+      return;
+    }
+
+    setTab(next);
+  };
+
   if (loading) {
     return <Container><Typography>Loading...</Typography></Container>;
   }
@@ -515,22 +532,42 @@ export default function TodoApp() {
       {/* MAIN CONTENT */}
       <Container maxWidth="sm" sx={{ marginBottom: 20, marginTop: 0 }}>
 
-        <Tabs
-          value={tab}
-          onChange={(_, v) => setTab(v)}
-          variant="scrollable"
-          allowScrollButtonsMobile
-          sx={{ mb: 1 }}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0,
+            mb: 1
+          }}
         >
+          <Button
+            size="small"
+            onClick={() => setTab(prev => (prev - 1 + TAB_COUNT) % TAB_COUNT)}
+          >
+            ◀
+          </Button>
 
-          <Tab icon={<HomeIcon />} />
-          <Tab icon={<CheckIcon />} />
-          <Tab icon={<RepeatIcon />} />
-          <Tab icon={<DoneAllIcon />} />
-          <Tab icon={<InsightsIcon />} />
-          <Tab icon={<GroupsIcon />} />
-        </Tabs>
+          <Tabs
+            value={tab}
+            onChange={handleTabChange}
+            // variant="scrollable"
+          >
 
+            <Tab icon={<HomeIcon />} />
+            <Tab icon={<CheckIcon />} />
+            <Tab icon={<RepeatIcon />} />
+            <Tab icon={<DoneAllIcon />} />
+            <Tab icon={<InsightsIcon />} />
+            <Tab icon={<GroupsIcon />} />
+          </Tabs>
+          <Button
+            size="small"
+            onClick={() => setTab(prev => (prev + 1) % TAB_COUNT)}
+          >
+            ▶
+          </Button>
+        </Box>
         {/* HOME */}
         {tab === 0 && (
           <Stack spacing={2} >
