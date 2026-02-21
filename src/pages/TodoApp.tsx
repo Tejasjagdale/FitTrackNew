@@ -537,7 +537,6 @@ export default function TodoApp() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 0,
             mb: 1
           }}
         >
@@ -551,10 +550,12 @@ export default function TodoApp() {
           <Tabs
             value={tab}
             onChange={handleTabChange}
-            // variant="scrollable"
+            variant="scrollable"
+            allowScrollButtonsMobile={false}
+            scrollButtons={false}
           >
 
-            <Tab icon={<HomeIcon />} />
+            <Tab icon={<HomeIcon  />} />
             <Tab icon={<CheckIcon />} />
             <Tab icon={<RepeatIcon />} />
             <Tab icon={<DoneAllIcon />} />
