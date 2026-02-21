@@ -232,7 +232,7 @@ export default function TodoApp() {
   const EmptyState = ({ label }: { label: string }) => (
     <Box
       sx={{
-        minHeight: 150,
+        minHeight: 200,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -540,14 +540,14 @@ export default function TodoApp() {
       </Box>
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm" sx={{ marginBottom: 20, marginTop: 0 }}>
+      <Container maxWidth="sm" sx={{ marginBottom: 10, marginTop: 1}}>
 
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            mb: 1
+            mb: 2
           }}
         >
           <Button

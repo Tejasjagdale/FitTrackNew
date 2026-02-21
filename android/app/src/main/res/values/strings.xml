@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">fittrack</string>
+    <string name="app_name">FitTrack</string>
     <string name="title_activity_main">fittrack</string>
     <string name="package_name">com.tejas.fittrack</string>
     <string name="custom_url_scheme">com.tejas.fittrack</string>
