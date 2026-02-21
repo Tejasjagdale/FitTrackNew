@@ -85,10 +85,6 @@ function getPriorityChip(priority: Priority) {
   return { bg: "rgba(60,170,255,.26)" };
 }
 
-function formatGroup(id: string) {
-  return id.replace(/^grp_/, "");
-}
-
 /* =========================================================
    PREMIUM CALENDAR
 ========================================================= */
@@ -145,28 +141,20 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
   return (
     <Stack spacing={1.2} sx={{
       p: 1.4,
-      borderRadius: 3,
+      borderRadius: 1,
       background:
         "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
       border: "1px solid rgba(255,255,255,0.08)",
       backdropFilter: "blur(24px)"
     }}>
 
-      {/* ================= HEADER (PREMIUM STYLE) ================= */}
+      {/* HEADER */}
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <IconButton size="small" onClick={goPrev}>
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
 
-        <Typography
-          fontWeight={700}
-          fontSize={13}
-          sx={{
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            opacity: .9
-          }}
-        >
+        <Typography fontWeight={700} fontSize={13} sx={{ letterSpacing: 1, textTransform: "uppercase", opacity: .9 }}>
           {monthLabel}
         </Typography>
 
@@ -176,11 +164,7 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
       </Stack>
 
       {/* WEEKDAY */}
-      <Box sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(7,minmax(0,1fr))",
-        gap: "6px"
-      }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: "6px" }}>
         {weekday.map(w => (
           <Typography key={w} sx={{ fontSize: 10, opacity: .5, textAlign: "center" }}>
             {w}
@@ -188,12 +172,21 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
         ))}
       </Box>
 
-      {/* ================= GRID ================= */}
-      <Box sx={{
-        display: "grid",
-        gridTemplateColumns: "repeat(7,minmax(0,1fr))",
-        gap: "6px"
-      }}>
+      {/* ===== PREMIUM SEAMLESS GRID (UI ONLY CHANGE) ===== */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7,minmax(0,1fr))",
+          gap: 0,
+          borderRadius: 1,
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.06)",
+          background:
+            "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))",
+          boxShadow:
+            "inset 0 0 40px rgba(0,255,166,.05)"
+        }}
+      >
         {cells.map((c, i) => {
 
           if (!c.day) {
@@ -211,23 +204,33 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                 sx={{
                   position: "relative",
                   minHeight: 86,
-                  borderRadius: 2,
                   p: .7,
                   cursor: "pointer",
-                  transition: "all .15s ease",
+
+                  borderRight: (i + 1) % 7 !== 0
+                    ? "1px solid rgba(255,255,255,0.05)"
+                    : "none",
+
+                  borderBottom:
+                    i < cells.length - 7
+                      ? "1px solid rgba(255,255,255,0.05)"
+                      : "none",
+
                   background: `
-                    linear-gradient(180deg,rgba(0,0,0,0.32),rgba(0,0,0,0.2)),
-                    radial-gradient(circle at top,
-                    rgba(255,70,70,${overdueHeat}),transparent 70%)
-                  `,
-                  "&:active": { filter: "brightness(1.2)" },
-                  border: c.isToday
-                    ? "1px solid rgba(0,255,166,.6)"
-                    : "1px solid rgba(255,255,255,0.05)"
+                      linear-gradient(
+                        180deg,
+                        rgba(12,24,20,.55),
+                        rgba(4,10,8,.45)
+                      ),
+                      radial-gradient(
+                        circle at top,
+                        rgba(255,70,70,${overdueHeat}),
+                        transparent 65%
+                      )
+                      `,
                 }}
               >
 
-                {/* TODAY DOT */}
                 {c.isToday && (
                   <Box sx={{
                     position: "absolute",
@@ -248,38 +251,35 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-
                     fontSize: 12,
                     fontWeight: 700,
-
                     backdropFilter: "blur(10px)",
-
                     background: c.isToday
-                      ? "linear-gradient(135deg, rgba(0,255,166,.35), rgba(0,255,166,.15))"
-                      : "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
-
+                      ? "linear-gradient(135deg,#00ffa6,#1affc6)"
+                      : c.todos.length
+                        ? "linear-gradient(180deg,rgba(0,255,166,.18),rgba(0,255,166,.05))"
+                        : "linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015))",
                     color:
-                      c.overdueCount > 0
-                        ? "#ff6b6b"
-                        : c.todos.length
-                          ? "#e6fff7"
-                          : "rgba(255,255,255,.65)",
-
+                      c.isToday
+                        ? "#002d22"
+                        : c.overdueCount > 0
+                          ? "#ff8a8a"
+                          : c.todos.length
+                            ? "#baffea"
+                            : "rgba(255,255,255,.55)",
                     border: c.isToday
                       ? "1px solid rgba(0,255,166,.7)"
                       : "1px solid rgba(255,255,255,.08)",
-
                     boxShadow: c.isToday
-                      ? "0 0 12px rgba(0,255,166,.55)"
-                      : c.overdueCount > 0
-                        ? "0 0 10px rgba(255,80,80,.35)"
+                      ? "0 0 18px rgba(0,255,166,.65)"
+                      : c.todos.length
+                        ? "0 0 10px rgba(0,255,166,.25)"
                         : "none",
-
-                    transition: "all .18s ease"
                   }}
                 >
                   {c.day}
                 </Box>
+
                 <Stack spacing={0.25} mt={0.4}>
                   {c.todos.slice(0, visibleCount).map((t: Todo) => {
 
@@ -312,15 +312,9 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
         })}
       </Box>
 
-      {/* ================= PREMIUM BOTTOM SHEET MODAL ================= */}
+      {/* ===== ORIGINAL MODAL FULLY RESTORED ===== */}
       <Modal open={!!openDay} onClose={() => setOpenDay(null)}>
-        <Box sx={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          outline: "none"
-        }}>
+        <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
           {openDay && (
             <Paper sx={{
               p: 1.6,
@@ -331,33 +325,13 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
               borderTop: "1px solid rgba(255,255,255,0.08)"
             }}>
 
-              <Box sx={{
-                width: 40,
-                height: 4,
-                borderRadius: 10,
-                background: "rgba(255,255,255,.2)",
-                mx: "auto",
-                mb: 1
-              }} />
-
               <Typography fontWeight={700} fontSize={13}>
                 Task's on 📅 {openDay.dateStr}
               </Typography>
 
               <Divider sx={{ my: 1, opacity: .2 }} />
 
-              <Box
-                sx={{
-                  height: 350,
-                  overflowY: "auto",
-                  pr: .4,
-                  "&::-webkit-scrollbar": { width: 5 },
-                  "&::-webkit-scrollbar-thumb": {
-                    background: "rgba(255,255,255,.25)",
-                    borderRadius: 8,
-                  },
-                }}
-              >
+              <Box sx={{ height: 350, overflowY: "auto", pr: .4 }}>
                 {openDay.todos.length === 0 ? (
 
                   <Box sx={{
@@ -377,7 +351,6 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                   </Box>
 
                 ) : (
-
                   openDay.todos.map((t: Todo) => {
 
                     const status = getStatusChip(t);
@@ -425,7 +398,6 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                       </Paper>
                     )
                   })
-
                 )}
               </Box>
 
