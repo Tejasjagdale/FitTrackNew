@@ -414,9 +414,9 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                             <Chip
                               key={g}
                               size="small"
-                              label={groupMap[g] ?? formatGroup(g)}
+                              label={groupMap[g] ?? "deleted group"}
                               variant="filled"
-                              color="primary"
+                              color={groupMap[g] ? "primary" : "error"}
                               sx={{ height: 18, fontSize: 10 }}
                             />
                           ))}
