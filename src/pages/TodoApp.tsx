@@ -13,7 +13,12 @@ import {
   useMediaQuery,
   SwipeableDrawer,
   Tabs,
-  Tab
+  Tab,
+  FormControl,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText
 } from "@mui/material";
 
 import HomeIcon from "@mui/icons-material/Home";
@@ -72,6 +77,7 @@ export default function TodoApp() {
   const [isDirty, setIsDirty] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [groupFilter, setGroupFilter] = useState<string[]>([]);
 
   const theme = useTheme();
 
@@ -118,13 +124,17 @@ export default function TodoApp() {
     return { routineDone, routineTotal, todoDone, todoTotal };
   }, [routines, todos, todayStr]);
 
-  const routineProgress =
-    analytics.routineTotal === 0 ? 0 :
-      (analytics.routineDone / analytics.routineTotal) * 100;
+  const filteredTodos = groupFilter.length
+    ? normalTodos.filter(t =>
+      t.groupIds?.some((id: string) => groupFilter.includes(id))
+    )
+    : normalTodos;
 
-  const todoProgress =
-    analytics.todoTotal === 0 ? 0 :
-      (analytics.todoDone / analytics.todoTotal) * 100;
+  const filteredRoutines = groupFilter.length
+    ? laterRoutines.filter(r =>
+      r.groupIds?.some((id: string) => groupFilter.includes(id))
+    )
+    : laterRoutines;
 
   useEffect(() => {
     if (!hasLoadedRef.current) {
@@ -554,13 +564,12 @@ export default function TodoApp() {
             allowScrollButtonsMobile={false}
             scrollButtons={false}
           >
-
-            <Tab icon={<HomeIcon  />} />
+            <Tab icon={<HomeIcon />} />
             <Tab icon={<CheckIcon />} />
             <Tab icon={<RepeatIcon />} />
             <Tab icon={<DoneAllIcon />} />
-            <Tab icon={<InsightsIcon />} />
             <Tab icon={<GroupsIcon />} />
+            <Tab icon={<InsightsIcon />} />
           </Tabs>
           <Button
             size="small"
@@ -632,17 +641,150 @@ export default function TodoApp() {
               alignItems="center"
               justifyContent="space-between"
               mb={1}
-            ><Typography fontWeight={700}>All Todos</Typography>
+            >
+              <Typography fontWeight={700}>📝 All Todos</Typography>
 
-              <Button startIcon={<CheckIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
-                onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
-                Todo
-              </Button>
+              <Stack direction="row" spacing={1} alignItems="center">
+
+
+                {/* GROUP MULTISELECT */}
+                <FormControl size="small">
+                  <Select
+                    multiple
+                    value={groupFilter}
+                    displayEmpty
+                    onChange={(e) =>
+                      setGroupFilter(e.target.value as string[])
+                    }
+                    renderValue={(selected) =>
+                      selected.length
+                        ? `${selected.length} groups`
+                        : "Groups"
+                    }
+                    sx={{
+                      height: 32,
+                      fontSize: 12,
+                      borderRadius: 999,
+
+                      /* ===== GLASS SURFACE ===== */
+                      background:
+                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      backdropFilter: "blur(12px)",
+
+                      color: "#d7ffe8",
+
+                      ".MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0,255,170,0.18)"
+                      },
+
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0,255,170,0.4)"
+                      },
+
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#00ffa6",
+                        boxShadow: "0 0 10px rgba(0,255,170,0.25)"
+                      },
+
+                      ".MuiSelect-icon": {
+                        color: "#00ffa6"
+                      }
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          mt: 1,
+                          borderRadius: 2,
+                          maxHeight: 260,
+
+                          background:
+                            "linear-gradient(180deg,#07130f,#04100c)",
+                          backdropFilter: "blur(18px)",
+                          border: "1px solid rgba(0,255,170,0.18)",
+
+                          /* ===== PREMIUM SCROLLBAR ===== */
+                          overflowY: "auto",
+
+                          "&::-webkit-scrollbar": {
+                            width: 6
+                          },
+
+                          "&::-webkit-scrollbar-track": {
+                            background: "transparent"
+                          },
+
+                          "&::-webkit-scrollbar-thumb": {
+                            background:
+                              "linear-gradient(180deg,#00ffa6,#2c6a31)",
+                            borderRadius: 999
+                          },
+
+                          "&::-webkit-scrollbar-thumb:hover": {
+                            background:
+                              "linear-gradient(180deg,#00ffa6,#549957)"
+                          },
+
+                          /* Firefox */
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "#549957 transparent",
+
+                          "& .MuiMenuItem-root": {
+                            fontSize: 13,
+                            borderRadius: 1,
+                            mx: 0.5,
+                            my: 0.2,
+
+                            "&.Mui-selected": {
+                              background:
+                                "linear-gradient(135deg,rgba(0,255,170,0.18),rgba(0,255,170,0.08))"
+                            },
+
+                            "&:hover": {
+                              background: "rgba(0,255,170,0.12)"
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    {groups.map(g => (
+                      <MenuItem key={g.id} value={g.id}>
+                        <Checkbox
+                          checked={groupFilter.includes(g.id)}
+                          size="small"
+                          sx={{
+                            color: "rgba(0,255,170,0.6)",
+                            "&.Mui-checked": {
+                              color: "#00ffa6"
+                            }
+                          }}
+                        />
+                        <ListItemText primary={g.name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Button
+                  startIcon={<CheckIcon />}
+                  size="small"
+                  variant="contained"
+                  sx={{ background: "#00ffa6" }}
+                  onClick={() => {
+                    setEditorMode("todo");
+                    setEditingItem(null);
+                    setEditorOpen(true);
+                  }}
+                >
+                  Todo
+                </Button>
+
+              </Stack>
             </Stack>
 
             <Stack spacing={1.5} sx={{ flex: 1 }}>
-              {normalTodos.length
-                ? normalTodos.map(TodoRow)
+              {filteredTodos.length
+                ? filteredTodos.map(TodoRow)
                 : <EmptyState label="todos" />}
             </Stack>
           </Paper>
@@ -661,15 +803,148 @@ export default function TodoApp() {
               justifyContent="space-between"
               mb={1}
             >
-              <Typography fontWeight={700}>All Routines</Typography>
-              <Button startIcon={<RepeatIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
-                onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
-                Routine
-              </Button></Stack>
+              <Typography fontWeight={700}>🔁 All Routines</Typography>
+
+              <Stack direction="row" spacing={1} alignItems="center">
+
+                {/* GROUP MULTISELECT */}
+                <FormControl size="small">
+                  <Select
+                    multiple
+                    value={groupFilter}
+                    displayEmpty
+                    onChange={(e) =>
+                      setGroupFilter(e.target.value as string[])
+                    }
+                    renderValue={(selected) =>
+                      selected.length
+                        ? `${selected.length} groups`
+                        : "Groups"
+                    }
+                    sx={{
+                      height: 32,
+                      fontSize: 12,
+                      borderRadius: 999,
+
+                      /* ===== GLASS SURFACE ===== */
+                      background:
+                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      backdropFilter: "blur(12px)",
+
+                      color: "#d7ffe8",
+
+                      ".MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0,255,170,0.18)"
+                      },
+
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgba(0,255,170,0.4)"
+                      },
+
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#00ffa6",
+                        boxShadow: "0 0 10px rgba(0,255,170,0.25)"
+                      },
+
+                      ".MuiSelect-icon": {
+                        color: "#00ffa6"
+                      }
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          mt: 1,
+                          borderRadius: 2,
+                          maxHeight: 260,
+
+                          background:
+                            "linear-gradient(180deg,#07130f,#04100c)",
+                          backdropFilter: "blur(18px)",
+                          border: "1px solid rgba(0,255,170,0.18)",
+
+                          /* ===== PREMIUM SCROLLBAR ===== */
+                          overflowY: "auto",
+
+                          "&::-webkit-scrollbar": {
+                            width: 6
+                          },
+
+                          "&::-webkit-scrollbar-track": {
+                            background: "transparent"
+                          },
+
+                          "&::-webkit-scrollbar-thumb": {
+                            background:
+                              "linear-gradient(180deg,#00ffa6,#2c6a31)",
+                            borderRadius: 999
+                          },
+
+                          "&::-webkit-scrollbar-thumb:hover": {
+                            background:
+                              "linear-gradient(180deg,#00ffa6,#549957)"
+                          },
+
+                          /* Firefox */
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "#549957 transparent",
+
+                          "& .MuiMenuItem-root": {
+                            fontSize: 13,
+                            borderRadius: 1,
+                            mx: 0.5,
+                            my: 0.2,
+
+                            "&.Mui-selected": {
+                              background:
+                                "linear-gradient(135deg,rgba(0,255,170,0.18),rgba(0,255,170,0.08))"
+                            },
+
+                            "&:hover": {
+                              background: "rgba(0,255,170,0.12)"
+                            }
+                          }
+                        }
+                      }
+                    }}
+                  >
+                    {groups.map(g => (
+                      <MenuItem key={g.id} value={g.id}>
+                        <Checkbox
+                          checked={groupFilter.includes(g.id)}
+                          size="small"
+                          sx={{
+                            color: "rgba(0,255,170,0.6)",
+                            "&.Mui-checked": {
+                              color: "#00ffa6"
+                            }
+                          }}
+                        />
+                        <ListItemText primary={g.name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <Button
+                  startIcon={<RepeatIcon />}
+                  size="small"
+                  variant="contained"
+                  sx={{ background: "#00ffa6" }}
+                  onClick={() => {
+                    setEditorMode("routine");
+                    setEditingItem(null);
+                    setEditorOpen(true);
+                  }}
+                >
+                  Routine
+                </Button>
+
+              </Stack>
+            </Stack>
 
             <Stack spacing={1.5} sx={{ flex: 1 }}>
-              {laterRoutines.length
-                ? laterRoutines.map(RoutineRow)
+              {filteredRoutines.length
+                ? filteredRoutines.map(RoutineRow)
                 : <EmptyState label="routines" />}
             </Stack>
           </Paper>
@@ -680,7 +955,7 @@ export default function TodoApp() {
             <Paper sx={{
               ...premiumSurface, p: 2
             }}>
-              <Typography fontWeight={700} mb={1}>Completed Daily Routines</Typography>
+              <Typography fontWeight={700} mb={1}> 🟢 Completed Daily Routines</Typography>
               <Stack spacing={1.2} sx={{ flex: 1 }}>
                 {routines.filter(r => r.completedToday === todayStr).length
                   ? routines.filter(r => r.completedToday === todayStr).map(RoutineRow)
@@ -691,7 +966,7 @@ export default function TodoApp() {
             <Paper sx={{
               ...premiumSurface, p: 2
             }}>
-              <Typography fontWeight={700} mb={1}>Completed Todos</Typography>
+              <Typography fontWeight={700} mb={1}> ✔️ Completed Todos</Typography>
               <Stack spacing={1.2} sx={{ flex: 1 }}>
                 {todos.filter(t => t.status === "completed").length
                   ? todos.filter(t => t.status === "completed").map(TodoRow)
@@ -701,15 +976,8 @@ export default function TodoApp() {
           </Stack>
         )}
 
-        {tab === 4 && (
-          <DashboardView
-            routines={routines}
-            todos={todos}
-          />
-        )}
-
         {/* ⭐ GROUPS TAB */}
-        {tab === 5 && (
+        {tab === 4 && (
           <Paper sx={{
             ...premiumSurface, p: 2, display: "flex",
             flexDirection: "column",
@@ -722,7 +990,7 @@ export default function TodoApp() {
               justifyContent="space-between"
               mb={1}
             >
-              <Typography fontWeight={700} mb={1}>Groups</Typography>
+              <Typography fontWeight={700} mb={1}> 🧩 Groups</Typography>
               <Button
                 variant="contained"
                 size="small"
@@ -742,6 +1010,16 @@ export default function TodoApp() {
             />
           </Paper>
         )}
+
+
+        {tab === 5 && (
+          <DashboardView
+            routines={routines}
+            todos={todos}
+            groups={groups}
+          />
+        )}
+
 
       </Container>
 

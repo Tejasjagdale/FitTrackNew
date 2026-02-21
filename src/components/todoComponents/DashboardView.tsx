@@ -12,7 +12,7 @@ import {
 import InsightsIcon from "@mui/icons-material/Insights";
 
 import { useState } from "react";
-import { Routine, Todo } from "../../types/todoModels";
+import { Group, Routine, Todo } from "../../types/todoModels";
 import RoutineHeatmap from "./RoutineHeatmap";
 import RoutineMonthCalendar from "./RoutineMonthCalendar";
 import TodoMonthCalendar from "./TodoMonthCalendar";
@@ -21,10 +21,11 @@ import CheckIcon from "@mui/icons-material/Checklist";
 type Props = {
   routines: Routine[];
   todos: Todo[];   // ✅ add this
+   groups: Group[];
 };
 type RangeType = "1m" | "3m" | "6m" | "1y" | "5y";
 
-export default function DashboardView({ routines, todos }: Props) {
+export default function DashboardView({ routines, todos, groups }: Props) {
 
   const [selectedId, setSelectedId] = useState<string>(
     routines[0]?.id ?? "all"
@@ -182,7 +183,7 @@ export default function DashboardView({ routines, todos }: Props) {
   ====================================================== */
 
   return (
-    <Stack spacing={3} mb={5}>
+    <Stack spacing={3} >
 
       {/* HEADER */}
       <Stack direction="row" spacing={1} alignItems="center">
@@ -242,83 +243,127 @@ export default function DashboardView({ routines, todos }: Props) {
             <Paper
               key={r.id}
               sx={{
-                p: 1.2,
-                borderRadius: 1,
+                p: 1.3,
+                borderRadius: 1.2,
+                position: "relative",
+
                 background:
-                  "linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
+                  "linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015))",
+
                 border: "1px solid rgba(255,255,255,0.08)",
-                overflow: "hidden"
+
+                backdropFilter: "blur(14px)",
+
+                transition: "all .25s ease",
+
+                "&:hover": {
+                  transform: "translateY(-1px)",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.35)"
+                }
               }}
             >
-              {/* TITLE */}
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  opacity: .95,
-                  mb: .5
-                }}
+              {/* ===== HEADER ===== */}
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                mb={0.6}
               >
-                <b>Routine :</b> {r.title}
-              </Typography>
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    opacity: .95,
+                    fontWeight: 600,
+                    letterSpacing: ".2px"
+                  }}
+                >
+                  🔁 {r.title}
+                </Typography>
 
-              <Stack direction="row" spacing={1.4}>
+                {/* subtle streak badge */}
+                <Typography
+                  sx={{
+                    fontSize: 11,
+                    px: .8,
+                    py: .1,
+                    borderRadius: 999,
+                    background: "rgba(0,255,170,0.12)",
+                    color: "#00ffa6"
+                  }}
+                >
+                  {stats.total} active
+                </Typography>
+              </Stack>
 
-                {/* LEFT STAT COLUMN */}
+              <Stack direction="row" spacing={1.5}>
+
+                {/* ===== LEFT STAT COLUMN ===== */}
                 <Stack
                   spacing={1}
                   sx={{
-                    minWidth: 70,
+                    minWidth: 76,
+                    borderRight: "1px solid rgba(255,255,255,0.06)",
+                    pr: 1,
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    py: .3
+                    justifyContent: "space-between"
                   }}
                 >
                   <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 300, color: "#ff784e" }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#ff784e" }}>
                       {stats.longest}
                     </Typography>
-                    <Typography variant="caption" sx={{ opacity: .6 }}>
+                    <Typography variant="caption" sx={{ opacity: .5 }}>
                       LONGEST
                     </Typography>
                   </Stack>
 
                   <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 300, color: "#00ffa6" }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#00ffa6" }}>
                       {Math.round(percent)}%
                     </Typography>
-                    <Typography variant="caption" sx={{ opacity: .6 }}>
+                    <Typography variant="caption" sx={{ opacity: .5 }}>
                       CONSIST
                     </Typography>
                   </Stack>
 
                   <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 13, fontWeight: 300 }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
                       {stats.total}
                     </Typography>
-                    <Typography variant="caption" sx={{ opacity: .6 }}>
+                    <Typography variant="caption" sx={{ opacity: .5 }}>
                       ACTIVE
                     </Typography>
                   </Stack>
                 </Stack>
 
-                {/* RIGHT CONTENT */}
-                <Stack flex={1} spacing={0.8}>
+                {/* ===== RIGHT CONTENT ===== */}
+                <Stack flex={1} spacing={0.9}>
 
-                  {/* ANALYSIS */}
-                  <Stack spacing={0.6} sx={{ opacity: .85 }}>
-                    <Typography variant="caption">
+                  {/* ANALYSIS BOX */}
+                  <Stack
+                    spacing={0.4}
+                    sx={{
+                      p: .6,
+                      borderRadius: 1,
+                      background:
+                        "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",
+                      border: "1px solid rgba(255,255,255,0.06)"
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ opacity: .85 }}>
                       🔥 Longest streak is {insight.bestWeek} days
                     </Typography>
 
-                    <Typography variant="caption">
+                    <Typography variant="caption" sx={{ opacity: .75 }}>
                       ⚠️ Drops {insight.worstDay}
                     </Typography>
 
-                    <Typography variant="caption">
+                    <Typography variant="caption" sx={{ opacity: .7 }}>
                       {insight.trend}
                     </Typography>
                   </Stack>
-                  {/* ===== TIME BAND — TRUE DATE VISUAL ===== */}
+
+                  {/* ===== CALENDAR ===== */}
                   <RoutineMonthCalendar routine={r} />
                 </Stack>
 
@@ -335,7 +380,10 @@ export default function DashboardView({ routines, todos }: Props) {
         </Typography>
       </Stack>
 
-      <TodoMonthCalendar todos={todos} />
+      <TodoMonthCalendar
+        todos={todos}
+        groups={groups}
+      />
 
     </Stack>
   );

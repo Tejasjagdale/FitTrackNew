@@ -13,7 +13,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { useMemo, useState } from "react";
-import { Todo, Priority } from "../../types/todoModels";
+import { Todo, Priority, Group } from "../../types/todoModels";
 import { nowIST, todayISTString } from "../../utils/istTime";
 import { motion } from "framer-motion";
 
@@ -93,7 +93,7 @@ function formatGroup(id: string) {
    PREMIUM CALENDAR
 ========================================================= */
 
-export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
+export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], groups: Group[]; }) {
 
   const now = nowIST();
 
@@ -103,6 +103,14 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
   });
 
   const [openDay, setOpenDay] = useState<any | null>(null);
+
+  const groupMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    groups.forEach(g => {
+      map[g.id] = g.name;
+    });
+    return map;
+  }, [groups]);
 
   const cells = useMemo(
     () => buildCalendar(todos, cursor.year, cursor.month),
@@ -232,21 +240,46 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
                   }} />
                 )}
 
-                <Typography
-                  fontWeight={700}
-                  fontSize={12}
+                <Box
                   sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+
+                    fontSize: 12,
+                    fontWeight: 700,
+
+                    backdropFilter: "blur(10px)",
+
+                    background: c.isToday
+                      ? "linear-gradient(135deg, rgba(0,255,166,.35), rgba(0,255,166,.15))"
+                      : "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
+
                     color:
                       c.overdueCount > 0
                         ? "#ff6b6b"
                         : c.todos.length
                           ? "#e6fff7"
-                          : "rgba(255,255,255,.6)"
+                          : "rgba(255,255,255,.65)",
+
+                    border: c.isToday
+                      ? "1px solid rgba(0,255,166,.7)"
+                      : "1px solid rgba(255,255,255,.08)",
+
+                    boxShadow: c.isToday
+                      ? "0 0 12px rgba(0,255,166,.55)"
+                      : c.overdueCount > 0
+                        ? "0 0 10px rgba(255,80,80,.35)"
+                        : "none",
+
+                    transition: "all .18s ease"
                   }}
                 >
                   {c.day}
-                </Typography>
-
+                </Box>
                 <Stack spacing={0.25} mt={0.4}>
                   {c.todos.slice(0, visibleCount).map((t: Todo) => {
 
@@ -367,10 +400,11 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
 
                           <Chip
                             size="small"
+                            variant="outlined"
                             label={status.label}
                             sx={{
-                              background: status.bg,
-                              color: status.color,
+                              border: `1px solid ${status.bg}`,
+                              color: status.bg,
                               height: 18,
                               fontSize: 10,
                             }}
@@ -380,8 +414,8 @@ export default function TodoMonthCalendar({ todos }: { todos: Todo[] }) {
                             <Chip
                               key={g}
                               size="small"
-                              label={formatGroup(g)}
-                              variant="outlined"
+                              label={groupMap[g] ?? formatGroup(g)}
+                              variant="filled"
                               color="primary"
                               sx={{ height: 18, fontSize: 10 }}
                             />
