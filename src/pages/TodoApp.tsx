@@ -11,7 +11,9 @@ import {
   Alert,
   useTheme,
   useMediaQuery,
-  SwipeableDrawer
+  SwipeableDrawer,
+  Tabs,
+  Tab
 } from "@mui/material";
 
 import HomeIcon from "@mui/icons-material/Home";
@@ -59,7 +61,7 @@ export default function TodoApp() {
   const { urgentTodos, normalTodos } = buildTodoPriorityLists(todos);
   const { next3Hours, laterRoutines } = buildRoutinePriorityLists(routines);
 
-  const [tab, setTab] = useState(1);
+  const [tab, setTab] = useState(0);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState<"routine" | "todo">("todo");
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -267,80 +269,80 @@ export default function TodoApp() {
       </Typography>
     </Box>
   );
-const CardHeaderProgress = ({
-  done,
-  total
-}: {
-  done: number;
-  total: number;
-}) => {
+  const CardHeaderProgress = ({
+    done,
+    total
+  }: {
+    done: number;
+    total: number;
+  }) => {
 
-  const percent = total === 0 ? 0 : (done / total) * 100;
+    const percent = total === 0 ? 0 : (done / total) * 100;
 
-  return (
-    <Box
-      sx={{
-        minWidth: 90,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end"
-      }}
-    >
-      {/* COUNTER */}
-      <Typography
-        sx={{
-          fontSize: 11,
-          opacity: 0.75,
-          letterSpacing: ".3px"
-        }}
-      >
-        {done} / {total}
-      </Typography>
-
-      {/* PREMIUM BAR */}
+    return (
       <Box
         sx={{
-          position: "relative",
-          mt: 0.4,
-          width: 90,
-          height: 6,
-          borderRadius: 999,
-          overflow: "hidden",
-          background:
-            "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
-          backdropFilter: "blur(8px)"
+          minWidth: 90,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end"
         }}
       >
-        {/* GLOW FILL */}
+        {/* COUNTER */}
+        <Typography
+          sx={{
+            fontSize: 11,
+            opacity: 0.75,
+            letterSpacing: ".3px"
+          }}
+        >
+          {done} / {total}
+        </Typography>
+
+        {/* PREMIUM BAR */}
         <Box
           sx={{
-            height: "100%",
-            width: `${percent}%`,
+            position: "relative",
+            mt: 0.4,
+            width: 90,
+            height: 6,
             borderRadius: 999,
-
+            overflow: "hidden",
             background:
-              "linear-gradient(90deg,#00ffa6,#00d4ff)",
-
-            boxShadow:
-              "0 0 10px rgba(0,255,170,0.6), 0 0 20px rgba(0,255,170,0.25)",
-
-            transition: "width .45s cubic-bezier(.2,.8,.2,1)",
-
-            animation: percent
-              ? "premiumBarPulse 2.2s ease-in-out infinite"
-              : "none",
-
-            "@keyframes premiumBarPulse": {
-              "0%": { filter: "brightness(1)" },
-              "50%": { filter: "brightness(1.3)" },
-              "100%": { filter: "brightness(1)" }
-            }
+              "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+            backdropFilter: "blur(8px)"
           }}
-        />
+        >
+          {/* GLOW FILL */}
+          <Box
+            sx={{
+              height: "100%",
+              width: `${percent}%`,
+              borderRadius: 999,
+
+              background:
+                "linear-gradient(90deg,#00ffa6,#00d4ff)",
+
+              boxShadow:
+                "0 0 10px rgba(0,255,170,0.6), 0 0 20px rgba(0,255,170,0.25)",
+
+              transition: "width .45s cubic-bezier(.2,.8,.2,1)",
+
+              animation: percent
+                ? "premiumBarPulse 2.2s ease-in-out infinite"
+                : "none",
+
+              "@keyframes premiumBarPulse": {
+                "0%": { filter: "brightness(1)" },
+                "50%": { filter: "brightness(1.3)" },
+                "100%": { filter: "brightness(1)" }
+              }
+            }}
+          />
+        </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  };
   /* ================= ROWS ================= */
 
   const RoutineRow = (r: Routine) => {
@@ -393,95 +395,33 @@ const CardHeaderProgress = ({
     return <Container><Typography>Loading...</Typography></Container>;
   }
 
-  /* ================= SIDEBAR ================= */
-
-  const sidebar = [
-    { icon: <></>, label: "" },
-    { icon: <HomeIcon />, label: "Home" },
-    { icon: <CheckIcon />, label: "Todos" },
-    { icon: <RepeatIcon />, label: "Routines" },
-    { icon: <DoneAllIcon />, label: "Completed" },
-    { icon: <InsightsIcon />, label: "Dashboard" },
-    { icon: <GroupsIcon />, label: "Groups" }
-  ];
-
-  const sidebarContent = (
-    <Box sx={{ width: 70, display: "flex", flexDirection: "column", alignItems: "center", pt: 10, gap: 2 }}>
-      {sidebar.map((s, i) => (
-        <Tooltip title={s.label} placement="right" key={i}>
-          <Box
-            onClick={() => {
-              setTab(i);
-              if (isMobile) setMobileSidebarOpen(false);
-            }}
-            sx={{
-              p: 1.5,
-              borderRadius: 2,
-              cursor: "pointer",
-              color: tab === i ? "#00ffa6" : "rgba(255,255,255,0.5)",
-              background: tab === i ? "rgba(0,255,170,0.12)" : "transparent"
-            }}
-          >
-            {s.icon}
-          </Box>
-        </Tooltip>
-      ))}
-    </Box>
-  );
-
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-
-      {isMobile ? (
-        <SwipeableDrawer
-          anchor="left"
-          open={mobileSidebarOpen}
-          onClose={() => setMobileSidebarOpen(false)}
-          onOpen={() => setMobileSidebarOpen(true)}
-          swipeAreaWidth={100}
-          PaperProps={{
-            sx: {
-              width: 80,
-              background: "#06110d",
-              borderRight: "1px solid rgba(255,255,255,0.06)"
-            }
-          }}
-        >
-          {sidebarContent}
-        </SwipeableDrawer>
-      ) : (
-        <Box sx={{ width: 64, borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-          {sidebarContent}
-        </Box>
-      )}
 
       {/* MAIN CONTENT */}
       <Container maxWidth="sm" sx={{ marginBottom: 20 }}>
 
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          variant="scrollable"
+          allowScrollButtonsMobile
+          sx={{ mb: 1 }}
+        >
+
+          <Tab icon={<HomeIcon />} />
+          <Tab icon={<CheckIcon />} />
+          <Tab icon={<RepeatIcon />} />
+          <Tab icon={<DoneAllIcon />} />
+          <Tab icon={<InsightsIcon />} />
+          <Tab icon={<GroupsIcon />} />
+        </Tabs>
+
         {/* ACTION BAR */}
 
         <Stack direction="row" spacing={0.5} mb={1}>
-          {tab !== 5 && tab !== 6 && <Button startIcon={<CheckIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
-            onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
-            Todo
-          </Button>}
 
-          {tab !== 5 && tab !== 6 && <Button startIcon={<RepeatIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
-            onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
-            Routine
-          </Button>}
-
-          {tab === 6 && <Button
-            variant="contained"
-            size="small"
-            sx={{ background: "#00ffa6", alignSelf: "flex-start" }}
-            onClick={() => setGroupModalOpen(true)}
-            startIcon={<AddIcon fontSize="small" />}
-          >
-            Create Group
-          </Button>}
-
-          {tab !== 5 && <Button
+          {tab !== 4 && <Button
             startIcon={<GitHubIcon sx={{ fontSize: 16 }} />}
             size="small"
             variant="contained"
@@ -507,7 +447,7 @@ const CardHeaderProgress = ({
 
 
         {/* HOME */}
-        {tab === 1 && (
+        {tab === 0 && (
           <Stack spacing={2} >
 
 
@@ -559,14 +499,26 @@ const CardHeaderProgress = ({
           </Stack>
         )}
 
-        {tab === 2 && (
+        {tab === 1 && (
           <Paper sx={{
             ...premiumSurface, p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240
           }}>
-            <Typography fontWeight={700}>All Todos</Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              mb={1}
+            ><Typography fontWeight={700}>All Todos</Typography>
+
+              <Button startIcon={<CheckIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
+                onClick={() => { setEditorMode("todo"); setEditingItem(null); setEditorOpen(true); }}>
+                Todo
+              </Button>
+            </Stack>
+
             <Stack spacing={1.5} sx={{ flex: 1 }}>
               {normalTodos.length
                 ? normalTodos.map(TodoRow)
@@ -575,14 +527,25 @@ const CardHeaderProgress = ({
           </Paper>
         )}
 
-        {tab === 3 && (
+        {tab === 2 && (
           <Paper sx={{
             ...premiumSurface, p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240
           }}>
-            <Typography fontWeight={700}>All Routines</Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              mb={1}
+            >
+              <Typography fontWeight={700}>All Routines</Typography>
+              <Button startIcon={<RepeatIcon />} size="small" variant="contained" sx={{ background: "#00ffa6" }}
+                onClick={() => { setEditorMode("routine"); setEditingItem(null); setEditorOpen(true); }}>
+                Routine
+              </Button></Stack>
+
             <Stack spacing={1.5} sx={{ flex: 1 }}>
               {laterRoutines.length
                 ? laterRoutines.map(RoutineRow)
@@ -591,7 +554,7 @@ const CardHeaderProgress = ({
           </Paper>
         )}
 
-        {tab === 4 && (
+        {tab === 3 && (
           <Stack spacing={2} sx={{ height: "100%" }}>
             <Paper sx={{
               ...premiumSurface, p: 2
@@ -617,7 +580,7 @@ const CardHeaderProgress = ({
           </Stack>
         )}
 
-        {tab === 5 && (
+        {tab === 4 && (
           <DashboardView
             routines={routines}
             todos={todos}
@@ -625,14 +588,30 @@ const CardHeaderProgress = ({
         )}
 
         {/* ⭐ GROUPS TAB */}
-        {tab === 6 && (
+        {tab === 5 && (
           <Paper sx={{
             ...premiumSurface, p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240
           }}>
-            <Typography fontWeight={700} mb={1}>Groups</Typography>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              mb={1}
+            >
+              <Typography fontWeight={700} mb={1}>Groups</Typography>
+              <Button
+                variant="contained"
+                size="small"
+                sx={{ background: "#00ffa6", alignSelf: "flex-start" }}
+                onClick={() => setGroupModalOpen(true)}
+                startIcon={<GroupsIcon fontSize="small" />}
+              >
+                Group
+              </Button></Stack>
+
             <GroupListView
               groups={groups}
               onDelete={(id) => {
