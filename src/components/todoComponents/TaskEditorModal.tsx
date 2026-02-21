@@ -11,7 +11,8 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  Select
+  Select,
+  DialogActions
 } from "@mui/material";
 
 import {
@@ -26,6 +27,9 @@ import {
 import {
   AdapterDayjs
 } from "@mui/x-date-pickers/AdapterDayjs";
+
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
@@ -44,10 +48,11 @@ interface Props {
   groups: Group[];
   onClose: () => void;
   onSave: (item: any) => void;
+  onDelete?: (id: string) => void;
 }
 
 export default function TaskEditorModal({
-  open, mode, item, groups, onClose, onSave
+  open, mode, item, groups, onClose, onSave, onDelete
 }: Props) {
 
   const [title, setTitle] = useState("");
@@ -56,6 +61,7 @@ export default function TaskEditorModal({
   const [deadline, setDeadline] = useState<any>(null);
   const [time, setTime] = useState<any>(null);
   const [error, setError] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
 
@@ -131,130 +137,176 @@ export default function TaskEditorModal({
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-            backdropFilter: "blur(20px)"
-          }
-        }}
-      >
+    <>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Dialog
+          open={open}
+          onClose={onClose}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+              backdropFilter: "blur(20px)"
+            }
+          }}
+        >
+          <DialogTitle
+            sx={{
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}
+          >
+            {mode === "routine" ? "Edit Routine" : "Edit Todo"}
 
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          {mode === "routine" ? "Edit Routine" : "Edit Todo"}
-        </DialogTitle>
+            <IconButton size="small" onClick={onClose}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
 
-        <DialogContent>
+            <Stack spacing={2} mt={1}>
 
-          <Stack spacing={2} mt={1}>
-
-            <TextField
-              label="Title"
-              fullWidth
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-            />
-
-            <FormControl fullWidth size="small">
-              <InputLabel
-                sx={{
-                  color: "rgba(255,255,255,0.6)",
-                  "&.Mui-focused": { color: "#00ffa6" }
-                }}
-              >
-                Priority
-              </InputLabel>
-
-              <Select
-                label="Priority"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as Priority)}
-                sx={{
-                  borderRadius: 2,
-                  background:
-                    "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))",
-                  backdropFilter: "blur(12px)",
-
-                  ".MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(0,255,170,0.15)"
-                  },
-
-                  "&:hover .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "rgba(0,255,170,0.35)"
-                  },
-
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#00ffa6"
-                  }
-                }}
-                MenuProps={{
-                  PaperProps: {
-                    sx: {
-                      mt: 1,
-                      borderRadius: 2,
-                      background: "#07130f",
-                      border: "1px solid rgba(0,255,170,0.18)",
-                      backdropFilter: "blur(16px)"
-                    }
-                  }
-                }}
-              >
-                <MenuItem value="low">🟢 Low</MenuItem>
-                <MenuItem value="medium">🟡 Medium</MenuItem>
-                <MenuItem value="high">🔴 High</MenuItem>
-              </Select>
-            </FormControl>
-
-
-            <Typography variant="caption">Groups</Typography>
-
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {groups.map(g => (
-                <Chip
-                  key={g.id}
-                  label={g.name}
-                  onClick={() => toggleGroup(g.id)}
-                  color={groupIds.includes(g.id) ? "primary" : "default"}
-                />
-              ))}
-            </Box>
-
-            {mode === "routine" && (
-              <TimePicker
-                ampm
-                label="Complete by"
-                value={time}
-                onChange={setTime}
-                minutesStep={1}          // ⭐ allows every minute
+              <TextField
+                label="Title"
+                fullWidth
+                value={title}
+                onChange={e => setTitle(e.target.value)}
               />
 
-            )}
+              <FormControl fullWidth size="small">
+                <InputLabel
+                  sx={{
+                    color: "rgba(255,255,255,0.6)",
+                    "&.Mui-focused": { color: "#00ffa6" }
+                  }}
+                >
+                  Priority
+                </InputLabel>
 
-            {mode === "todo" && (
-              <DatePicker label="Deadline" value={deadline} onChange={setDeadline} />
-            )}
+                <Select
+                  label="Priority"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value as Priority)}
+                  sx={{
+                    borderRadius: 2,
+                    background:
+                      "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))",
+                    backdropFilter: "blur(12px)",
 
-            {error && <Typography color="error">{error}</Typography>}
+                    ".MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0,255,170,0.15)"
+                    },
 
-            <Stack direction="row" spacing={2}>
-              <Button fullWidth variant="outlined" onClick={onClose}>
-                Cancel
-              </Button>
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "rgba(0,255,170,0.35)"
+                    },
 
-              <Button fullWidth variant="contained" onClick={handleSave}>
-                Save
-              </Button>
+                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#00ffa6"
+                    }
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        mt: 1,
+                        borderRadius: 2,
+                        background: "#07130f",
+                        border: "1px solid rgba(0,255,170,0.18)",
+                        backdropFilter: "blur(16px)"
+                      }
+                    }
+                  }}
+                >
+                  <MenuItem value="low">🟢 Low</MenuItem>
+                  <MenuItem value="medium">🟡 Medium</MenuItem>
+                  <MenuItem value="high">🔴 High</MenuItem>
+                </Select>
+              </FormControl>
+
+
+              <Typography variant="caption">Groups</Typography>
+
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {groups.map(g => (
+                  <Chip
+                    key={g.id}
+                    label={g.name}
+                    onClick={() => toggleGroup(g.id)}
+                    color={groupIds.includes(g.id) ? "primary" : "default"}
+                  />
+                ))}
+              </Box>
+
+              {mode === "routine" && (
+                <TimePicker
+                  ampm
+                  label="Complete by"
+                  value={time}
+                  onChange={setTime}
+                  minutesStep={1}          // ⭐ allows every minute
+                />
+
+              )}
+
+              {mode === "todo" && (
+                <DatePicker label="Deadline" value={deadline} onChange={setDeadline} />
+              )}
+
+              {error && <Typography color="error">{error}</Typography>}
+
+              <Stack direction="row" spacing={2}>
+
+                {item && onDelete && (
+                  <Button
+                    fullWidth
+                    color="error"
+                    variant="outlined"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    Delete
+                  </Button>
+                )}
+
+                <Button fullWidth variant="contained" onClick={handleSave}>
+                  Save
+                </Button>
+
+              </Stack>
             </Stack>
 
-          </Stack>
+          </DialogContent>
 
-        </DialogContent>
+        </Dialog>
+      </LocalizationProvider>
+      <Dialog
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+      >
+        <DialogTitle>Delete task?</DialogTitle>
+
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(false)}>
+            Cancel
+          </Button>
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              if (item && onDelete) {
+                onDelete(item.id);
+              }
+              setConfirmDelete(false);
+              onClose();
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
       </Dialog>
-    </LocalizationProvider>
+    </>
   );
 }

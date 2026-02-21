@@ -25,8 +25,6 @@ interface Props {
   meta?: string;
   onToggle: () => void;
   onEdit: () => void;
-  onDelete?: () => void;
-
   groups?: any[];
   groupIds?: string[];
 
@@ -41,7 +39,6 @@ export default function PremiumTaskCard({
   meta,
   onToggle,
   onEdit,
-  onDelete,
   groups = [],
   groupIds = [],
   isOverdue = false,
@@ -62,25 +59,21 @@ export default function PremiumTaskCard({
       <Paper
         elevation={0}
         sx={{
-          px: 2,
+          px: 0.5,
           py: 1.2,
-          borderRadius: 2,
+          borderRadius: 1,
           position: "relative",
 
           /* NEW PREMIUM GREEN SURFACE */
           background: isActive
             ? 'linear-gradient(160deg, rgba(255,80,80,0.20) 0%, rgba(255,80,80,0.10) 100%)'
-            : 'linear-gradient(160deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.05) 100%)',
+            : '',
 
           backdropFilter: "blur(12px)",
 
           border: isActive
             ? "1px solid rgba(255,80,80,0.35)"
-            : "1px solid rgba(0,255,170,0.18)",
-
-          boxShadow: done
-            ? "none"
-            : "0 6px 18px rgba(0,0,0,0.35)",
+            : "",
 
           transition: "all .35s ease",
 
@@ -88,7 +81,7 @@ export default function PremiumTaskCard({
             transform: "translateY(-1px)",
             boxShadow: isActive
               ? "0 10px 28px rgba(255,80,80,0.25)"
-              : "0 10px 26px rgba(0,255,170,0.12)"
+              : "0 10px 28px rgba(0,0,0,0.45)"
           },
 
           animation: isActive
@@ -99,17 +92,17 @@ export default function PremiumTaskCard({
             "0%": {
               boxShadow: isActive
                 ? "0 0 0px rgba(255,80,80,0.15)"
-                : "0 0 0px rgba(0,255,170,0.12)"
+                : "0 0 0px rgba(0,0,0,0.12)"
             },
             "50%": {
               boxShadow: isActive
                 ? "0 0 22px rgba(255,80,80,0.45)"
-                : "0 0 18px rgba(0,255,170,0.35)"
+                : "0 0 18px rgba(0,0,0,0.35)"
             },
             "100%": {
               boxShadow: isActive
                 ? "0 0 0px rgba(255,80,80,0.15)"
-                : "0 0 0px rgba(0,255,170,0.12)"
+                : "0 0 0px rgba(0,0,0,0.12)"
             }
           }
         }}
@@ -120,7 +113,7 @@ export default function PremiumTaskCard({
           <Checkbox
             checked={done}
             onChange={onToggle}
-            sx={{ p: 0.4 }}
+            sx={{ pr: 0.2 }}
           />
 
           <Box sx={{ flex: 1 }}>
@@ -198,59 +191,9 @@ export default function PremiumTaskCard({
             <EditIcon fontSize="small" />
           </IconButton>
 
-          {/* DELETE BUTTON */}
-          {onDelete && (
-            <IconButton
-              size="small"
-              onClick={() => setConfirmOpen(true)}
-              sx={{ color: "rgba(255,80,80,0.9)" }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          )}
 
         </Stack>
       </Paper>
-
-      {/* ✅ CONFIRM DELETE POPUP */}
-      <Dialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: 1,
-            background: "#07130f",
-            border: "1px solid rgba(255,80,80,0.25)"
-          }
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          Delete task?
-        </DialogTitle>
-
-        <DialogContent>
-          <Typography variant="body2">
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 2, pb: 2 }}>
-          <Button onClick={() => setConfirmOpen(false)}>
-            Cancel
-          </Button>
-
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              setConfirmOpen(false);
-              onDelete?.();
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }

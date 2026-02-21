@@ -186,6 +186,12 @@ export default function TodoApp() {
     setEditorOpen(false);
   };
 
+  const priorityDone = todos.filter(t => t.status === "completed").length;
+  const priorityTotal = todos.length;
+
+  const nextHoursDone = routines.filter(r => r.completedToday === todayStr).length;
+  const nextHoursTotal = routines.length;
+
   const isRoutineOverdue = (r: Routine) => {
 
     if (!r.completeByTime) return false;
@@ -208,6 +214,133 @@ export default function TodoApp() {
 
     return now.getTime() > due.getTime();
   };
+
+  const EmptyState = ({ label }: { label: string }) => (
+    <Box
+      sx={{
+        minHeight: 140,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: 0.5,
+        opacity: 0.65,
+        textAlign: "center",
+
+        /* subtle floating animation */
+        animation: "emptyFloat 3.5s ease-in-out infinite",
+
+        "@keyframes emptyFloat": {
+          "0%": { transform: "translateY(0px)", opacity: 0.55 },
+          "50%": { transform: "translateY(-4px)", opacity: 0.8 },
+          "100%": { transform: "translateY(0px)", opacity: 0.55 }
+        }
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: 28,
+          lineHeight: 1,
+          filter: "drop-shadow(0 0 6px rgba(0,255,170,0.25))"
+        }}
+      >
+        🧘‍♂️
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: 13,
+          letterSpacing: ".3px",
+          color: "rgba(255,255,255,0.7)"
+        }}
+      >
+        Nothing here yet
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: 11,
+          opacity: 0.6
+        }}
+      >
+        No {label}
+      </Typography>
+    </Box>
+  );
+const CardHeaderProgress = ({
+  done,
+  total
+}: {
+  done: number;
+  total: number;
+}) => {
+
+  const percent = total === 0 ? 0 : (done / total) * 100;
+
+  return (
+    <Box
+      sx={{
+        minWidth: 90,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end"
+      }}
+    >
+      {/* COUNTER */}
+      <Typography
+        sx={{
+          fontSize: 11,
+          opacity: 0.75,
+          letterSpacing: ".3px"
+        }}
+      >
+        {done} / {total}
+      </Typography>
+
+      {/* PREMIUM BAR */}
+      <Box
+        sx={{
+          position: "relative",
+          mt: 0.4,
+          width: 90,
+          height: 6,
+          borderRadius: 999,
+          overflow: "hidden",
+          background:
+            "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+          backdropFilter: "blur(8px)"
+        }}
+      >
+        {/* GLOW FILL */}
+        <Box
+          sx={{
+            height: "100%",
+            width: `${percent}%`,
+            borderRadius: 999,
+
+            background:
+              "linear-gradient(90deg,#00ffa6,#00d4ff)",
+
+            boxShadow:
+              "0 0 10px rgba(0,255,170,0.6), 0 0 20px rgba(0,255,170,0.25)",
+
+            transition: "width .45s cubic-bezier(.2,.8,.2,1)",
+
+            animation: percent
+              ? "premiumBarPulse 2.2s ease-in-out infinite"
+              : "none",
+
+            "@keyframes premiumBarPulse": {
+              "0%": { filter: "brightness(1)" },
+              "50%": { filter: "brightness(1.3)" },
+              "100%": { filter: "brightness(1)" }
+            }
+          }}
+        />
+      </Box>
+    </Box>
+  );
+};
   /* ================= ROWS ================= */
 
   const RoutineRow = (r: Routine) => {
@@ -230,10 +363,6 @@ export default function TodoApp() {
         }}
         isUrgent={(r as any).isUrgent}
         isOverdue={overdue}   // ✅ NEW
-        onDelete={() => {
-          const next = routines.filter(x => x.id !== r.id);
-          saveDb(next, todos);
-        }}
         streak={r.streak?.current}
       />
     );
@@ -255,10 +384,6 @@ export default function TodoApp() {
           setEditorMode("todo");
           setEditingItem(t);
           setEditorOpen(true);
-        }}
-        onDelete={() => {
-          const next = todos.filter(x => x.id !== t.id);
-          saveDb(routines, next);
         }}
       />
     );
@@ -331,7 +456,7 @@ export default function TodoApp() {
       )}
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm">
+      <Container maxWidth="sm" sx={{ marginBottom: 20 }}>
 
         {/* ACTION BAR */}
 
@@ -374,7 +499,7 @@ export default function TodoApp() {
               }
             }}
           >
-            {isDirty ? "Sync changes" : "Up to date"}
+            {isDirty ? "Save changes" : "Up to date"}
           </Button>}
 
 
@@ -383,58 +508,110 @@ export default function TodoApp() {
 
         {/* HOME */}
         {tab === 1 && (
-          <Stack spacing={2}>
-            <Stack direction="row" spacing={2}>
-              <Paper sx={{ ...premiumSurface, flex: 1, p: 1 }}>
-                <Typography fontSize={12}>Daily Routines</Typography>
-                <LinearProgress value={routineProgress} variant="determinate" />
-              </Paper>
+          <Stack spacing={2} >
 
-              <Paper sx={{ ...premiumSurface, flex: 1, p: 1 }}>
-                <Typography fontSize={12}>Todo Tasks</Typography>
-                <LinearProgress value={todoProgress} variant="determinate" />
-              </Paper>
-            </Stack>
 
-            <Paper sx={{ ...premiumSurface, p: 2 }}>
-              <Typography fontWeight={700}>🔥 Priority Todos</Typography>
-              <Stack spacing={1}>{urgentTodos.map(TodoRow)}</Stack>
+            <Paper sx={{
+              ...premiumSurface, p: 2
+            }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                mb={1}
+              >
+                <Typography fontWeight={700}>🔥 Priority Todos</Typography>
+
+                <CardHeaderProgress
+                  done={priorityDone}
+                  total={priorityTotal}
+                />
+              </Stack>
+              <Stack spacing={1} sx={{ flex: 1 }}>
+                {urgentTodos.length
+                  ? urgentTodos.map(TodoRow)
+                  : <EmptyState label="priority todos" />}
+              </Stack>
             </Paper>
 
-            <Paper sx={{ ...premiumSurface, p: 2 }}>
-              <Typography fontWeight={700}>⏱ Next 3 Hours</Typography>
-              <Stack spacing={1}>{next3Hours.map(RoutineRow)}</Stack>
+            <Paper sx={{
+              ...premiumSurface, p: 2
+            }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                mb={1}
+              >
+                <Typography fontWeight={700}>⏱ Next 3 Hours</Typography>
+
+                <CardHeaderProgress
+                  done={nextHoursDone}
+                  total={nextHoursTotal}
+                />
+              </Stack>
+              <Stack spacing={1} sx={{ flex: 1 }}>
+                {next3Hours.length
+                  ? next3Hours.map(RoutineRow)
+                  : <EmptyState label="routines here" />}
+              </Stack>
             </Paper>
           </Stack>
         )}
 
         {tab === 2 && (
-          <Paper sx={{ ...premiumSurface, p: 2 }}>
+          <Paper sx={{
+            ...premiumSurface, p: 2, display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 240
+          }}>
             <Typography fontWeight={700}>All Todos</Typography>
-            <Stack spacing={1.5}>{normalTodos.map(TodoRow)}</Stack>
+            <Stack spacing={1.5} sx={{ flex: 1 }}>
+              {normalTodos.length
+                ? normalTodos.map(TodoRow)
+                : <EmptyState label="todos" />}
+            </Stack>
           </Paper>
         )}
 
         {tab === 3 && (
-          <Paper sx={{ ...premiumSurface, p: 2 }}>
+          <Paper sx={{
+            ...premiumSurface, p: 2, display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 240
+          }}>
             <Typography fontWeight={700}>All Routines</Typography>
-            <Stack spacing={1.5}>{laterRoutines.map(RoutineRow)}</Stack>
+            <Stack spacing={1.5} sx={{ flex: 1 }}>
+              {laterRoutines.length
+                ? laterRoutines.map(RoutineRow)
+                : <EmptyState label="routines" />}
+            </Stack>
           </Paper>
         )}
 
         {tab === 4 && (
-          <Stack spacing={2}>
-            <Paper sx={{ ...premiumSurface, p: 2 }}>
+          <Stack spacing={2} sx={{ height: "100%" }}>
+            <Paper sx={{
+              ...premiumSurface, p: 2
+            }}>
               <Typography fontWeight={700} mb={1}>Completed Daily Routines</Typography>
-              <Stack spacing={1.2}>
-                {routines.filter(r => r.completedToday === todayStr).map(RoutineRow)}
+              <Stack spacing={1.2} sx={{ flex: 1 }}>
+                {routines.filter(r => r.completedToday === todayStr).length
+                  ? routines.filter(r => r.completedToday === todayStr).map(RoutineRow)
+                  : <EmptyState label="completed routines" />}
               </Stack>
             </Paper>
 
-            <Paper sx={{ ...premiumSurface, p: 2 }}>
+            <Paper sx={{
+              ...premiumSurface, p: 2
+            }}>
               <Typography fontWeight={700} mb={1}>Completed Todos</Typography>
-              <Stack spacing={1.2}>
-                {todos.filter(t => t.status === "completed").map(TodoRow)}
+              <Stack spacing={1.2} sx={{ flex: 1 }}>
+                {todos.filter(t => t.status === "completed").length
+                  ? todos.filter(t => t.status === "completed").map(TodoRow)
+                  : <EmptyState label="completed todos" />}
               </Stack>
             </Paper>
           </Stack>
@@ -449,7 +626,12 @@ export default function TodoApp() {
 
         {/* ⭐ GROUPS TAB */}
         {tab === 6 && (
-          <Paper sx={{ ...premiumSurface, p: 2 }}>
+          <Paper sx={{
+            ...premiumSurface, p: 2, display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 240
+          }}>
             <Typography fontWeight={700} mb={1}>Groups</Typography>
             <GroupListView
               groups={groups}
@@ -470,6 +652,18 @@ export default function TodoApp() {
         groups={groups}
         onClose={() => setEditorOpen(false)}
         onSave={handleSaveItem}
+        onDelete={(id) => {
+
+          if (editorMode === "routine") {
+            const next = routines.filter(r => r.id !== id);
+            saveDb(next, todos);
+          } else {
+            const next = todos.filter(t => t.id !== id);
+            saveDb(routines, next);
+          }
+
+          setEditorOpen(false);
+        }}
       />
 
       <GroupModal
@@ -496,3 +690,4 @@ export default function TodoApp() {
     </Box>
   );
 }
+
