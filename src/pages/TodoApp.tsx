@@ -24,6 +24,9 @@ import InsightsIcon from "@mui/icons-material/Insights";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AddIcon from "@mui/icons-material/Add";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import SyncRoundedIcon from "@mui/icons-material/SyncRounded";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 
@@ -68,10 +71,9 @@ export default function TodoApp() {
   const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     initNotifications();
@@ -220,7 +222,7 @@ export default function TodoApp() {
   const EmptyState = ({ label }: { label: string }) => (
     <Box
       sx={{
-        minHeight: 140,
+        minHeight: 150,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -397,9 +399,121 @@ export default function TodoApp() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      <Box
+        sx={{
+          position: "fixed",
+          top: 70,
+          right: 20,
+          zIndex: 1200
+        }}
+      >
+        <Button
+          size="small"
+          variant="contained"
+          disableElevation
+          startIcon={
+            isSyncing ? (
+              <SyncRoundedIcon
+                sx={{
+                  fontSize: 18,
+                  animation: "spin 0.9s linear infinite",
+                  "@keyframes spin": {
+                    "0%": { transform: "rotate(0deg)" },
+                    "100%": { transform: "rotate(360deg)" }
+                  }
+                }}
+              />
+            ) : isDirty ? (
+              <SaveRoundedIcon sx={{ fontSize: 18 }} />
+            ) : (
+              <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />
+            )
+          }
+          onClick={async () => {
+
+            if (isSyncing) return;
+
+            setIsSyncing(true);
+
+            await handleSync();
+
+            initialSnapshotRef.current = JSON.stringify({ routines, todos, groups });
+            setIsDirty(false);
+            setSyncSuccess(true);
+
+            setTimeout(() => setIsSyncing(false), 800);
+          }}
+          sx={{
+            px: 2.6,
+            borderRadius: 999,
+            textTransform: "none",
+            fontWeight: 700,
+            letterSpacing: ".4px",
+
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,255,255,0.12)",
+
+            transition: "all .2s ease",
+
+            /* ================= DIRTY RED ALERT ================= */
+            ...(isDirty && !isSyncing && {
+              background: "linear-gradient(135deg,#ff2b2b,#ff0000)",
+              color: "#fff",
+
+              animation: "dangerPulse 0.8s ease-in-out infinite",
+
+              "@keyframes dangerPulse": {
+                "0%": {
+                  boxShadow:
+                    "0 0 6px rgba(255,0,0,0.4), 0 0 12px rgba(255,0,0,0.3)"
+                },
+                "50%": {
+                  boxShadow:
+                    "0 0 22px rgba(255,0,0,0.95), 0 0 60px rgba(255,0,0,0.65)"
+                },
+                "100%": {
+                  boxShadow:
+                    "0 0 6px rgba(255,0,0,0.4), 0 0 12px rgba(255,0,0,0.3)"
+                }
+              }
+            }),
+
+            /* ================= SYNCING GREEN FLOW ================= */
+            ...(isSyncing && {
+              background:
+                "linear-gradient(110deg,#1c3f1f 0%,#549957 35%,#2c6a31 60%,#549957 85%,#1c3f1f 100%)",
+              backgroundSize: "250% 100%",
+              color: "#eaffea",
+
+              animation: "greenFlow 1.1s linear infinite",
+
+              "@keyframes greenFlow": {
+                "0%": { backgroundPosition: "200% 0" },
+                "100%": { backgroundPosition: "-200% 0" }
+              }
+            }),
+
+            /* ================= CLEAN STATE ================= */
+            ...(!isDirty && !isSyncing && {
+              background: "rgba(255,255,255,0.08)",
+              color: "rgba(255,255,255,0.7)"
+            }),
+
+            "&:hover": {
+              transform: "translateY(-1px)"
+            }
+          }}
+        >
+          {isSyncing
+            ? "Syncing..."
+            : isDirty
+              ? "Save changes"
+              : "Up to date"}
+        </Button>
+      </Box>
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm" sx={{ marginBottom: 20,marginTop:0 }}>
+      <Container maxWidth="sm" sx={{ marginBottom: 20, marginTop: 0 }}>
 
         <Tabs
           value={tab}
@@ -417,40 +531,9 @@ export default function TodoApp() {
           <Tab icon={<GroupsIcon />} />
         </Tabs>
 
-        {/* ACTION BAR */}
-
-        <Stack direction="row" spacing={0.5} mb={1}>
-
-          {tab !== 4 && <Button
-            startIcon={<GitHubIcon sx={{ fontSize: 16 }} />}
-            size="small"
-            variant="contained"
-            onClick={async () => {
-              await handleSync();
-              initialSnapshotRef.current = JSON.stringify({ routines, todos, groups });
-              setIsDirty(false);
-              setSyncSuccess(true);
-            }}
-            sx={{
-              background: isDirty ? "#961717" : "#24292f",
-              animation: isDirty ? "githubPulse 1s ease-in-out infinite" : "none",
-              "@keyframes githubPulse": {
-                "50%": { boxShadow: "0 0 50px rgba(255,0,0,0.85)" }
-              }
-            }}
-          >
-            {isDirty ? "Save changes" : "Up to date"}
-          </Button>}
-
-
-        </Stack>
-
-
         {/* HOME */}
         {tab === 0 && (
           <Stack spacing={2} >
-
-
             <Paper sx={{
               ...premiumSurface, p: 2
             }}>
