@@ -576,7 +576,7 @@ export default function TodoApp() {
             sx={{
               minHeight: 32,
               background: "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
-              padding:2,
+              padding:1,
               borderRadius:1,
               "& .MuiTabs-flexContainer": {
                 gap: "6px",
