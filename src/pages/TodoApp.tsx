@@ -562,33 +562,112 @@ export default function TodoApp() {
             mb: 2
           }}
         >
-          <Button
+          {/* <Button
             size="small"
             onClick={() => setTab(prev => (prev - 1 + TAB_COUNT) % TAB_COUNT)}
           >
             ◀
-          </Button>
+          </Button> */}
 
           <Tabs
             value={tab}
             onChange={handleTabChange}
-            variant="scrollable"
-            allowScrollButtonsMobile={false}
-            scrollButtons={false}
+            variant="standard"
+            sx={{
+              minHeight: 32,
+
+              "& .MuiTabs-flexContainer": {
+                gap: "6px",
+                alignItems: "center"
+              },
+
+              "& .MuiTabs-indicator": {
+                height: 2,
+                borderRadius: 2
+              }
+            }}
           >
-            <Tab icon={<HomeIcon />} />
-            <Tab icon={<CheckIcon />} />
-            <Tab icon={<RepeatIcon />} />
-            <Tab icon={<DoneAllIcon />} />
-            <Tab icon={<GroupsIcon />} />
-            <Tab icon={<InsightsIcon />} />
+            <Tab
+              disableRipple
+              icon={<HomeIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                minWidth: "unset",
+                minHeight: 28,
+                padding: "4px",
+                borderRadius: 999,
+
+                "& .MuiTab-iconWrapper": {
+                  margin: 0
+                }
+              }}
+            />
+
+            <Tab
+              disableRipple
+              icon={<CheckIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                minWidth: "unset",
+                minHeight: 28,
+                padding: "4px",
+                borderRadius: 999,
+
+                "& .MuiTab-iconWrapper": {
+                  margin: 0
+                }
+              }}
+            />
+
+            <Tab
+              disableRipple
+              icon={<RepeatIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                minWidth: "unset",
+                minHeight: 28,
+                padding: "4px",
+                borderRadius: 999,
+
+                "& .MuiTab-iconWrapper": {
+                  margin: 0
+                }
+              }}
+            />
+
+            <Tab
+              disableRipple
+              icon={<DoneAllIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                minWidth: "unset",
+                minHeight: 28,
+                padding: "4px",
+                borderRadius: 999,
+
+                "& .MuiTab-iconWrapper": {
+                  margin: 0
+                }
+              }}
+            />
+
+            <Tab
+              disableRipple
+              icon={<GroupsIcon sx={{ fontSize: 20 }} />}
+              sx={{
+                minWidth: "unset",
+                minHeight: 28,
+                padding: "4px",
+                borderRadius: 999,
+
+                "& .MuiTab-iconWrapper": {
+                  margin: 0
+                }
+              }}
+            />
           </Tabs>
-          <Button
+          {/* <Button
             size="small"
             onClick={() => setTab(prev => (prev + 1) % TAB_COUNT)}
           >
             ▶
-          </Button>
+          </Button> */}
         </Box>
         {/* HOME */}
         {tab === 0 && (
@@ -638,6 +717,12 @@ export default function TodoApp() {
                   : <EmptyState label="routines here" />}
               </Stack>
             </Paper>
+
+            <DashboardView
+              routines={routines}
+              todos={todos}
+              groups={groups}
+            />
           </Stack>
         )}
 

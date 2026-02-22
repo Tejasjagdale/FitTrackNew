@@ -11,15 +11,8 @@ import TodayWorkout from './pages/TodayWorkout'
 import ExerciseDatabasePage from './pages/ExerciseDatabasePage'
 import TodoApp from './pages/TodoApp'
 import CrazyProfileUI from './components/CrazyProfileUI'
-import { UserProvider, useUser } from './context/UserContext'
 
-function AppInner() {
-
-  const { user, chooseUser } = useUser();
-
-  if (!user) {
-    return <CrazyProfileUI chooseUser={chooseUser} />;
-  }
+export default function App() {
 
   return (
     <Layout>
@@ -34,12 +27,4 @@ function AppInner() {
       </Routes>
     </Layout>
   )
-}
-
-export default function App() {
-  return (
-    <UserProvider>
-      <AppInner />
-    </UserProvider>
-  );
 }
