@@ -592,7 +592,7 @@ export default function TodoApp() {
               disableRipple
               icon={<HomeIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "50px",
+                minWidth: "3rem",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -607,7 +607,7 @@ export default function TodoApp() {
               disableRipple
               icon={<CheckIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "50px",
+                minWidth: "3rem",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -622,7 +622,7 @@ export default function TodoApp() {
               disableRipple
               icon={<RepeatIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "50px",
+                minWidth: "3rem",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -637,7 +637,7 @@ export default function TodoApp() {
               disableRipple
               icon={<DoneAllIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "50px",
+                minWidth: "3rem",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -652,7 +652,7 @@ export default function TodoApp() {
               disableRipple
               icon={<GroupsIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "50px",
+                minWidth: "3rem",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
