@@ -12,11 +12,20 @@ const Context = createContext<UserCtx | null>(null);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
 
-  const [user, setUser] = useState<AppUser | null>(null);
+  const DEFAULT_USER: AppUser = "KU"; // your default
+
+  const [user, setUser] = useState<AppUser | null>(DEFAULT_USER);
+
+  /* 🔥 CRITICAL: sync github service on mount */
+  React.useEffect(() => {
+    if (DEFAULT_USER) {
+      setAppUser(DEFAULT_USER);
+    }
+  }, []);
 
   const chooseUser = (u: AppUser) => {
-    setAppUser(u);   // update github service
-    setUser(u);      // update react tree
+    setAppUser(u);
+    setUser(u);
   };
 
   return (
@@ -25,7 +34,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     </Context.Provider>
   );
 }
-
 export function useUser() {
   const ctx = useContext(Context);
   if (!ctx) throw new Error("useUser must be inside UserProvider");

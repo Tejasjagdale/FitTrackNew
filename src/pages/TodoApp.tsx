@@ -48,7 +48,7 @@ import { useTodoStore } from "../components/hooks/useTodoStore";
 import { buildTodoPriorityLists } from "../engine/todoPriorityEngine";
 import { buildRoutinePriorityLists } from "../engine/routinePriorityEngine";
 import DashboardView from "../components/todoComponents/DashboardView";
-import { initNotifications, rescheduleAllNotifications } from "../engine/notificationService";
+import { rescheduleAllNotifications } from "../engine/notificationService";
 import GroupListView from "../components/todoComponents/GroupListView";
 import { nowIST } from "../utils/istTime";
 
@@ -84,12 +84,6 @@ export default function TodoApp() {
   const [groupFilter, setGroupFilter] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const theme = useTheme();
-
-  useEffect(() => {
-    initNotifications();
-  }, []);
 
   /* ================= INITIAL SNAPSHOT ================= */
 
