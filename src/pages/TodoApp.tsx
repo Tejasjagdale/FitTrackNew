@@ -18,7 +18,8 @@ import {
   Select,
   MenuItem,
   Checkbox,
-  ListItemText
+  ListItemText,
+  IconButton
 } from "@mui/material";
 
 import HomeIcon from "@mui/icons-material/Home";
@@ -26,12 +27,15 @@ import CheckIcon from "@mui/icons-material/Checklist";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import InsightsIcon from "@mui/icons-material/Insights";
-import GitHubIcon from "@mui/icons-material/GitHub";
 import GroupsIcon from "@mui/icons-material/Groups";
 import AddIcon from "@mui/icons-material/Add";
 import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
 import SyncRoundedIcon from "@mui/icons-material/SyncRounded";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 
 import { useState, useMemo, useEffect, useRef } from "react";
 
@@ -78,6 +82,7 @@ export default function TodoApp() {
   const [syncSuccess, setSyncSuccess] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [groupFilter, setGroupFilter] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
 
   const theme = useTheme();
 
@@ -124,17 +129,29 @@ export default function TodoApp() {
     return { routineDone, routineTotal, todoDone, todoTotal };
   }, [routines, todos, todayStr]);
 
-  const filteredTodos = groupFilter.length
-    ? normalTodos.filter(t =>
-      t.groupIds?.some((id: string) => groupFilter.includes(id))
-    )
-    : normalTodos;
+  const filteredTodos = normalTodos.filter(t => {
+    const groupMatch = groupFilter.length
+      ? t.groupIds?.some((id: string) => groupFilter.includes(id))
+      : true;
 
-  const filteredRoutines = groupFilter.length
-    ? laterRoutines.filter(r =>
-      r.groupIds?.some((id: string) => groupFilter.includes(id))
-    )
-    : laterRoutines;
+    const searchMatch = search
+      ? t.title.toLowerCase().includes(search.toLowerCase())
+      : true;
+
+    return groupMatch && searchMatch;
+  });
+
+  const filteredRoutines = laterRoutines.filter(r => {
+    const groupMatch = groupFilter.length
+      ? r.groupIds?.some((id: string) => groupFilter.includes(id))
+      : true;
+
+    const searchMatch = search
+      ? r.title.toLowerCase().includes(search.toLowerCase())
+      : true;
+
+    return groupMatch && searchMatch;
+  });
 
   useEffect(() => {
     if (!hasLoadedRef.current) {
@@ -540,7 +557,7 @@ export default function TodoApp() {
       </Box>
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm" sx={{ marginBottom: 10, marginTop: 1}}>
+      <Container maxWidth="sm" sx={{ marginBottom: 10, marginTop: 1 }}>
 
         <Box
           sx={{
@@ -644,9 +661,72 @@ export default function TodoApp() {
             >
               <Typography fontWeight={700}>📝 All Todos</Typography>
 
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row"
+                alignItems="center"
+                spacing={1}
+                flexWrap="wrap"
+                useFlexGap>
 
+                <TextField
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search..."
+                  size="small"
+                  sx={{
+                    flex: 1,
+                    minWidth: { xs: "100%", sm: 180 },
 
+                    "& .MuiOutlinedInput-root": {
+                      height: { xs: 34, sm: 36 },
+                      borderRadius: 999,
+                      fontSize: 13,
+
+                      background:
+                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      backdropFilter: "blur(14px)",
+
+                      color: "#d7ffe8",
+
+                      "& fieldset": {
+                        borderColor: "rgba(0,255,170,0.18)"
+                      },
+
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0,255,170,0.45)"
+                      },
+
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#00ffa6",
+                        boxShadow: "0 0 12px rgba(0,255,170,0.25)"
+                      }
+                    },
+
+                    "& input::placeholder": {
+                      color: "rgba(215,255,232,0.6)",
+                      opacity: 1
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon
+                          sx={{ fontSize: 18, color: "rgba(0,255,170,0.7)" }}
+                        />
+                      </InputAdornment>
+                    ),
+                    endAdornment: search && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearch("")}
+                          sx={{ color: "#00ffa6" }}
+                        >
+                          <ClearIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
                 {/* GROUP MULTISELECT */}
                 <FormControl size="small">
                   <Select
@@ -765,19 +845,40 @@ export default function TodoApp() {
                   </Select>
                 </FormControl>
 
-                <Button
-                  startIcon={<CheckIcon />}
-                  size="small"
-                  variant="contained"
-                  sx={{ background: "#00ffa6" }}
+                <IconButton
                   onClick={() => {
-                    setEditorMode("todo");
+                    setEditorMode("todo"); // or routine
                     setEditingItem(null);
                     setEditorOpen(true);
                   }}
+                  sx={{
+                    width: { xs: 32, sm: 36 },
+                    height: { xs: 32, sm: 36 },
+                    borderRadius: 999,
+
+                    border: "1px solid rgba(0,255,170,0.35)",
+                    color: "#00ffa6",
+
+                    background:
+                      "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+
+                    backdropFilter: "blur(10px)",
+
+                    transition: "all .18s ease",
+
+                    "& svg": {
+                      fontSize: { xs: 18, sm: 20 }
+                    },
+
+                    "&:hover": {
+                      background: "rgba(0,255,170,0.12)",
+                      borderColor: "#00ffa6",
+                      boxShadow: "0 0 10px rgba(0,255,170,0.35)"
+                    }
+                  }}
                 >
-                  Todo
-                </Button>
+                  <AddIcon />
+                </IconButton>
 
               </Stack>
             </Stack>
@@ -805,7 +906,72 @@ export default function TodoApp() {
             >
               <Typography fontWeight={700}>🔁 All Routines</Typography>
 
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row"
+                alignItems="center"
+                spacing={1}
+                flexWrap="wrap"
+                useFlexGap>
+
+                <TextField
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search..."
+                  size="small"
+                  sx={{
+                    flex: 1,
+                    minWidth: { xs: "100%", sm: 180 },
+
+                    "& .MuiOutlinedInput-root": {
+                      height: { xs: 34, sm: 36 },
+                      borderRadius: 999,
+                      fontSize: 13,
+
+                      background:
+                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      backdropFilter: "blur(14px)",
+
+                      color: "#d7ffe8",
+
+                      "& fieldset": {
+                        borderColor: "rgba(0,255,170,0.18)"
+                      },
+
+                      "&:hover fieldset": {
+                        borderColor: "rgba(0,255,170,0.45)"
+                      },
+
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#00ffa6",
+                        boxShadow: "0 0 12px rgba(0,255,170,0.25)"
+                      }
+                    },
+
+                    "& input::placeholder": {
+                      color: "rgba(215,255,232,0.6)",
+                      opacity: 1
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon
+                          sx={{ fontSize: 18, color: "rgba(0,255,170,0.7)" }}
+                        />
+                      </InputAdornment>
+                    ),
+                    endAdornment: search && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => setSearch("")}
+                          sx={{ color: "#00ffa6" }}
+                        >
+                          <ClearIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
 
                 {/* GROUP MULTISELECT */}
                 <FormControl size="small">
@@ -925,19 +1091,41 @@ export default function TodoApp() {
                   </Select>
                 </FormControl>
 
-                <Button
-                  startIcon={<RepeatIcon />}
+                <IconButton
                   size="small"
-                  variant="contained"
-                  sx={{ background: "#00ffa6" }}
                   onClick={() => {
                     setEditorMode("routine");
                     setEditingItem(null);
                     setEditorOpen(true);
                   }}
+                  sx={{
+                    width: { xs: 32, sm: 36 },
+                    height: { xs: 32, sm: 36 },
+                    borderRadius: 999,
+
+                    border: "1px solid rgba(0,255,170,0.35)",
+                    color: "#00ffa6",
+
+                    background:
+                      "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+
+                    backdropFilter: "blur(10px)",
+
+                    transition: "all .18s ease",
+
+                    "& svg": {
+                      fontSize: { xs: 18, sm: 20 }
+                    },
+
+                    "&:hover": {
+                      background: "rgba(0,255,170,0.12)",
+                      borderColor: "#00ffa6",
+                      boxShadow: "0 0 10px rgba(0,255,170,0.35)"
+                    }
+                  }}
                 >
-                  Routine
-                </Button>
+                  <AddIcon fontSize="small" />
+                </IconButton>
 
               </Stack>
             </Stack>
