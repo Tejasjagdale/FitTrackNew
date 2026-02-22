@@ -578,7 +578,8 @@ export default function TodoApp() {
 
               "& .MuiTabs-flexContainer": {
                 gap: "6px",
-                alignItems: "center"
+                alignItems: "center",
+                justifyContent:"space-around"
               },
 
               "& .MuiTabs-indicator": {
@@ -591,7 +592,7 @@ export default function TodoApp() {
               disableRipple
               icon={<HomeIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "unset",
+                minWidth: "50px",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -606,7 +607,7 @@ export default function TodoApp() {
               disableRipple
               icon={<CheckIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "unset",
+                minWidth: "50px",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -621,7 +622,7 @@ export default function TodoApp() {
               disableRipple
               icon={<RepeatIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "unset",
+                minWidth: "50px",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -636,7 +637,7 @@ export default function TodoApp() {
               disableRipple
               icon={<DoneAllIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "unset",
+                minWidth: "50px",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
@@ -651,7 +652,7 @@ export default function TodoApp() {
               disableRipple
               icon={<GroupsIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "unset",
+                minWidth: "50px",
                 minHeight: 28,
                 padding: "4px",
                 borderRadius: 999,
