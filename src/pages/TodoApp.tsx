@@ -907,7 +907,7 @@ export default function TodoApp() {
               justifyContent="space-between"
               mb={1}
             >
-              <Typography fontWeight={700}>🔁 All Routines</Typography>
+              {searchOpen ? <></> : <Typography fontWeight={700}>🔁 All Routines</Typography>}
 
               <Stack direction="row"
                 alignItems="center"
@@ -915,66 +915,68 @@ export default function TodoApp() {
                 flexWrap="wrap"
                 useFlexGap>
 
-                <TextField
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search..."
-                  size="small"
+                <Box
                   sx={{
-                    flex: 1,
-                    minWidth: { xs: "100%", sm: 180 },
-
-                    "& .MuiOutlinedInput-root": {
-                      height: { xs: 34, sm: 36 },
-                      borderRadius: 999,
-                      fontSize: 13,
-
-                      background:
-                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
-                      backdropFilter: "blur(14px)",
-
-                      color: "#d7ffe8",
-
-                      "& fieldset": {
-                        borderColor: "rgba(0,255,170,0.18)"
-                      },
-
-                      "&:hover fieldset": {
-                        borderColor: "rgba(0,255,170,0.45)"
-                      },
-
-                      "&.Mui-focused fieldset": {
-                        borderColor: "#00ffa6",
-                        boxShadow: "0 0 12px rgba(0,255,170,0.25)"
-                      }
-                    },
-
-                    "& input::placeholder": {
-                      color: "rgba(215,255,232,0.6)",
-                      opacity: 1
-                    }
+                    flex: searchOpen ? 1 : "0 0 auto",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end"
                   }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon
-                          sx={{ fontSize: 18, color: "rgba(0,255,170,0.7)" }}
-                        />
-                      </InputAdornment>
-                    ),
-                    endAdornment: search && (
-                      <InputAdornment position="end">
-                        <IconButton
-                          size="small"
-                          onClick={() => setSearch("")}
-                          sx={{ color: "#00ffa6" }}
-                        >
-                          <ClearIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
+                >
+                  {!searchOpen ? (
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearchOpen(true)}
+                      sx={{
+                        border: "1px solid rgba(0,255,170,0.35)",
+                        color: "#00ffa6",
+                        width: 34,
+                        height: 34
+                      }}
+                    >
+                      <SearchIcon fontSize="small" />
+                    </IconButton>
+                  ) : (
+                    <TextField
+                      autoFocus
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search..."
+                      size="small"
+                      sx={{
+                        flex: 1,
+                        "& .MuiOutlinedInput-root": {
+                          height: 34,
+                          borderRadius: 999,
+                          fontSize: 13,
+                          background:
+                            "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                          backdropFilter: "blur(14px)"
+                        }
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ fontSize: 18 }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setSearch("");
+                                setSearchOpen(false);
+                              }}
+                            >
+                              <ClearIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  )}
+                </Box>
 
                 {/* GROUP MULTISELECT */}
                 <FormControl size="small">
