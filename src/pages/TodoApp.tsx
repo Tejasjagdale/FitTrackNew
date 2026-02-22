@@ -577,7 +577,7 @@ export default function TodoApp() {
               minHeight: 32,
               background: "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
               padding:1,
-              borderRadius:1,
+              borderRadius:0.5,
               "& .MuiTabs-flexContainer": {
                 gap: "6px",
                 alignItems: "center",
