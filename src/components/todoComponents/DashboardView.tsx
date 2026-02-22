@@ -17,11 +17,12 @@ import RoutineHeatmap from "./RoutineHeatmap";
 import RoutineMonthCalendar from "./RoutineMonthCalendar";
 import TodoMonthCalendar from "./TodoMonthCalendar";
 import CheckIcon from "@mui/icons-material/Checklist";
+import RoutineInsightPanel from "./RoutineInsightPanel";
 
 type Props = {
   routines: Routine[];
   todos: Todo[];   // ✅ add this
-   groups: Group[];
+  groups: Group[];
 };
 type RangeType = "1m" | "3m" | "6m" | "1y" | "5y";
 
@@ -196,35 +197,121 @@ export default function DashboardView({ routines, todos, groups }: Props) {
       {/* GLOBAL HEATMAP */}
       <RoutineHeatmap routines={routines} />
 
-      {/* ROUTINE SELECT */}
-      <TextField
-        select
-        size="small"
-        label="Select Routine"
-        value={selectedId}
-        onChange={(e) => setSelectedId(e.target.value)}
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{
+          p: 1,
+          borderRadius: 2,
+          background:
+            "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(14px)"
+        }}
       >
-        <MenuItem value="all">See All</MenuItem>
-        {routines.map(r => (
-          <MenuItem key={r.id} value={r.id}>
-            {r.title}
-          </MenuItem>
-        ))}
-      </TextField>
 
-      {/* RANGE SELECT */}
-      <Stack direction="row" spacing={1} flexWrap="wrap">
-        {(["1m", "3m", "6m", "1y", "5y"] as RangeType[]).map(r => (
-          <Button
-            key={r}
-            size="small"
-            variant={range === r ? "contained" : "outlined"}
-            onClick={() => setRange(r)}
-            sx={{ borderRadius: 3, padding: 0 }}
-          >
-            {r.toUpperCase()}
-          </Button>
-        ))}
+        {/* ===== ROUTINE DROPDOWN ===== */}
+        <TextField
+          select
+          size="small"
+          label="Routine"
+          value={selectedId}
+          onChange={(e) => setSelectedId(e.target.value)}
+          sx={{
+            flex: 1,
+
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              background:
+                "linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.2))",
+              backdropFilter: "blur(10px)"
+            },
+
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0,255,170,0.15)"
+            },
+
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0,255,170,0.35)"
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#00ffa6"
+            }
+          }}
+          SelectProps={{
+            MenuProps: {
+              PaperProps: {
+                sx: {
+                  mt: 1,
+                  borderRadius: 2,
+                  background: "#07130f",
+                  border: "1px solid rgba(0,255,170,0.18)",
+                  backdropFilter: "blur(16px)"
+                }
+              }
+            }
+          }}
+        >
+          <MenuItem value="all">✨ See All</MenuItem>
+          {routines.map(r => (
+            <MenuItem key={r.id} value={r.id}>
+              🔁 {r.title}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        {/* ===== RANGE DROPDOWN ===== */}
+        <TextField
+          select
+          size="small"
+          label="Range"
+          value={range}
+          onChange={(e) => setRange(e.target.value as RangeType)}
+          sx={{
+            flex: 1,
+
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 2,
+              background:
+                "linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.2))",
+              backdropFilter: "blur(10px)"
+            },
+
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0,255,170,0.15)"
+            },
+
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "rgba(0,255,170,0.35)"
+            },
+
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#00ffa6"
+            }
+          }}
+          SelectProps={{
+            MenuProps: {
+              PaperProps: {
+                sx: {
+                  mt: 1,
+                  borderRadius: 2,
+                  background: "#07130f",
+                  border: "1px solid rgba(0,255,170,0.18)",
+                  backdropFilter: "blur(16px)"
+                }
+              }
+            }
+          }}
+        >
+          <MenuItem value="1m">📅 1 Month</MenuItem>
+          <MenuItem value="3m">📆 3 Months</MenuItem>
+          <MenuItem value="6m">🗓 6 Months</MenuItem>
+          <MenuItem value="1y">📊 1 Year</MenuItem>
+          <MenuItem value="5y">🧠 5 Years</MenuItem>
+        </TextField>
+
       </Stack>
 
       {/* ROUTINE CARDS */}
@@ -240,135 +327,14 @@ export default function DashboardView({ routines, todos, groups }: Props) {
               : (stats.total / stats.possible) * 100;
 
           return (
-            <Paper
-              key={r.id}
-              sx={{
-                p: 1.3,
-                borderRadius: 1.2,
-                position: "relative",
 
-                background:
-                  "linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015))",
+            <RoutineInsightPanel
+              routine={r}
+              percent={percent}
+              stats={stats}
+              insight={insight}
+            />
 
-                border: "1px solid rgba(255,255,255,0.08)",
-
-                backdropFilter: "blur(14px)",
-
-                transition: "all .25s ease",
-
-                "&:hover": {
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 6px 18px rgba(0,0,0,0.35)"
-                }
-              }}
-            >
-              {/* ===== HEADER ===== */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                mb={0.6}
-              >
-                <Typography
-                  sx={{
-                    fontSize: 14,
-                    opacity: .95,
-                    fontWeight: 600,
-                    letterSpacing: ".2px"
-                  }}
-                >
-                  🔁 {r.title}
-                </Typography>
-
-                {/* subtle streak badge */}
-                <Typography
-                  sx={{
-                    fontSize: 11,
-                    px: .8,
-                    py: .1,
-                    borderRadius: 999,
-                    background: "rgba(0,255,170,0.12)",
-                    color: "#00ffa6"
-                  }}
-                >
-                  {stats.total} active
-                </Typography>
-              </Stack>
-
-              <Stack direction="row" spacing={1.5}>
-
-                {/* ===== LEFT STAT COLUMN ===== */}
-                <Stack
-                  spacing={1}
-                  sx={{
-                    minWidth: 76,
-                    borderRight: "1px solid rgba(255,255,255,0.06)",
-                    pr: 1,
-                    alignItems: "center",
-                    justifyContent: "space-between"
-                  }}
-                >
-                  <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#ff784e" }}>
-                      {stats.longest}
-                    </Typography>
-                    <Typography variant="caption" sx={{ opacity: .5 }}>
-                      LONGEST
-                    </Typography>
-                  </Stack>
-
-                  <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#00ffa6" }}>
-                      {Math.round(percent)}%
-                    </Typography>
-                    <Typography variant="caption" sx={{ opacity: .5 }}>
-                      CONSIST
-                    </Typography>
-                  </Stack>
-
-                  <Stack alignItems="center" spacing={0}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 500 }}>
-                      {stats.total}
-                    </Typography>
-                    <Typography variant="caption" sx={{ opacity: .5 }}>
-                      ACTIVE
-                    </Typography>
-                  </Stack>
-                </Stack>
-
-                {/* ===== RIGHT CONTENT ===== */}
-                <Stack flex={1} spacing={0.9}>
-
-                  {/* ANALYSIS BOX */}
-                  <Stack
-                    spacing={0.4}
-                    sx={{
-                      p: .6,
-                      borderRadius: 1,
-                      background:
-                        "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",
-                      border: "1px solid rgba(255,255,255,0.06)"
-                    }}
-                  >
-                    <Typography variant="caption" sx={{ opacity: .85 }}>
-                      🔥 Longest streak is {insight.bestWeek} days
-                    </Typography>
-
-                    <Typography variant="caption" sx={{ opacity: .75 }}>
-                      ⚠️ Drops {insight.worstDay}
-                    </Typography>
-
-                    <Typography variant="caption" sx={{ opacity: .7 }}>
-                      {insight.trend}
-                    </Typography>
-                  </Stack>
-
-                  {/* ===== CALENDAR ===== */}
-                  <RoutineMonthCalendar routine={r} />
-                </Stack>
-
-              </Stack>
-            </Paper>
           );
         })}
       </Stack>

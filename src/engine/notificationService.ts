@@ -118,10 +118,11 @@ export async function scheduleRoutineNotifications(routines: Routine[]) {
         Math.floor(Math.random() * 999999),
 
       title: `Routine : ${r.title}`,
-      body: `🔥 Streak at risk starts in 5 minutes`,
-      largeBody: `Your ${r.title} routine is scheduled for ${r.completeByTime}. Stay consistent and protect your streak.`,
+      // body: `🔥 Streak at risk starts in 5 minutes`,
+      largeBody: `Your ${r.title} routine is scheduled for ${r.completeByTime}. Stay consistent !`,
 
       color: "#00ffa6",
+      backgroundColor: "#00c781",
       smallIcon: "ic_notification",
       channelId: "routine_channel",
       group: "routine_group",
@@ -169,7 +170,7 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
         id: baseId + 100000,
 
         title: `${t.title} 📌 Today’s Focus`,
-        body: t.title,
+        // body: t.title,
         largeBody: `Your task for today: ${t.title}`,
 
         color: "#00ffa6",
@@ -189,7 +190,7 @@ export async function scheduleTodoNotifications(todos: Todo[]) {
         id: baseId + 200000,
 
         title: `${t.title} ⏱ Still Pending`,
-        body: `Don't forget: ${t.title}`,
+        // body: `Don't forget: ${t.title}`,
         largeBody: `You still have an unfinished task today: ${t.title}`,
 
         color: "#00ffa6",
