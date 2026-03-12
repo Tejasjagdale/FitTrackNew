@@ -47,18 +47,18 @@ export default function Home() {
   }, [])
 
   // Fetch motivational quote - one per day
-useEffect(() => {
-  // deterministic quote of the day
-  const today = new Date().toISOString().split('T')[0]
+  useEffect(() => {
+    // deterministic quote of the day
+    const today = new Date().toISOString().split('T')[0]
 
-  const hash = today
-    .split('')
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const hash = today
+      .split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0)
 
-  const index = hash % QUOTES.length
+    const index = hash % QUOTES.length
 
-  setQuote(QUOTES[index])
-}, [])
+    setQuote(QUOTES[index])
+  }, [])
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -104,66 +104,41 @@ useEffect(() => {
         </Card>
       )}
 
-      {/* Quick Start Section */}
-      <Box sx={{ mb: 5 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-          Let's Go
-        </Typography>
-        <Grid container spacing={1.5}>
-          <Grid item xs={12} sm={6}>
-            <Button
-              variant="contained"
-              fullWidth
-              startIcon={<FitnessCenterIcon />}
-              size="large"
-              onClick={() => navigate('/today')}
-              sx={{
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 16px rgba(102, 126, 234, 0.4)'
-                },
-                transition: 'all 0.3s'
-              }}
-            >
-              Start Today's Workout
-            </Button>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Button
-              variant="outlined"
-              fullWidth
-              startIcon={<ChecklistIcon />}
-              size="large"
-              onClick={() => navigate('/todo')}
-              sx={{
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 600,
-                borderWidth: 2,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  borderWidth: 2,
-                  background: 'rgba(102, 126, 234, 0.08)'
-                },
-                transition: 'all 0.3s'
-              }}
-            >
-              Manage Tasks
-            </Button>
-          </Grid>
-        </Grid>
-      </Box>
-
       {/* Main Features Grid */}
       <Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2.5, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Features
         </Typography>
         <Grid container spacing={2}>
+          {/* Exercise Database */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 169, 244, 0.1) 100%)',
+                border: '1px solid rgba(33, 150, 243, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(33, 150, 243, 0.15)',
+                  borderColor: 'rgba(33, 150, 243, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/todo')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <ChecklistIcon sx={{ fontSize: 40, mb: 1.5, color: '#2196f3' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Manage Tasks
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Check off your to-dos
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
           {/* Workout Variants */}
           <Grid item xs={12} sm={6} md={3}>
             <Card
@@ -192,6 +167,8 @@ useEffect(() => {
               </CardContent>
             </Card>
           </Grid>
+
+
 
           {/* Playlists */}
           <Grid item xs={12} sm={6} md={3}>
@@ -251,34 +228,8 @@ useEffect(() => {
             </Card>
           </Grid>
 
-          {/* Exercise Database */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                cursor: 'pointer',
-                height: '100%',
-                transition: 'all 0.3s',
-                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 169, 244, 0.1) 100%)',
-                border: '1px solid rgba(33, 150, 243, 0.2)',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 24px rgba(33, 150, 243, 0.15)',
-                  borderColor: 'rgba(33, 150, 243, 0.4)'
-                }
-              }}
-              onClick={() => navigate('/exercise-database')}
-            >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <ChecklistIcon sx={{ fontSize: 40, mb: 1.5, color: '#2196f3' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                  Exercise DB
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Browse all exercises
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+
+
         </Grid>
       </Box>
     </Container>

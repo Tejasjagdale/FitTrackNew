@@ -7,7 +7,12 @@ import {
     Button,
     Typography,
     Stack,
-    useTheme
+    useTheme,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import type { Variant } from '../data/workoutUtils'
@@ -41,7 +46,7 @@ export default function WorkoutPlayer({
 }: Props) {
     const theme = useTheme()
     const currentStep = variant.exerciseOrder[currentStepIndex] || null
-
+    const [confirmOpen, setConfirmOpen] = useState(false)
     const [timeLeft, setTimeLeft] = useState(0)
     const [isResting, setIsResting] = useState(false)
 
@@ -132,17 +137,27 @@ export default function WorkoutPlayer({
         ((currentStepIndex + 1) / variant.exerciseOrder.length) * 100
 
     return (
-        <Card sx={{
-            p: 4,
-            textAlign: 'center',
-            mb: 3,
-            borderRadius: 2.5,
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s ease'
-        }}>
+        <Card
+            sx={{
+                p: { xs: 2.5, sm: 3.5 },
+                textAlign: "center",
+                mb: 3,
+
+                borderRadius: 2.5,
+
+                background: theme.palette.background.paper,
+                backdropFilter: "blur(16px)",
+
+                border: `1px solid ${theme.palette.divider}`,
+
+                boxShadow:
+                    theme.palette.mode === "dark"
+                        ? "0 20px 60px rgba(0,0,0,0.55)"
+                        : "0 10px 25px rgba(0,0,0,0.08)",
+
+                transition: "all 0.3s ease"
+            }}
+        >
 
             {/* --- EQUIPMENT --- */}
             {!isResting && (
@@ -159,11 +174,12 @@ export default function WorkoutPlayer({
                                 sx={{
                                     mb: 0.5,
                                     height: 28,
-                                    fontSize: '0.8rem',
+                                    fontSize: "0.8rem",
                                     fontWeight: 500,
-                                    background: 'linear-gradient(135deg, rgba(66,133,244,0.15) 0%, rgba(52,168,224,0.1) 100%)',
-                                    border: '1px solid rgba(66,133,244,0.3)',
-                                    color: 'text.primary'
+
+                                    background: `${theme.palette.primary.main}15`,
+                                    border: `1px solid ${theme.palette.primary.main}35`,
+                                    color: theme.palette.text.primary
                                 }}
                             />
                         ))}
@@ -189,7 +205,7 @@ export default function WorkoutPlayer({
                             sx={{
                                 borderRadius: 20,
                                 height: 7,
-                                background: 'rgba(255,255,255,0.1)',
+                                background: theme.palette.action.disabledBackground,
                                 '& .MuiLinearProgress-bar': {
                                     borderRadius: 20,
                                     background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`
@@ -203,11 +219,22 @@ export default function WorkoutPlayer({
                         sx={{
                             fontWeight: 800,
                             mb: 2.5,
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
-                            backgroundClip: 'text',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            letterSpacing: '-0.5px'
+
+                            fontSize: {
+                                xs: "1.6rem",
+                                sm: "1.9rem",
+                                md: "2.2rem"
+                            },
+
+                            background: `linear-gradient(
+      135deg,
+      ${theme.palette.primary.main},
+      ${theme.palette.primary.light}
+    )`,
+
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent"
                         }}
                     >
                         {currentStep.name}
@@ -238,8 +265,8 @@ export default function WorkoutPlayer({
                                 px: 2,
                                 py: 1,
                                 borderRadius: 1.5,
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                background: theme.palette.background.default,
+                                border: `1.5px solid ${theme.palette.divider}`,
                                 minWidth: 90
                             }}>
                                 <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.95rem' }}>
@@ -250,7 +277,18 @@ export default function WorkoutPlayer({
                     </Stack>
 
                     {/* BUTTONS */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: 1.5,
+                            flexWrap: "wrap",
+
+                            "& button": {
+                                width: { xs: "100%", sm: "auto" }
+                            }
+                        }}
+                    >
                         <Button
                             variant="contained"
                             size="medium"
@@ -346,10 +384,10 @@ export default function WorkoutPlayer({
                                 maxWidth: '300px',
                                 mx: 'auto',
                                 textAlign: 'center',
-                                background: 'linear-gradient(135deg, rgba(66,133,244,0.1) 0%, rgba(52,168,224,0.05) 100%)',
+                                background: `${theme.palette.primary.main}12`,
                                 backdropFilter: 'blur(12px)',
                                 WebkitBackdropFilter: 'blur(12px)',
-                                border: '1px solid rgba(66,133,244,0.25)',
+                                border: `1px solid ${theme.palette.primary.main}30`,
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                                 position: 'relative',
                                 overflow: 'hidden',
@@ -397,7 +435,7 @@ export default function WorkoutPlayer({
                             sx={{
                                 borderRadius: 1,
                                 minWidth: 50,
-                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                border: `1.5px solid ${theme.palette.divider}`,
                                 transition: 'all 0.2s ease',
                                 '&:hover': { background: 'rgba(255,255,255,0.08)' }
                             }}
@@ -414,9 +452,9 @@ export default function WorkoutPlayer({
                             sx={{
                                 borderRadius: 1,
                                 minWidth: 50,
-                                border: '1.5px solid rgba(255,255,255,0.15)',
+                                border: `1.5px solid ${theme.palette.divider}`,
                                 transition: 'all 0.2s ease',
-                                '&:hover': { background: 'rgba(255,255,255,0.08)' }
+                                '&:hover': { background: theme.palette.action.hover }
                             }}
                         >
                             +10s
@@ -461,7 +499,7 @@ export default function WorkoutPlayer({
                                     border: '1.5px solid rgba(255,255,255,0.2)',
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
-                                        background: 'rgba(255,255,255,0.08)',
+                                        background: `${theme.palette.error.main}15`,
                                         transform: 'translateY(-2px)'
                                     }
                                 }}
@@ -475,7 +513,7 @@ export default function WorkoutPlayer({
 
             <Button
                 variant="text"
-                onClick={() => onFinishWorkout(false)}
+                onClick={() => setConfirmOpen(true)}
                 sx={{
                     borderRadius: 1.5,
                     textTransform: 'none',
@@ -492,6 +530,38 @@ export default function WorkoutPlayer({
             >
                 End Workout Early
             </Button>
+
+            <Dialog
+  open={confirmOpen}
+  onClose={() => setConfirmOpen(false)}
+  fullWidth
+  maxWidth="xs"
+>
+                <DialogTitle>End Workout?</DialogTitle>
+
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to end the workout early? Your progress for this session will stop.
+                    </DialogContentText>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={() => setConfirmOpen(false)}>
+                        Cancel
+                    </Button>
+
+                    <Button
+                        color="error"
+                        variant="contained"
+                        onClick={() => {
+                            setConfirmOpen(false)
+                            onFinishWorkout(false)
+                        }}
+                    >
+                        Yes, End Workout
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Card>
     )
 }

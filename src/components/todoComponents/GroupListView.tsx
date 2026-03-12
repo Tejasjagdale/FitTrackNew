@@ -3,7 +3,8 @@ import {
   Stack,
   Typography,
   IconButton,
-  Box
+  Box,
+  useTheme
 } from "@mui/material";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,10 +19,17 @@ interface Props {
 }
 
 export default function GroupListView({ groups, onDelete }: Props) {
+  const theme = useTheme();
 
   if (!groups.length) {
     return (
-      <Typography sx={{ opacity: 0.6 }}>
+      <Typography
+        sx={{
+          opacity: 0.7,
+          color: theme.palette.text.secondary,
+          fontSize: 13
+        }}
+      >
         No groups created yet
       </Typography>
     );
@@ -33,10 +41,15 @@ export default function GroupListView({ groups, onDelete }: Props) {
         <Paper
           key={g.id}
           sx={{
-            ...premiumSurface,
-            px: 1.5,
-            py: 1.2,
-            borderRadius: 3,
+            ...premiumSurface(theme),
+
+            px: { xs: 1.4, sm: 1.6 },
+            py: { xs: 1.1, sm: 1.2 },
+
+            borderRadius: 2.5,
+
+            background: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
 
             display: "flex",
             alignItems: "center",
@@ -49,7 +62,10 @@ export default function GroupListView({ groups, onDelete }: Props) {
 
             "&:hover": {
               transform: "translateY(-1px)",
-              boxShadow: "0 10px 28px rgba(0,0,0,0.35)"
+              boxShadow:
+                theme.palette.mode === "dark"
+                  ? "0 10px 30px rgba(0,0,0,0.55)"
+                  : "0 6px 20px rgba(0,0,0,0.08)"
             }
           }}
         >
@@ -62,8 +78,10 @@ export default function GroupListView({ groups, onDelete }: Props) {
               bottom: 10,
               width: 3,
               borderRadius: 2,
-              background:
-                "linear-gradient(#00ffa6,#0b8f62)"
+              background: `linear-gradient(
+  ${theme.palette.primary.main},
+  ${theme.palette.primary.dark}
+)`
             }}
           />
 
@@ -71,16 +89,17 @@ export default function GroupListView({ groups, onDelete }: Props) {
           <Stack direction="row" alignItems="center" spacing={1.2} sx={{ pl: 1 }}>
             <GroupsIcon
               sx={{
-                fontSize: 18,
+                fontSize: { xs: 18, sm: 20 },
                 opacity: 0.7,
-                color: "#00ffa6"
+                color: theme.palette.primary.main
               }}
             />
 
             <Typography
               sx={{
                 fontWeight: 600,
-                fontSize: 14,
+                fontSize: { xs: 13, sm: 14 },
+                color: theme.palette.text.primary,
                 letterSpacing: "-0.2px"
               }}
             >
@@ -93,7 +112,7 @@ export default function GroupListView({ groups, onDelete }: Props) {
             sx={{
               display: "flex",
               alignItems: "center",
-              background: "rgba(255,255,255,0.05)",
+              background: theme.palette.action.hover,
               borderRadius: 2,
               px: 0.5
             }}
@@ -102,9 +121,10 @@ export default function GroupListView({ groups, onDelete }: Props) {
               size="small"
               onClick={() => onDelete(g.id)}
               sx={{
-                color: "rgba(255,100,100,0.85)",
+                color: theme.palette.error.main,
+
                 "&:hover": {
-                  background: "rgba(255,80,80,0.12)"
+                  background: `${theme.palette.error.main}15`
                 }
               }}
             >

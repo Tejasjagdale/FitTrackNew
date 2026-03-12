@@ -1,12 +1,15 @@
 // src/components/progress/progressTypes.ts
 
+export type AppTheme = "apple" | "jarvis" | "pokemon" | "cherry"
+
 export interface ProfileData {
   name?: string
   age?: number
   gender?: string
   heightCm?: number
-  goalWeight?:number,
+  goalWeight?: number
   targetBMI?: number
+  theme?: AppTheme
 }
 
 export interface MeasurementsEntry {

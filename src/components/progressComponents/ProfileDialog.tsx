@@ -1,5 +1,4 @@
-// src/components/progress/ProfileDialog.tsx
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -8,9 +7,13 @@ import {
   Stack,
   TextField,
   Button,
-  MenuItem
-} from '@mui/material'
-import { ProfileData } from '../../data/progressTypes'
+  MenuItem,
+  Box,
+  Typography
+} from "@mui/material"
+
+import { ProfileData } from "../../data/progressTypes"
+import { useAppTheme } from "../../theme/ThemeContext"
 
 interface ProfileDialogProps {
   open: boolean
@@ -25,18 +28,17 @@ export function ProfileDialog({
   onClose,
   onSave
 }: ProfileDialogProps) {
+
   const [form, setForm] = useState<ProfileData>(initial)
 
-  /* ------------------------------------------
-     Sync initial values when dialog opens
-  ------------------------------------------ */
+  const { theme, setTheme } = useAppTheme()
+
+  /* sync initial data */
   useEffect(() => {
     if (open) setForm(initial)
   }, [open, initial])
 
-  /* ------------------------------------------
-     Auto-calc targetBMI = goalWeight / (heightM^2)
-  ------------------------------------------ */
+  /* auto BMI */
   useEffect(() => {
     const h = form.heightCm ? form.heightCm / 100 : undefined
     if (form.goalWeight && h) {
@@ -48,16 +50,14 @@ export function ProfileDialog({
     }
   }, [form.goalWeight, form.heightCm])
 
-  /* ------------------------------------------
-     Handle input changes
-  ------------------------------------------ */
   const handleChange =
     (key: keyof ProfileData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+
       const val = e.target.value
       let parsed: any = val
 
-      if (key === 'age' || key === 'heightCm' || key === 'goalWeight') {
-        parsed = val === '' ? undefined : Number(val)
+      if (key === "age" || key === "heightCm" || key === "goalWeight") {
+        parsed = val === "" ? undefined : Number(val)
       }
 
       setForm(prev => ({
@@ -66,12 +66,24 @@ export function ProfileDialog({
       }))
     }
 
+  const handleThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTheme = e.target.value as any
+
+    setForm(prev => ({
+      ...prev,
+      theme: newTheme
+    }))
+
+    setTheme(newTheme)
+  }
+
   const handleSubmit = () => {
     onSave(form)
   }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
+
       <DialogTitle>User Profile</DialogTitle>
 
       <DialogContent sx={{ pt: 2 }}>
@@ -79,24 +91,24 @@ export function ProfileDialog({
 
           <TextField
             label="Name"
-            value={form.name || ''}
-            onChange={handleChange('name')}
+            value={form.name || ""}
+            onChange={handleChange("name")}
             fullWidth
           />
 
           <TextField
             label="Age"
             type="number"
-            value={form.age || ''}
-            onChange={handleChange('age')}
+            value={form.age || ""}
+            onChange={handleChange("age")}
             fullWidth
           />
 
           <TextField
             select
             label="Gender"
-            value={form.gender || ''}
-            onChange={handleChange('gender')}
+            value={form.gender || ""}
+            onChange={handleChange("gender")}
             fullWidth
           >
             <MenuItem value="male">Male</MenuItem>
@@ -107,37 +119,57 @@ export function ProfileDialog({
           <TextField
             label="Height (cm)"
             type="number"
-            value={form.heightCm || ''}
-            onChange={handleChange('heightCm')}
+            value={form.heightCm || ""}
+            onChange={handleChange("heightCm")}
             fullWidth
           />
 
           <TextField
             label="Goal Weight (kg)"
             type="number"
-            value={form.goalWeight || ''}
-            onChange={handleChange('goalWeight')}
+            value={form.goalWeight || ""}
+            onChange={handleChange("goalWeight")}
             fullWidth
           />
 
           <TextField
             label="Target BMI"
             type="number"
-            value={form.targetBMI || ''}
+            value={form.targetBMI || ""}
             disabled
             fullWidth
             helperText="Auto-calculated from height & goal weight"
           />
+
+          <Box pt={1}>
+            <Typography variant="subtitle2" gutterBottom>
+              App Theme
+            </Typography>
+
+            <TextField
+              select
+              value={form.theme || theme}
+              onChange={handleThemeChange}
+              fullWidth
+            >
+              <MenuItem value="apple">Apple Liquid Glass</MenuItem>
+              <MenuItem value="jarvis">AI Jarvis</MenuItem>
+              <MenuItem value="pokemon">Pokemon</MenuItem>
+              <MenuItem value="cherry">Cherry Blossom</MenuItem>
+            </TextField>
+          </Box>
 
         </Stack>
       </DialogContent>
 
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
+
         <Button variant="contained" onClick={handleSubmit}>
           Save
         </Button>
       </DialogActions>
+
     </Dialog>
   )
 }

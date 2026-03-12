@@ -7,7 +7,8 @@ import {
   Button,
   Divider,
   Box,
-  IconButton
+  IconButton,
+  useTheme
 } from "@mui/material"
 
 import PlayArrowIcon from "@mui/icons-material/PlayArrow"
@@ -33,6 +34,7 @@ export default function VariantCarousel({
   onNext,
   onStart
 }: Props) {
+  const theme = useTheme()
 
   if (!selectedVariant) return null
 
@@ -58,41 +60,53 @@ export default function VariantCarousel({
       direction="row"
       alignItems="center"
       justifyContent="center"
-      spacing={1}
+      spacing={{ xs: 0.5, sm: 1 }}
       sx={{
         width: "100%",
-        mb: 1
+        mb: 1,
+        px: { xs: 1, sm: 0 }
       }}
     >
       {/* LEFT BUTTON */}
-      <IconButton size="small" onClick={onPrev}>
+      <IconButton
+        size="small"
+        onClick={onPrev}
+        sx={{
+          bgcolor: `${theme.palette.background.paper}`,
+          border: `1px solid ${theme.palette.divider}`
+        }}
+      >
         <ChevronLeftIcon />
       </IconButton>
 
       {/* CARD */}
       <Card
         sx={{
-          px: 2,
-          py: 2,
+          px: { xs: 2, sm: 2.5 },
+          py: { xs: 2, sm: 2.5 },
+
           borderRadius: 2,
           textAlign: "center",
 
-          /* key change: card does NOT stretch full width */
-          width: "fit-content",
+          width: "100%",
           maxWidth: 420,
 
-          background:
-            "linear-gradient(160deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+          background: theme.palette.background.paper,
+
           backdropFilter: "blur(18px)",
-          border: "1px solid rgba(255,255,255,0.12)",
+
+          border: `1px solid ${theme.palette.divider}`,
+
           boxShadow:
-            "0 30px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05)"
+            theme.palette.mode === "dark"
+              ? "0 20px 60px rgba(0,0,0,0.55)"
+              : "0 10px 30px rgba(0,0,0,0.08)"
         }}
       >
         <Typography
           variant="caption"
           sx={{
-            color: "#81c784",
+            color: theme.palette.primary.main,
             fontWeight: 600,
             letterSpacing: "1px"
           }}
@@ -111,8 +125,11 @@ export default function VariantCarousel({
             wordBreak: "break-word",
             whiteSpace: "normal",
 
-            background:
-              "linear-gradient(135deg,#a5d6a7 0%,#2e7d32 100%)",
+            background: `linear-gradient(
+  135deg,
+  ${theme.palette.primary.light},
+  ${theme.palette.primary.dark}
+)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent"
           }}
@@ -129,8 +146,8 @@ export default function VariantCarousel({
             p: 1.5,
             borderRadius: 2,
             mb: 2,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)"
+            background: theme.palette.background.default,
+            border: `1px solid ${theme.palette.divider}`
           }}
         >
           <Stack
@@ -149,9 +166,9 @@ export default function VariantCarousel({
                   fontSize: 11,
                   fontWeight: 500,
 
-                  color: "#f2f990",
-                  background: "rgba(242, 249, 144, 0.1)",
-                  border: "1px solid rgba(249, 233, 144, 0.25)",
+                  color: theme.palette.text.primary,
+                  background: `${theme.palette.primary.main}15`,
+                  border: `1px solid ${theme.palette.primary.main}40`,
 
                   "& .MuiChip-label": {
                     px: 0.8
@@ -163,7 +180,7 @@ export default function VariantCarousel({
           </Stack>
         </Box>
 
-        <Divider sx={{ mb: 1, borderColor: "rgba(255,255,255,0.08)" }} />
+        <Divider sx={{ mb: 1, borderColor: theme.palette.divider }} />
 
         <Typography variant="caption" sx={{ fontWeight: 300 }}>
           {exercisesListLocal.length} Exercises • {selectedVariant.exerciseOrder.length} Sets
@@ -202,8 +219,8 @@ export default function VariantCarousel({
                         px: 0.6,
                         py: "1px",
                         borderRadius: 1,
-                        background: "rgba(129,199,132,0.15)",
-                        color: "#a5d6a7",
+                        background: `${theme.palette.primary.main}25`,
+                        color: theme.palette.primary.light,
                         fontWeight: 700
                       }}
                     >
@@ -216,12 +233,11 @@ export default function VariantCarousel({
                   height: 26,
                   px: 0.6,
 
-                  color: "#e8f5e9",
-                  background:
-                    "linear-gradient(135deg, rgba(129,199,132,0.18), rgba(46,125,50,0.18))",
-                  border: "1px solid rgba(129,199,132,0.45)",
+                  color: theme.palette.text.primary,
 
-                  boxShadow: "0 0 12px rgba(129,199,132,0.15)",
+                  background: `${theme.palette.primary.main}18`,
+
+                  border: `1px solid ${theme.palette.primary.main}45`,
 
                   "& .MuiChip-label": {
                     px: 0.6
@@ -246,7 +262,14 @@ export default function VariantCarousel({
       </Card>
 
       {/* RIGHT BUTTON */}
-      <IconButton size="small" onClick={onNext}>
+      <IconButton
+        size="small"
+        onClick={onNext}
+        sx={{
+          bgcolor: `${theme.palette.background.paper}`,
+          border: `1px solid ${theme.palette.divider}`
+        }}
+      >
         <ChevronRightIcon />
       </IconButton>
     </Stack>

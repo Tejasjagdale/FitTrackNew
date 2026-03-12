@@ -10,7 +10,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
+  useTheme
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -47,6 +48,7 @@ export default function PremiumTaskCard({
 }: Props) {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const theme = useTheme();
 
   const groupLabels = groups.filter((g: any) =>
     groupIds.includes(g.id)
@@ -59,50 +61,47 @@ export default function PremiumTaskCard({
       <Paper
         elevation={0}
         sx={{
-          px: 0.5,
-          py: 1.2,
-          borderRadius: 1,
+          px: { xs: 0.6, sm: 1 },
+          py: { xs: 1.1, sm: 1.2 },
+
+          borderRadius: 1.8,
           position: "relative",
 
-          /* NEW PREMIUM GREEN SURFACE */
           background: isActive
-            ? 'linear-gradient(160deg, rgba(255,80,80,0.20) 0%, rgba(255,80,80,0.10) 100%)'
-            : '',
+            ? `${theme.palette.error.main}30`
+            : theme.palette.background.paper,
 
           backdropFilter: "blur(12px)",
+          boxShadow:
+              theme.palette.mode === "light"
+                ? "0 8px 24px rgba(0,0,0,0.10)"
+                : "0 6px 16px rgba(0,0,0,0.01)",
 
           border: isActive
-            ? "1px solid rgba(255,80,80,0.35)"
-            : "",
+            ? `1px solid ${theme.palette.error.main}50`
+            : `1px solid ${theme.palette.divider}`,
 
-          transition: "all .35s ease",
+          transition: "all .28s ease",
 
           "&:hover": {
             transform: "translateY(-1px)",
-            boxShadow: isActive
-              ? "0 10px 28px rgba(255,80,80,0.25)"
-              : "0 10px 28px rgba(0,0,0,0.45)"
+            boxShadow:
+              theme.palette.mode === "dark"
+                ? "0 8px 24px rgba(0,0,0,0.45)"
+                : "0 6px 16px rgba(0,0,0,0.08)"
           },
 
-          animation: isActive
-            ? "premiumPulse 3s ease-in-out infinite"
-            : "none",
+          animation: isActive ? "premiumPulse 3s ease-in-out infinite" : "none",
 
           "@keyframes premiumPulse": {
             "0%": {
-              boxShadow: isActive
-                ? "0 0 0px rgba(255,80,80,0.15)"
-                : "0 0 0px rgba(0,0,0,0.12)"
+              boxShadow: `0 0 0px ${theme.palette.error.main}20`
             },
             "50%": {
-              boxShadow: isActive
-                ? "0 0 22px rgba(255,80,80,0.45)"
-                : "0 0 18px rgba(0,0,0,0.35)"
+              boxShadow: `0 0 20px ${theme.palette.error.main}60`
             },
             "100%": {
-              boxShadow: isActive
-                ? "0 0 0px rgba(255,80,80,0.15)"
-                : "0 0 0px rgba(0,0,0,0.12)"
+              boxShadow: `0 0 0px ${theme.palette.error.main}20`
             }
           }
         }}
@@ -113,7 +112,14 @@ export default function PremiumTaskCard({
           <Checkbox
             checked={done}
             onChange={onToggle}
-            sx={{ pr: 0.2 }}
+            sx={{
+              pr: 0.2,
+              color: theme.palette.primary.main,
+
+              "&.Mui-checked": {
+                color: theme.palette.primary.main
+              }
+            }}
           />
 
           <Box sx={{ flex: 1 }}>
@@ -121,7 +127,8 @@ export default function PremiumTaskCard({
             <Typography
               sx={{
                 fontWeight: 600,
-                fontSize: ".95rem",
+                fontSize: { xs: "0.92rem", sm: ".95rem" },
+                color: theme.palette.text.primary,
                 opacity: done ? 0.5 : 1
               }}
             >
@@ -137,7 +144,7 @@ export default function PremiumTaskCard({
             >
 
               {/* 🔥 STREAK CHIP */}
-              { typeof streak === "number" && (streak > 0) && (
+              {typeof streak === "number" && (streak > 0) && (
                 <Chip
                   size="small"
                   icon={<LocalFireDepartmentIcon sx={{ fontSize: 14 }} />}
@@ -145,10 +152,9 @@ export default function PremiumTaskCard({
                   sx={{
                     height: 18,
                     fontSize: 10,
-                    background:
-                      "linear-gradient(135deg,rgba(255,120,40,0.25),rgba(255,80,0,0.15))",
-                    border: "1px solid rgba(255,140,60,0.35)",
-                    color: "#ffb36b"
+                    background: `${theme.palette.warning.main}22`,
+                    border: `1px solid ${theme.palette.warning.main}55`,
+                    color: theme.palette.warning.main
                   }}
                 />
               )}
@@ -163,8 +169,9 @@ export default function PremiumTaskCard({
                     height: 18,
                     fontSize: 10,
                     background: isOverdue
-                      ? "rgba(255,80,80,0.25)"
-                      : "rgba(0,255,170,0.18)"
+                      ? `${theme.palette.error.main}22`
+                      : `${theme.palette.primary.main}22`,
+                    color: theme.palette.text.primary
                   }}
                 />
               )}
@@ -178,8 +185,11 @@ export default function PremiumTaskCard({
                   sx={{
                     height: 18,
                     fontSize: 10,
+                    background: `${theme.palette.secondary.main}22`,
+                    border: `1px solid ${theme.palette.secondary.main}55`,
+                    color: theme.palette.secondary.main
                   }}
-                  color="success"
+
                 />
               ))}
 
@@ -187,7 +197,16 @@ export default function PremiumTaskCard({
           </Box>
 
           {/* EDIT BUTTON */}
-          <IconButton size="small" onClick={onEdit}>
+          <IconButton
+            size="small"
+            onClick={onEdit}
+            sx={{
+              color: theme.palette.text.secondary,
+              "&:hover": {
+                background: theme.palette.action.hover
+              }
+            }}
+          >
             <EditIcon fontSize="small" />
           </IconButton>
 

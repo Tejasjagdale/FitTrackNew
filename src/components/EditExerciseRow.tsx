@@ -1,6 +1,6 @@
 // src/components/progress/EditExerciseRow.tsx
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Typography,
@@ -59,24 +59,41 @@ export function EditExerciseRow({
     setEditDialog(false)
   }
 
+  useEffect(() => {
+    if (editDialog) {
+      setName(exercise.name)
+      setReps(exercise.reps)
+      setRest(exercise.restSeconds.toString())
+      setEquipment(
+        Array.isArray(exercise.equipment) ? exercise.equipment : []
+      )
+    }
+  }, [editDialog, exercise])
+
   return (
     <>
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: { xs: 'flex-start', sm: 'center' },
           justifyContent: 'space-between',
           p: 1.5,
+
           backgroundColor:
             theme.palette.mode === 'dark'
               ? 'rgba(255,255,255,0.03)'
-              : 'rgba(0,0,0,0.02)',
+              : 'rgba(0,0,0,0.03)',
+
           borderRadius: 2,
           gap: 1,
           flexWrap: 'wrap'
         }}
       >
-        <Box sx={{ minWidth: 160 }}>
+        <Box
+          sx={{
+            minWidth: { xs: '100%', sm: 160 }
+          }}
+        >
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
             {exercise.name}
           </Typography>
@@ -88,7 +105,13 @@ export function EditExerciseRow({
         <Stack
           direction="row"
           spacing={1}
-          sx={{ alignItems: 'center', flexWrap: 'wrap', flexGrow: 1 }}
+          useFlexGap
+          sx={{
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            flexGrow: 1,
+            gap: 1
+          }}
         >
           <Chip label={`${exercise.reps} reps`} size="small" color="primary" />
           <Chip label={`${exercise.restSeconds}s rest`} size="small" variant="outlined" />
@@ -101,18 +124,27 @@ export function EditExerciseRow({
           )}
         </Stack>
 
-        <Stack direction="row" spacing={0.5}>
-          <IconButton size="small" onClick={() => setEditDialog(true)}>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{ flexShrink: 0 }}
+        >
+          <IconButton size="small" sx={{ p: 0.8 }} onClick={() => setEditDialog(true)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" color="error" onClick={onDelete}>
+          <IconButton size="small" sx={{ p: 0.8 }} color="error" onClick={onDelete}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Stack>
       </Box>
 
       {/* EDIT DIALOG */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="xs" fullWidth>
+      <Dialog
+        open={editDialog}
+        onClose={() => setEditDialog(false)}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Edit Set</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField
@@ -144,7 +176,15 @@ export function EditExerciseRow({
             Equipment
           </Typography>
 
-          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1
+            }}
+          >
             {equipmentOptions.map((opt) => (
               <Chip
                 key={opt}

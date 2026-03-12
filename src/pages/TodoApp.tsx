@@ -53,7 +53,8 @@ import GroupListView from "../components/todoComponents/GroupListView";
 import { nowIST } from "../utils/istTime";
 
 export default function TodoApp() {
-
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const {
     loading,
     routines,
@@ -277,7 +278,7 @@ export default function TodoApp() {
         sx={{
           fontSize: 13,
           letterSpacing: ".3px",
-          color: "rgba(255,255,255,0.7)"
+          color: theme.palette.text.secondary
         }}
       >
         Nothing here yet
@@ -433,11 +434,24 @@ export default function TodoApp() {
   };
 
   if (loading) {
-    return <Container><Typography>Loading...</Typography></Container>;
+    return <Container
+      maxWidth="sm"
+      sx={{
+        mt: { xs: 1.5, sm: 2 },
+        mb: { xs: 8, sm: 10 }
+      }}
+    ><Typography>Loading...</Typography></Container>;
   }
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        px: { xs: 1, sm: 2 }
+      }}
+    >
       <Box
         sx={{
           position: "fixed",
@@ -483,59 +497,37 @@ export default function TodoApp() {
             setTimeout(() => setIsSyncing(false), 800);
           }}
           sx={{
-            px: 2.6,
+            px: 2.4,
             borderRadius: 999,
             textTransform: "none",
             fontWeight: 700,
             letterSpacing: ".4px",
 
             backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.12)",
+
+            border: `1px solid ${theme.palette.divider}`,
+
+            background: theme.palette.background.paper,
+            color: theme.palette.text.primary,
 
             transition: "all .2s ease",
 
-            /* ================= DIRTY RED ALERT ================= */
             ...(isDirty && !isSyncing && {
-              background: "linear-gradient(135deg,#ff2b2b,#ff0000)",
-              color: "#fff",
+              background: theme.palette.error.main,
+              color: theme.palette.getContrastText(theme.palette.error.main),
 
-              animation: "dangerPulse 0.8s ease-in-out infinite",
+              animation: "dangerPulse 0.9s ease-in-out infinite",
 
               "@keyframes dangerPulse": {
-                "0%": {
-                  boxShadow:
-                    "0 0 6px rgba(255,0,0,0.4), 0 0 12px rgba(255,0,0,0.3)"
-                },
-                "50%": {
-                  boxShadow:
-                    "0 0 22px rgba(255,0,0,0.95), 0 0 60px rgba(255,0,0,0.65)"
-                },
-                "100%": {
-                  boxShadow:
-                    "0 0 6px rgba(255,0,0,0.4), 0 0 12px rgba(255,0,0,0.3)"
-                }
+                "0%": { boxShadow: `0 0 6px ${theme.palette.error.main}40` },
+                "50%": { boxShadow: `0 0 20px ${theme.palette.error.main}` },
+                "100%": { boxShadow: `0 0 6px ${theme.palette.error.main}40` }
               }
             }),
 
-            /* ================= SYNCING GREEN FLOW ================= */
             ...(isSyncing && {
-              background:
-                "linear-gradient(110deg,#1c3f1f 0%,#549957 35%,#2c6a31 60%,#549957 85%,#1c3f1f 100%)",
-              backgroundSize: "250% 100%",
-              color: "#eaffea",
-
-              animation: "greenFlow 1.1s linear infinite",
-
-              "@keyframes greenFlow": {
-                "0%": { backgroundPosition: "200% 0" },
-                "100%": { backgroundPosition: "-200% 0" }
-              }
-            }),
-
-            /* ================= CLEAN STATE ================= */
-            ...(!isDirty && !isSyncing && {
-              background: "rgba(255,255,255,0.08)",
-              color: "rgba(255,255,255,0.7)"
+              background: theme.palette.success.main,
+              color: theme.palette.getContrastText(theme.palette.success.main)
             }),
 
             "&:hover": {
@@ -552,7 +544,13 @@ export default function TodoApp() {
       </Box>
 
       {/* MAIN CONTENT */}
-      <Container maxWidth="sm" sx={{ marginBottom: 10, marginTop: 1 }}>
+      <Container
+        maxWidth="sm"
+        sx={{
+          mt: { xs: 1.5, sm: 2 },
+          mb: { xs: 8, sm: 10 }
+        }}
+      >
 
         <Box
           sx={{
@@ -574,19 +572,26 @@ export default function TodoApp() {
             onChange={handleTabChange}
             variant="standard"
             sx={{
-              minHeight: 32,
-              background: "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
-              padding:1,
-              borderRadius:0.5,
+              minHeight: 36,
+              px: 0.5,
+
+              borderRadius: 2,
+
+              background: theme.palette.background.paper,
+
+              backdropFilter: "blur(14px)",
+
+              border: `1px solid ${theme.palette.divider}`,
+
               "& .MuiTabs-flexContainer": {
-                gap: "6px",
-                alignItems: "center",
-                justifyContent: "space-around"
+                gap: { xs: "2px", sm: "6px" },
+                justifyContent: "space-between"
               },
 
               "& .MuiTabs-indicator": {
                 height: 2,
-                borderRadius: 2
+                borderRadius: 2,
+                background: theme.palette.primary.main
               }
             }}
           >
@@ -594,13 +599,17 @@ export default function TodoApp() {
               disableRipple
               icon={<HomeIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "4rem",
-                minHeight: 28,
-                padding: "4px",
+                minWidth: isMobile ? 40 : 64,
+                minHeight: 34,
+
                 borderRadius: 999,
 
                 "& .MuiTab-iconWrapper": {
                   margin: 0
+                },
+
+                "&.Mui-selected": {
+                  color: theme.palette.primary.main
                 }
               }}
             />
@@ -609,13 +618,17 @@ export default function TodoApp() {
               disableRipple
               icon={<CheckIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "4rem",
-                minHeight: 28,
-                padding: "4px",
+                minWidth: isMobile ? 40 : 64,
+                minHeight: 34,
+
                 borderRadius: 999,
 
                 "& .MuiTab-iconWrapper": {
                   margin: 0
+                },
+
+                "&.Mui-selected": {
+                  color: theme.palette.primary.main
                 }
               }}
             />
@@ -624,13 +637,17 @@ export default function TodoApp() {
               disableRipple
               icon={<RepeatIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "4rem",
-                minHeight: 28,
-                padding: "4px",
+                minWidth: isMobile ? 40 : 64,
+                minHeight: 34,
+
                 borderRadius: 999,
 
                 "& .MuiTab-iconWrapper": {
                   margin: 0
+                },
+
+                "&.Mui-selected": {
+                  color: theme.palette.primary.main
                 }
               }}
             />
@@ -639,13 +656,17 @@ export default function TodoApp() {
               disableRipple
               icon={<DoneAllIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "4rem",
-                minHeight: 28,
-                padding: "4px",
+                minWidth: isMobile ? 40 : 64,
+                minHeight: 34,
+
                 borderRadius: 999,
 
                 "& .MuiTab-iconWrapper": {
                   margin: 0
+                },
+
+                "&.Mui-selected": {
+                  color: theme.palette.primary.main
                 }
               }}
             />
@@ -654,13 +675,17 @@ export default function TodoApp() {
               disableRipple
               icon={<GroupsIcon sx={{ fontSize: 20 }} />}
               sx={{
-                minWidth: "4rem",
-                minHeight: 28,
-                padding: "4px",
+                minWidth: isMobile ? 40 : 64,
+                minHeight: 34,
+
                 borderRadius: 999,
 
                 "& .MuiTab-iconWrapper": {
                   margin: 0
+                },
+
+                "&.Mui-selected": {
+                  color: theme.palette.primary.main
                 }
               }}
             />
@@ -676,7 +701,7 @@ export default function TodoApp() {
         {tab === 0 && (
           <Stack spacing={2} >
             <Paper sx={{
-              ...premiumSurface, p: 2
+              ...premiumSurface(theme), p: 2
             }}>
               <Stack
                 direction="row"
@@ -699,7 +724,7 @@ export default function TodoApp() {
             </Paper>
 
             <Paper sx={{
-              ...premiumSurface, p: 2
+              ...premiumSurface(theme), p: 2
             }}>
               <Stack
                 direction="row"
@@ -731,7 +756,7 @@ export default function TodoApp() {
 
         {tab === 1 && (
           <Paper sx={{
-            ...premiumSurface, p: 2, display: "flex",
+            ...premiumSurface(theme), p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240
@@ -763,8 +788,9 @@ export default function TodoApp() {
                       size="small"
                       onClick={() => setSearchOpen(true)}
                       sx={{
-                        border: "1px solid rgba(0,255,170,0.35)",
-                        color: "#00ffa6",
+                        border: `1px solid ${theme.palette.divider}`,
+                        color: theme.palette.primary.main,
+                        background: theme.palette.background.paper,
                         width: 34,
                         height: 34
                       }}
@@ -784,9 +810,8 @@ export default function TodoApp() {
                           height: 34,
                           borderRadius: 999,
                           fontSize: 13,
-                          background:
-                            "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
-                          backdropFilter: "blur(14px)"
+                          background: theme.palette.background.paper,
+                          backdropFilter: "blur(12px)"
                         }
                       }}
                       InputProps={{
@@ -827,32 +852,28 @@ export default function TodoApp() {
                         : "Groups"
                     }
                     sx={{
-                      height: 32,
+                      height: 34,
                       fontSize: 12,
                       borderRadius: 999,
 
-                      /* ===== GLASS SURFACE ===== */
-                      background:
-                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      background: theme.palette.background.paper,
+
                       backdropFilter: "blur(12px)",
 
-                      color: "#d7ffe8",
-
                       ".MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(0,255,170,0.18)"
+                        borderColor: theme.palette.divider
                       },
 
                       "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(0,255,170,0.4)"
+                        borderColor: theme.palette.primary.main
                       },
 
                       "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#00ffa6",
-                        boxShadow: "0 0 10px rgba(0,255,170,0.25)"
+                        borderColor: theme.palette.primary.main
                       },
 
                       ".MuiSelect-icon": {
-                        color: "#00ffa6"
+                        color: theme.palette.primary.main
                       }
                     }}
                     MenuProps={{
@@ -941,11 +962,10 @@ export default function TodoApp() {
                     height: { xs: 32, sm: 36 },
                     borderRadius: 999,
 
-                    border: "1px solid rgba(0,255,170,0.35)",
-                    color: "#00ffa6",
+                    border: `1px solid ${theme.palette.primary.main}`,
+                    color: theme.palette.primary.main,
 
-                    background:
-                      "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+                    background: theme.palette.background.paper,
 
                     backdropFilter: "blur(10px)",
 
@@ -954,12 +974,6 @@ export default function TodoApp() {
                     "& svg": {
                       fontSize: { xs: 18, sm: 20 }
                     },
-
-                    "&:hover": {
-                      background: "rgba(0,255,170,0.12)",
-                      borderColor: "#00ffa6",
-                      boxShadow: "0 0 10px rgba(0,255,170,0.35)"
-                    }
                   }}
                 >
                   <AddIcon />
@@ -978,7 +992,7 @@ export default function TodoApp() {
 
         {tab === 2 && (
           <Paper sx={{
-            ...premiumSurface, p: 2, display: "flex",
+            ...premiumSurface(theme), p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240
@@ -1228,7 +1242,7 @@ export default function TodoApp() {
         {tab === 3 && (
           <Stack spacing={2} sx={{ height: "100%" }}>
             <Paper sx={{
-              ...premiumSurface, p: 2
+              ...premiumSurface(theme), p: 2
             }}>
               <Typography fontWeight={700} mb={1}> 🟢 Completed Daily Routines</Typography>
               <Stack spacing={1.2} sx={{ flex: 1 }}>
@@ -1239,7 +1253,7 @@ export default function TodoApp() {
             </Paper>
 
             <Paper sx={{
-              ...premiumSurface, p: 2
+              ...premiumSurface(theme), p: 2
             }}>
               <Typography fontWeight={700} mb={1}> ✔️ Completed Todos</Typography>
               <Stack spacing={1.2} sx={{ flex: 1 }}>
@@ -1254,7 +1268,7 @@ export default function TodoApp() {
         {/* ⭐ GROUPS TAB */}
         {tab === 4 && (
           <Paper sx={{
-            ...premiumSurface, p: 2, display: "flex",
+            ...premiumSurface(theme), p: 2, display: "flex",
             flexDirection: "column",
             flex: 1,
             minHeight: 240

@@ -151,34 +151,57 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
       onChange={(_, e) => setExpanded(e)}
       sx={{
         mb: 2,
-        borderRadius: 1,
+        borderRadius: 2,
         border: `1px solid ${theme.palette.divider}`,
+        background: theme.palette.background.paper,
+
         boxShadow:
           theme.palette.mode === 'dark'
-            ? '0 8px 20px rgba(0,0,0,0.6)'
-            : '0 8px 20px rgba(0,0,0,0.08)'
+            ? '0 6px 16px rgba(0,0,0,0.55)'
+            : '0 6px 16px rgba(0,0,0,0.08)',
+
+        overflow: 'hidden'
       }}
     >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          width: '100%',
+          gap: 1,
+          flexWrap: 'wrap'
+        }}>
+          <Typography variant="h6"
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.primary.main,
+              fontSize: { xs: '1rem', sm: '1.15rem' }
+            }}>
             {variantName}
           </Typography>
 
-          <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
-            <IconButton size="small" onClick={() => setVariantNameDialog(true)}>
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{
+              flexShrink: 0
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconButton size="small" sx={{ p: 0.8 }} onClick={() => setVariantNameDialog(true)}>
               <EditIcon fontSize="small" />
             </IconButton>
 
             <IconButton
-              size="small"
+              size="small" sx={{ p: 0.8 }}
               onClick={() => setIsEditing((p) => !p)}
               color={isEditing ? 'primary' : 'default'}
             >
               <AddIcon fontSize="small" />
             </IconButton>
 
-            <IconButton size="small" color="error" onClick={onDelete}>
+            <IconButton size="small" sx={{ p: 0.8 }} color="error" onClick={onDelete}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Stack>
@@ -189,13 +212,25 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
         {/* Add Exercise Section */}
         {isEditing && (
           <Box sx={{ mb: 3, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-            <Typography sx={{ fontWeight: 600, mb: 2 }} variant="subtitle2">
+            <Typography
+              sx={{
+                fontWeight: 600,
+                mb: 2,
+                color: theme.palette.text.secondary
+              }}
+              variant="subtitle2"
+            >
               Add New Exercise Set
             </Typography>
 
-            <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
+            <Stack
+              spacing={2}
+              direction={{ xs: 'column', md: 'row' }}
+              alignItems={{ md: 'center' }}
+            >
               <Autocomplete
                 freeSolo
+                sx={{ flex: 2, minWidth: 180 }}
                 options={exerciseNameOptions}
                 value={newExerciseName}
                 onChange={(_, val) => setNewExerciseName(val ?? '')}
@@ -211,16 +246,36 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
                 onChange={(e) => setNewSetRest(e.target.value)}
               />
 
-              <Button onClick={handleAddSet} variant="contained" startIcon={<AddIcon />}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={handleAddSet}
+              >
                 Add Set
               </Button>
             </Stack>
 
-            <Typography sx={{ mt: 2, fontWeight: 600 }} variant="subtitle2">
+            <Typography
+              sx={{
+                fontWeight: 600,
+                mb: 1,
+                mt:1,
+                color: theme.palette.text.secondary
+              }}
+              variant="subtitle2"
+            >
               Equipment
             </Typography>
 
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              sx={{
+                flexWrap: 'wrap',
+                gap: 1
+              }}
+            >
               {equipmentOptions.map((opt: string) => (
                 <Chip
                   key={opt}
@@ -236,7 +291,14 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
         )}
 
         {/* Exercise Order */}
-        <Typography sx={{ mb: 1, fontWeight: 600 }} variant="subtitle2">
+        <Typography
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: theme.palette.text.secondary
+          }}
+          variant="subtitle2"
+        >
           Exercise Order (drag to reorder)
         </Typography>
 
@@ -262,11 +324,25 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
               mb: 1.5,
               borderRadius: 2,
               display: 'flex',
-              border: `1px solid ${hoverIndex === idx ? theme.palette.primary.main : theme.palette.divider
-                }`
+              alignItems: 'stretch',
+
+              background: theme.palette.background.paper,
+
+              border: `1px solid ${hoverIndex === idx
+                ? theme.palette.primary.main
+                : theme.palette.divider
+                }`,
+
+              transition: 'border 0.15s ease'
             }}
           >
-            <Box sx={{ px: 1, display: 'flex', alignItems: 'center', borderRight: `1px solid ${theme.palette.divider}` }}>
+            <Box sx={{
+              px: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              borderRight: `1px solid ${theme.palette.divider}`,
+              cursor: 'grab'
+            }}>
               <DragIndicatorIcon fontSize="small" />
             </Box>
 
@@ -283,7 +359,12 @@ export function EditVariantCard({ variant, onUpdate, onDelete }: EditVariantCard
       </AccordionDetails>
 
       {/* Edit Name Dialog */}
-      <Dialog open={variantNameDialog} onClose={() => setVariantNameDialog(false)}>
+      <Dialog
+        open={variantNameDialog}
+        onClose={() => setVariantNameDialog(false)}
+        fullWidth
+        maxWidth="xs"
+      >
         <DialogTitle>Edit Variant Name</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField fullWidth label="Variant Name" value={variantName} onChange={(e) => setVariantName(e.target.value)} />

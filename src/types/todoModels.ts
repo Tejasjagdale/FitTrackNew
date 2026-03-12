@@ -33,9 +33,7 @@ export interface Routine {
 
 /* ================= TODO ================= */
 
-export type TodoStatus =
-  | "pending"
-  | "completed";
+export type TodoStatus = "pending" | "completed";
 
 export interface Todo {
   id: string;
@@ -60,9 +58,9 @@ export interface TodoDatabase {
   todos: Todo[];
 }
 
-export const premiumSurface = {
-  background:
-    "linear-gradient(180deg, rgba(0,255,170,0.06), rgba(0,255,170,0.015))",
-  border: "1px solid rgba(0,255,170,0.18)",
-  backdropFilter: "blur(18px)",
-};
+export const premiumSurface = (theme:any) => ({
+  borderRadius: 2,
+  backdropFilter: "blur(16px)",
+  background: theme.palette.background.paper,
+  border: `1px solid ${theme.palette.divider}`
+});

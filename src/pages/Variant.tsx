@@ -7,7 +7,8 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  Stack
+  Stack,
+  useTheme
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import AddIcon from '@mui/icons-material/Add'
@@ -23,6 +24,8 @@ export default function VariantPage() {
   const [syncError, setSyncError] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
   const hasGitHubToken = isGitHubConfigured()
+
+  const theme = useTheme()
 
   // Ensure every loaded variant has an ID
   const ensureIds = (v: Variant[]): Variant[] =>
@@ -140,36 +143,63 @@ export default function VariantPage() {
         {/* ===== Premium Hero Header ===== */}
         <Box
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             mb: 2,
             borderRadius: 3,
             position: 'relative',
             overflow: 'hidden',
-            background:
-              'linear-gradient(160deg, rgba(76,175,80,0.15) 0%, rgba(46,125,50,0.05) 100%)',
-            border: '1px solid rgba(76,175,80,0.25)',
-            backdropFilter: 'blur(14px)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
 
+            background: `linear-gradient(
+              160deg,
+              ${theme.palette.primary.main}20 0%,
+              ${theme.palette.primary.main}08 100%
+            )`,
+
+            border: `1px solid ${theme.palette.primary.main}40`,
+            backdropFilter: 'blur(14px)',
+            boxShadow: `0 20px 60px ${theme.palette.primary.main}25`,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(
+    circle at top left,
+    ${theme.palette.primary.main}22,
+    transparent 40%
+  )`,
+              pointerEvents: 'none'
+            }
           }}
         >
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              flexDirection: { xs: 'column', sm: 'row' },
               gap: 2
             }}
           >
-            <Box>
+            <Box sx={{ width: { xs: '100%', sm: 'auto' } }}>
               <Typography
                 variant="h4"
                 sx={{
                   fontWeight: 900,
                   letterSpacing: '-0.4px',
-                  background:
-                    'linear-gradient(135deg,#a5d6a7 0%,#2e7d32 100%)',
+
+                  fontSize: {
+                    xs: '1.4rem',
+                    sm: '1.8rem',
+                    md: '2rem'
+                  },
+
+                  lineHeight: 1.2,
+
+                  background: `linear-gradient(
+      135deg,
+      ${theme.palette.primary.light} 0%,
+      ${theme.palette.primary.dark} 100%
+    )`,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent'
                 }}
@@ -181,7 +211,7 @@ export default function VariantPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: '#81c784',
+                    color: theme.palette.success.main,
                     fontWeight: 700,
                     mt: 0.5
                   }}
@@ -191,6 +221,7 @@ export default function VariantPage() {
               ) : (
                 <Typography
                   variant="body2"
+                  color="text.secondary"
                   sx={{ opacity: 0.7, mt: 0.5 }}
                 >
                   Loaded from GitHub. Changes remain local until synced.
@@ -199,17 +230,28 @@ export default function VariantPage() {
             </Box>
 
             {/* ===== Action Buttons ===== */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={1}
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+
+                '& button': {
+                  width: { xs: '100%', sm: 'auto' }
+                }
+              }}
+            >
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}
                 onClick={handleAddVariant}
                 sx={{
-                  borderColor: 'rgba(76,175,80,0.5)',
-                  color: '#a5d6a7',
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.primary.main,
+
                   '&:hover': {
-                    borderColor: '#66bb6a',
-                    background: 'rgba(76,175,80,0.08)'
+                    borderColor: theme.palette.primary.dark,
+                    background: `${theme.palette.primary.main}15`
                   }
                 }}
               >
@@ -225,43 +267,44 @@ export default function VariantPage() {
                   sx={{
                     fontWeight: 800,
                     position: 'relative',
-                    background:
-                      'linear-gradient(135deg,#66bb6a 0%,#2e7d32 100%)',
 
-                    // ---- Premium Pulse Glow ----
+                    background: `linear-gradient(
+    135deg,
+    ${theme.palette.primary.light} 0%,
+    ${theme.palette.primary.dark} 100%
+  )`,
+
                     animation: !isSyncing && unsavedChanges
                       ? 'syncPulse 2.4s ease-in-out infinite'
                       : 'none',
 
-                    boxShadow: '0 12px 30px rgba(76,175,80,0.45)',
+                    boxShadow: `0 12px 30px ${theme.palette.primary.main}50`,
 
                     '&:hover': {
-                      boxShadow: '0 18px 45px rgba(76,175,80,0.65)'
+                      boxShadow: `0 18px 45px ${theme.palette.primary.main}70`
                     },
 
-                    // ---- Soft Attention Ring ----
                     '&::after': !isSyncing && unsavedChanges ? {
                       content: '""',
                       position: 'absolute',
                       inset: -2,
                       borderRadius: 'inherit',
-                      border: '1px solid rgba(129,199,132,0.6)',
+                      border: `1px solid ${theme.palette.primary.light}`,
                       animation: 'syncRing 2.4s ease-in-out infinite'
                     } : {},
 
-                    // ---- Keyframes ----
                     '@keyframes syncPulse': {
                       '0%': {
                         transform: 'scale(1)',
-                        boxShadow: '0 10px 25px rgba(76,175,80,0.35)'
+                        boxShadow: `0 10px 25px ${theme.palette.primary.main}35`
                       },
                       '50%': {
                         transform: 'scale(1.04)',
-                        boxShadow: '0 18px 50px rgba(102,187,106,0.7)'
+                        boxShadow: `0 18px 50px ${theme.palette.primary.main}70`
                       },
                       '100%': {
                         transform: 'scale(1)',
-                        boxShadow: '0 10px 25px rgba(76,175,80,0.35)'
+                        boxShadow: `0 10px 25px ${theme.palette.primary.main}35`
                       }
                     },
 
@@ -273,7 +316,7 @@ export default function VariantPage() {
                   }}
 
                 >
-                  {isSyncing ? 'Syncing…' : 'Sync to GitHub'}
+                  {isSyncing ? 'Syncing…' : 'Sync'}
                 </Button>
               )}
             </Stack>
@@ -285,9 +328,8 @@ export default function VariantPage() {
           sx={{
             p: { xs: 1.5, md: 2.5 },
             borderRadius: 1,
-            background:
-              'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
             backdropFilter: 'blur(12px)'
           }}
         >

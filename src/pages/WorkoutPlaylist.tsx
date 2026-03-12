@@ -1,6 +1,6 @@
 // src/pages/WorkoutPlaylist.tsx
 import React, { useState, useEffect } from 'react'
-import { Container, Box, Typography } from '@mui/material'
+import { Container, Box, Typography, useTheme } from '@mui/material'
 
 import { loadData, getData } from '../data/dataService'
 import type { Variant } from '../data/workoutUtils'
@@ -9,7 +9,6 @@ import WorkoutPlayer from '../components/WorkoutPlayer'
 import VariantCarousel from '../components/VariantCarousel'
 
 import {
-  loadProgressData,
   getProgressData,
   setProgressData,
   syncProgressToGitHub
@@ -26,6 +25,8 @@ export default function WorkoutPlaylist() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const theme = useTheme()
+
   // -----------------------------
   // Load workout + progress from GitHub
   // -----------------------------
@@ -38,7 +39,6 @@ export default function WorkoutPlaylist() {
 
       try {
         await loadData()
-        await loadProgressData()
 
         if (cancelled) return
 
@@ -181,10 +181,7 @@ export default function WorkoutPlaylist() {
   // -----------------------------
   return (
     <Container>
-      <Box sx={{ textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          Choose a Workout
-        </Typography>
+      <Box sx={{ textAlign: 'center', pt: 2 }}>
 
         {!isWorkoutInProgress ? (
           <VariantCarousel

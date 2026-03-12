@@ -7,14 +7,14 @@ import {
     Container,
     IconButton,
     Tooltip,
-    Box
+    Box,
+    useTheme
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 
-import { useThemeMode } from '../ThemeModeProvider'
 import { ProfileDialog } from './progressComponents/ProfileDialog'
 
 import {
@@ -32,13 +32,13 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const { mode, toggleMode } = useThemeMode()
     const navigate = useNavigate();
     const [profileDialogOpen, setProfileDialogOpen] = useState(false)
     const [profile, setProfile] = useState<ProfileData>({})
     const [cachedData, setCachedData] = useState<ProgressDataFile | null>(null)
 
     const hasGitHubToken = isGitHubConfigured()
+    const theme = useTheme();
 
     /* ----------------------------------------------------------
        LOAD progress.json (profile + all data)
@@ -93,21 +93,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => navigate("/")}
                 sx={{
                     position: "fixed",
-                    bottom: 50,
-                    right: 20,
+                    bottom: { xs: 18, sm: 24 },
+                    right: { xs: 16, sm: 20 },
                     zIndex: 2000,
 
-                    background:
-                        "linear-gradient(135deg,#00ffa6 0%,#00c781 100%)",
-                    color: "#03140d",
+                    background: `linear-gradient(
+      135deg,
+      ${theme.palette.primary.light},
+      ${theme.palette.primary.dark}
+    )`,
 
-                    boxShadow:
-                        "0 10px 25px rgba(0,255,170,0.35)",
+                    color: theme.palette.getContrastText(theme.palette.primary.main),
+
+                    boxShadow: `0 8px 25px ${theme.palette.primary.main}45`,
+
+                    transition: "all 0.25s ease",
 
                     "&:hover": {
                         transform: "translateY(-2px)",
-                        boxShadow:
-                            "0 14px 35px rgba(0,255,170,0.55)"
+                        boxShadow: `0 12px 30px ${theme.palette.primary.main}70`
                     }
                 }}
             >
@@ -116,17 +120,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <AppBar
                 position="sticky"
                 sx={{
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.25))',
-                    boxShadow: 'none',
-                    borderBottom: (t) =>
-                        `1px solid ${t.palette.mode === 'dark'
-                            ? 'rgba(255,255,255,0.03)'
-                            : 'rgba(0,0,0,0.06)'
-                        }`,
-                    backdropFilter: 'blur(6px)'
+                    background: theme.palette.background.paper,
+
+                    backdropFilter: "blur(14px)",
+
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+
+                    boxShadow:
+                        theme.palette.mode === "dark"
+                            ? "0 8px 30px rgba(0,0,0,0.45)"
+                            : "0 4px 12px rgba(0,0,0,0.08)"
                 }}
             >
-                <Toolbar sx={{ gap: 1, px: { xs: 1, sm: 2 } }}>
+                <Toolbar
+                    sx={{
+                        gap: 1,
+                        px: { xs: 1.5, sm: 2.5 },
+                        minHeight: { xs: 56, sm: 64 }
+                    }}
+                >
                     {/* LOGO + TITLE */}
                     <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1 }}>
                         <RouterLink
@@ -148,9 +160,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                                 component="div"
                                 sx={{
                                     fontWeight: 700,
-                                    cursor: 'pointer',
-                                    '&:hover': { opacity: 0.8 },
-                                    transition: 'opacity 200ms',
+
+                                    fontSize: {
+                                        xs: "1rem",
+                                        sm: "1.15rem"
+                                    },
+
+                                    letterSpacing: "-0.2px",
+
+                                    transition: "opacity 200ms",
+
+                                    "&:hover": { opacity: 0.85 },
+
                                     ml: 1
                                 }}
                             >
@@ -159,22 +180,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         </RouterLink>
                     </Box>
 
-                    {/* THEME SWITCH */}
-                    <Tooltip title={mode === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
-                        <IconButton
-                            color="inherit"
-                            onClick={toggleMode}
-                            sx={{ ml: 1 }}
-                            aria-label="toggle theme"
-                        >
-                            {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
-                        </IconButton>
-                    </Tooltip>
-
                     {/* PROFILE BUTTON */}
                     <Tooltip title="Edit Profile">
-                        <IconButton onClick={() => setProfileDialogOpen(true)}>
-                            <AccountCircleIcon fontSize="large" />
+                        <IconButton
+                            onClick={() => setProfileDialogOpen(true)}
+                            sx={{
+                                borderRadius: 2,
+
+                                border: `1px solid ${theme.palette.divider}`,
+
+                                background: theme.palette.background.default,
+
+                                transition: "all 0.2s ease",
+
+                                "&:hover": {
+                                    background: theme.palette.action.hover
+                                }
+                            }}
+                        >
+                            <AccountCircleIcon />
                         </IconButton>
                     </Tooltip>
 
