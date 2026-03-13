@@ -4,10 +4,10 @@ import { Octokit } from "octokit";
 const OWNER = "Tejasjagdale";
 const REPO = "github-db";
 
-const WORKOUT_FILE = "workoutData.json";
-const PROGRESS_FILE = "progressData.json";
+const WORKOUT_FILE = "workoutDataK.json";
+const PROGRESS_FILE = "progressDataK.json";
 const EXERCISE_DB_FILE = "exerciseDatabase.json";
-const TODO_FILE = "todo.json";
+const TODO_FILE = "todoK.json";
 
 
 let octokit: Octokit | null = null;
