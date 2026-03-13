@@ -169,7 +169,7 @@ export default function RoutineHeatmap({
               display: "flex",
               ml: "22px",
               mb: .3,
-              gap: { xs: "3px", sm: "4px" }
+              gap: { xs: "1px", sm: "2px" , md: "4px" }
             }}
           >
             {weeks.map((_, wi) => {

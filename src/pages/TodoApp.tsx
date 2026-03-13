@@ -53,6 +53,7 @@ import GroupListView from "../components/todoComponents/GroupListView";
 import { nowIST } from "../utils/istTime";
 import TodoTabs from "../components/todoComponents/TodoTabs";
 import { calculateStreak } from "../utils/streakUtils";
+import { text } from "stream/consumers";
 
 export default function TodoApp() {
   const theme = useTheme();
@@ -781,7 +782,7 @@ export default function TodoApp() {
                           maxHeight: 260,
 
                           background:
-                            "linear-gradient(180deg,#07130f,#04100c)",
+                            theme.palette.background.paper,
                           backdropFilter: "blur(18px)",
                           border: "1px solid rgba(0,255,170,0.18)",
 
@@ -809,7 +810,7 @@ export default function TodoApp() {
 
                           /* Firefox */
                           scrollbarWidth: "thin",
-                          scrollbarColor: "#549957 transparent",
+                          scrollbarColor: `${theme.palette.primary.main} transparent`,
 
                           "& .MuiMenuItem-root": {
                             fontSize: 13,
@@ -823,7 +824,7 @@ export default function TodoApp() {
                             },
 
                             "&:hover": {
-                              background: "rgba(0,255,170,0.12)"
+                              background: "theme.palette.action.hover"
                             }
                           }
                         }
@@ -836,9 +837,9 @@ export default function TodoApp() {
                           checked={groupFilter.includes(g.id)}
                           size="small"
                           sx={{
-                            color: "rgba(0,255,170,0.6)",
+                            color: theme.palette.primary.main,
                             "&.Mui-checked": {
-                              color: "#00ffa6"
+                              color: theme.palette.primary.main
                             }
                           }}
                         />
@@ -921,8 +922,9 @@ export default function TodoApp() {
                       size="small"
                       onClick={() => setSearchOpen(true)}
                       sx={{
-                        border: "1px solid rgba(0,255,170,0.35)",
-                        color: "#00ffa6",
+                        border: `1px solid ${theme.palette.divider}`,
+                        color: theme.palette.primary.main,
+                        background: theme.palette.background.paper,
                         width: 34,
                         height: 34
                       }}
@@ -986,32 +988,28 @@ export default function TodoApp() {
                         : "Groups"
                     }
                     sx={{
-                      height: 32,
+                      height: 34,
                       fontSize: 12,
                       borderRadius: 999,
 
-                      /* ===== GLASS SURFACE ===== */
-                      background:
-                        "linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))",
+                      background: theme.palette.background.paper,
+
                       backdropFilter: "blur(12px)",
 
-                      color: "#d7ffe8",
-
                       ".MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(0,255,170,0.18)"
+                        borderColor: theme.palette.divider
                       },
 
                       "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(0,255,170,0.4)"
+                        borderColor: theme.palette.primary.main
                       },
 
                       "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#00ffa6",
-                        boxShadow: "0 0 10px rgba(0,255,170,0.25)"
+                        borderColor: theme.palette.primary.main
                       },
 
                       ".MuiSelect-icon": {
-                        color: "#00ffa6"
+                        color: theme.palette.primary.main
                       }
                     }}
                     MenuProps={{
@@ -1021,8 +1019,7 @@ export default function TodoApp() {
                           borderRadius: 2,
                           maxHeight: 260,
 
-                          background:
-                            "linear-gradient(180deg,#07130f,#04100c)",
+                          background:theme.palette.background.paper,
                           backdropFilter: "blur(18px)",
                           border: "1px solid rgba(0,255,170,0.18)",
 
@@ -1050,7 +1047,7 @@ export default function TodoApp() {
 
                           /* Firefox */
                           scrollbarWidth: "thin",
-                          scrollbarColor: "#549957 transparent",
+                          scrollbarColor: `${theme.palette.primary.main} transparent`,
 
                           "& .MuiMenuItem-root": {
                             fontSize: 13,
@@ -1064,7 +1061,7 @@ export default function TodoApp() {
                             },
 
                             "&:hover": {
-                              background: "rgba(0,255,170,0.12)"
+                              background: theme.palette.action.hover
                             }
                           }
                         }
@@ -1077,13 +1074,13 @@ export default function TodoApp() {
                           checked={groupFilter.includes(g.id)}
                           size="small"
                           sx={{
-                            color: "rgba(0,255,170,0.6)",
+                            color: `${theme.palette.primary.main}`,
                             "&.Mui-checked": {
-                              color: "#00ffa6"
+                              color: `${theme.palette.primary.main}`
                             }
                           }}
                         />
-                        <ListItemText primary={g.name} />
+                        <ListItemText primary={g.name} color={theme.palette.primary.main} />
                       </MenuItem>
                     ))}
                   </Select>
@@ -1096,16 +1093,15 @@ export default function TodoApp() {
                     setEditingItem(null);
                     setEditorOpen(true);
                   }}
-                  sx={{
+                 sx={{
                     width: { xs: 32, sm: 36 },
                     height: { xs: 32, sm: 36 },
                     borderRadius: 999,
 
-                    border: "1px solid rgba(0,255,170,0.35)",
-                    color: "#00ffa6",
+                    border: `1px solid ${theme.palette.primary.main}`,
+                    color: theme.palette.primary.main,
 
-                    background:
-                      "linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))",
+                    background: theme.palette.background.paper,
 
                     backdropFilter: "blur(10px)",
 
@@ -1114,12 +1110,6 @@ export default function TodoApp() {
                     "& svg": {
                       fontSize: { xs: 18, sm: 20 }
                     },
-
-                    "&:hover": {
-                      background: "rgba(0,255,170,0.12)",
-                      borderColor: "#00ffa6",
-                      boxShadow: "0 0 10px rgba(0,255,170,0.35)"
-                    }
                   }}
                 >
                   <AddIcon fontSize="small" />
@@ -1180,7 +1170,7 @@ export default function TodoApp() {
               <Button
                 variant="contained"
                 size="small"
-                sx={{ background: "#00ffa6", alignSelf: "flex-start" }}
+                sx={{ background: theme.palette.primary.main, alignSelf: "flex-start" }}
                 onClick={() => setGroupModalOpen(true)}
                 startIcon={<GroupsIcon fontSize="small" />}
               >
