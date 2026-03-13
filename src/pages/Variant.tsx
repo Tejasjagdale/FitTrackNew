@@ -131,7 +131,7 @@ export default function VariantPage() {
     return (
       <Container sx={{ py: 6, textAlign: 'center' }}>
         <CircularProgress size={40} />
-        <Typography sx={{ mt: 2 }}>Loading workout variants from GitHub…</Typography>
+        <Typography sx={{ mt: 2 }} color="text.primary">Loading workout variants from GitHub…</Typography>
       </Container>
     )
   }

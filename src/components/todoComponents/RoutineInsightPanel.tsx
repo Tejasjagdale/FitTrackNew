@@ -1,198 +1,161 @@
-import { Paper, Stack, Typography, Box, LinearProgress } from "@mui/material";
+import {
+  Dialog,
+  DialogContent,
+  Typography,
+  Stack,
+  Box,
+  useTheme
+} from "@mui/material";
+
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+
 import { Routine } from "../../types/todoModels";
 import RoutineMonthCalendar from "./RoutineMonthCalendar";
 
 type Props = {
-  routine: Routine;
-  stats: {
-    total: number;
-    possible: number;
-    longest: number;
-  };
-  insight: {
-    bestWeek: number;
-    worstDay: string;
-    trend: string;
-  };
-  percent: number;
+  open: boolean;
+  onClose: () => void;
+  routine: Routine | null;
+  onHistoryChange?: (routineId: string, history: string[]) => void;
 };
 
-export default function RoutineInsightCard({
+export default function RoutineInsightDialog({
+  open,
+  onClose,
   routine,
-  stats,
-  insight,
-  percent
+  onHistoryChange
 }: Props) {
 
-  /* ======================================================
-     ADVANCED DERIVED ANALYTICS (PURE UI LAYER)
-  ====================================================== */
+  const theme = useTheme();
+
+  if (!routine) return null;
 
   const momentum = routine.streak?.current ?? 0;
+  const longest = routine.streak?.longest ?? 0;
 
-  const density =
-    stats.possible === 0 ? 0 : stats.total / stats.possible;
+  const history = routine.history ?? [];
 
-  const grade =
-    percent >= 85 ? "A+" :
-    percent >= 70 ? "A" :
-    percent >= 55 ? "B" :
-    percent >= 40 ? "C" : "D";
+  const consistency =
+    history.length === 0
+      ? 0
+      : Math.round(
+        (history.length /
+          Math.max(
+            1,
+            Math.ceil(
+              (Date.now() -
+                new Date(history[0]).getTime()) /
+              (1000 * 60 * 60 * 24)
+            )
+          )) *
+        100
+      );
 
-  const risk =
-    percent < 30
-      ? "🚨 Burnout risk"
-      : percent < 50
-        ? "⚠️ Inconsistent phase"
-        : "🧠 Stable behaviour";
-
-  const discipline =
-    momentum > 10
-      ? "Elite discipline"
-      : momentum > 5
-        ? "Building discipline"
-        : "Early phase";
-
-  const densityColor =
-    percent > 70 ? "#00ffa6" :
-    percent > 40 ? "#ffaa00" :
-    "#ff6b6b";
-
-  /* ====================================================== */
+  const showFlame = momentum >= 3;
 
   return (
-    <Paper
-      sx={{
-        p: 1.3,
-        borderRadius: 1.3,
-        position: "relative",
-
-        background:
-          "linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015))",
-
-        border: "1px solid rgba(255,255,255,0.08)",
-        backdropFilter: "blur(14px)",
-
-        transition: "all .25s ease",
-        "&:hover": {
-          transform: "translateY(-1px)",
-          boxShadow: "0 6px 18px rgba(0,0,0,0.35)"
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          background: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          backdropFilter: "blur(20px)"
         }
       }}
     >
+      <DialogContent sx={{ p: { xs: 2, sm: 2.4 } }}>
 
-      {/* ================= HEADER ================= */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={0.6}
-      >
-        <Typography
-          sx={{
-            fontSize: 14,
-            fontWeight: 600,
-            letterSpacing: ".2px"
-          }}
-        >
-          🔁 {routine.title}
-        </Typography>
-
-        <Box
-          sx={{
-            px: .9,
-            py: .1,
-            borderRadius: 999,
-            background: "rgba(0,255,170,0.12)",
-            color: "#00ffa6",
-            fontSize: 11,
-            fontWeight: 600
-          }}
-        >
-          Grade {grade}
-        </Box>
-      </Stack>
-
-      {/* ================= PROGRESS STRIP ================= */}
-      <LinearProgress
-        variant="determinate"
-        value={percent}
-        sx={{
-          height: 4,
-          borderRadius: 10,
-          mb: .8,
-          background: "rgba(255,255,255,0.08)",
-          "& .MuiLinearProgress-bar": {
-            background: densityColor
-          }
-        }}
-      />
-
-      {/* ================= BODY ================= */}
-      <Stack direction="row" spacing={1.5}>
-
-        {/* LEFT METRICS COLUMN */}
+        {/* TITLE */}
         <Stack
+          direction="row"
+          alignItems="center"
           spacing={1}
-          sx={{
-            minWidth: 82,
-            borderRight: "1px solid rgba(255,255,255,0.06)",
-            pr: 1,
-            alignItems: "center"
-          }}
+          mb={1.6}
         >
-          <Metric label="MOMENTUM" value={momentum} color="#ff784e" />
-          <Metric label="CONSIST" value={`${Math.round(percent)}%`} color="#00ffa6" />
-          <Metric label="LONGEST" value={stats.longest} />
-        </Stack>
-
-        {/* RIGHT ANALYTICS */}
-        <Stack flex={1} spacing={0.8}>
-
-          {/* INSIGHT PANEL */}
-          <Stack
-            spacing={0.35}
-            sx={{
-              p: .7,
-              borderRadius: 1,
-              background:
-                "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))",
-              border: "1px solid rgba(255,255,255,0.06)"
-            }}
+          <Typography
+            fontWeight={700}
+            fontSize={{ xs: 18, sm: 20 }}
           >
-            <Typography variant="caption" sx={{ opacity: .85 }}>
-              🔥 Longest streak window {insight.bestWeek} days
-            </Typography>
+            🔁 {routine.title}
+          </Typography>
 
-            <Typography variant="caption" sx={{ opacity: .75 }}>
-              ⚠️ Weak day: {insight.worstDay}
-            </Typography>
+          {showFlame && (
+            <LocalFireDepartmentIcon
+              sx={{
+                color: "#ff784e",
+                fontSize: 20,
+                animation: "flame 1.4s ease-in-out infinite"
+              }}
+            />
+          )}
 
-            <Typography variant="caption" sx={{ opacity: .7 }}>
-              {insight.trend}
-            </Typography>
-
-            <Typography variant="caption" sx={{ opacity: .65 }}>
-              🧩 {discipline}
-            </Typography>
-
-            <Typography variant="caption" sx={{ opacity: .6 }}>
-              {risk}
-            </Typography>
-          </Stack>
-
-          {/* CALENDAR */}
-          <RoutineMonthCalendar routine={routine} />
-
+          <style>
+            {`
+            @keyframes flame {
+              0% { transform: scale(1); opacity:.8 }
+              50% { transform: scale(1.25); opacity:1 }
+              100% { transform: scale(1); opacity:.8 }
+            }
+            `}
+          </style>
         </Stack>
-      </Stack>
-    </Paper>
+
+        {/* METRICS */}
+        <Stack
+          direction="row"
+          spacing={3}
+          justifyContent="space-between"
+          mb={1}
+          p={2}
+          borderRadius={1}
+          sx={{background:theme.palette.background.paper}}
+        >
+          <Metric
+            label="Momentum"
+            value={momentum}
+            color="#ff784e"
+          />
+
+          <Metric
+            label="Consistency"
+            value={`${consistency}%`}
+            color={theme.palette.primary.main}
+          />
+
+          <Metric
+            label="Longest"
+            value={longest}
+            color={theme.palette.success.main}
+          />
+        </Stack>
+
+        {/* CALENDAR */}
+        <RoutineMonthCalendar
+          routine={routine}
+          onToggleDate={(date) => {
+
+            const exists = routine.history?.includes(date);
+
+            let newHistory;
+
+            if (exists) {
+              newHistory = routine.history?.filter(d => d !== date) ?? [];
+            } else {
+              newHistory = [...(routine.history ?? []), date];
+            }
+
+            onHistoryChange?.(routine.id, newHistory);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
-
-/* ======================================================
-   SMALL INTERNAL METRIC COMPONENT
-====================================================== */
 
 function Metric({
   label,
@@ -200,21 +163,27 @@ function Metric({
   color
 }: {
   label: string;
-  value: any;
+  value: string | number;
   color?: string;
 }) {
   return (
-    <Stack alignItems="center" spacing={0}>
+    <Stack alignItems="center" spacing={0.2}>
       <Typography
         sx={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: color || "white"
+          fontSize: 18,
+          fontWeight: 700,
+          color
         }}
       >
         {value}
       </Typography>
-      <Typography variant="caption" sx={{ opacity: .55 }}>
+
+      <Typography
+        sx={{
+          fontSize: 11,
+          opacity: 0.7
+        }}
+      >
         {label}
       </Typography>
     </Stack>

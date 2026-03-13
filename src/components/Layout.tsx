@@ -93,8 +93,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => navigate("/")}
                 sx={{
                     position: "fixed",
-                    bottom: { xs: 18, sm: 24 },
-                    right: { xs: 16, sm: 20 },
+                    bottom: { xs: 30, sm: 40 },
+                    right: { xs: 24, sm: 32 },
                     zIndex: 2000,
 
                     background: `linear-gradient(
@@ -158,6 +158,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             <Typography
                                 variant="h6"
                                 component="div"
+                                color="primary"
                                 sx={{
                                     fontWeight: 700,
 

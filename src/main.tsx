@@ -9,6 +9,7 @@ import { StatusBar, Style } from "@capacitor/status-bar"
 import { Capacitor } from "@capacitor/core"
 
 import { AppThemeProvider } from "./theme/ThemeContext"
+import { loadProgressData } from "./data/progressDataService"
 
 /* Android StatusBar setup */
 if (Capacitor.getPlatform() === "android") {
@@ -16,13 +17,26 @@ if (Capacitor.getPlatform() === "android") {
   StatusBar.setStyle({ style: Style.Dark })
 }
 
-/* Root Render */
-createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <AppThemeProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </AppThemeProvider>
-  </React.StrictMode>
-)
+async function start() {
+
+  let theme : "apple" | "jarvis" | "pokemon" | "cherry" | undefined = "apple"
+
+  try {
+    const data = await loadProgressData()
+    theme = data?.profile?.theme || "apple"
+  } catch {
+    console.warn("Failed to load theme, using default")
+  }
+
+  createRoot(document.getElementById("root") as HTMLElement).render(
+    <React.StrictMode>
+      <AppThemeProvider initialTheme={theme}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AppThemeProvider>
+    </React.StrictMode>
+  )
+}
+
+start()

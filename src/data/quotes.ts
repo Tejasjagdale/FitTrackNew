@@ -65,7 +65,7 @@ export const QUOTES = [
   { text: "You are stronger than your excuses.", author: "FitTrack" },
   { text: "Focus beats talent.", author: "FitTrack" },
 
-  { text: "Sweat is just weakness leaving the body.", author: "Unknown" },
+  { text: "Sweat is just weakness leaving the body.", author: "FitTrack" },
   { text: "Rise. Train. Repeat.", author: "FitTrack" },
   { text: "Build strength, build confidence.", author: "FitTrack" },
   { text: "Today’s effort is tomorrow’s progress.", author: "FitTrack" },
@@ -76,7 +76,7 @@ export const QUOTES = [
   { text: "Make sweat your therapy.", author: "FitTrack" },
   { text: "Move with purpose.", author: "FitTrack" },
 
-  { text: "Train like a beast, look like a beauty.", author: "Unknown" },
+  { text: "Train like a beast, look like a beauty.", author: "FitTrack" },
   { text: "Strong is a lifestyle.", author: "FitTrack" },
   { text: "Push harder than yesterday.", author: "FitTrack" },
   { text: "The grind builds greatness.", author: "FitTrack" },
@@ -87,7 +87,7 @@ export const QUOTES = [
   { text: "Stay hungry for progress.", author: "FitTrack" },
   { text: "Train your mind first.", author: "FitTrack" },
 
-  { text: "Great things never come from comfort zones.", author: "Unknown" },
+  { text: "Great things never come from comfort zones.", author: "FitTrack" },
   { text: "Your effort defines you.", author: "FitTrack" },
   { text: "Strive for progress, not perfection.", author: "FitTrack" },
   { text: "Be stronger than your strongest excuse.", author: "FitTrack" },
@@ -96,5 +96,5 @@ export const QUOTES = [
   { text: "Every workout is an investment.", author: "FitTrack" },
   { text: "Results love patience.", author: "FitTrack" },
   { text: "Train like you mean it.", author: "FitTrack" },
-  { text: "The best project you’ll ever work on is you.", author: "Unknown" }
+  { text: "The best project you’ll ever work on is you.", author: "FitTrack" }
 ]

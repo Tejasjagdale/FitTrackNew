@@ -6,16 +6,20 @@ import {
   Chip,
   Modal,
   Paper,
-  Divider
+  Divider,
+  useTheme
 } from "@mui/material";
 
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Todo, Priority, Group } from "../../types/todoModels";
 import { nowIST, todayISTString } from "../../utils/istTime";
 import { motion } from "framer-motion";
+import CheckIcon from "@mui/icons-material/Checklist";
+import PremiumTaskCard from "./PremiumTaskCard";
+import AddIcon from "@mui/icons-material/Add";
 
 /* =========================================================
    CALENDAR BUILD (UNCHANGED LOGIC)
@@ -89,9 +93,22 @@ function getPriorityChip(priority: Priority) {
    PREMIUM CALENDAR
 ========================================================= */
 
-export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], groups: Group[]; }) {
+export default function TodoMonthCalendar({
+  todos,
+  groups,
+  onToggleTodo,
+  onEditTodo,
+  onAddTodo
+}: {
+  todos: Todo[];
+  groups: Group[];
+  onToggleTodo: (t: Todo) => void;
+  onEditTodo: (t: Todo) => void;
+  onAddTodo: () => void;
+}) {
 
   const now = nowIST();
+  const theme = useTheme();
 
   const [cursor, setCursor] = useState({
     year: now.getFullYear(),
@@ -99,6 +116,14 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
   });
 
   const [openDay, setOpenDay] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!openDay) return;
+
+    const updated = cells.find(c => c.dateStr === openDay.dateStr);
+    if (updated) setOpenDay(updated);
+
+  }, [todos]);
 
   const groupMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -140,13 +165,23 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
 
   return (
     <Stack spacing={1.2} sx={{
-      p: 1.4,
-      borderRadius: 1,
-      background:
-        "linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))",
-      border: "1px solid rgba(255,255,255,0.08)",
+      p: { xs: 1, sm: 1.4 },
+      borderRadius: 2,
+      background: theme.palette.background.default,
+      border: `1px solid ${theme.palette.divider}`,
       backdropFilter: "blur(24px)"
     }}>
+
+      <Stack direction="row" spacing={1} mb={2} alignItems="center">
+        <CheckIcon sx={{ opacity: .8, color: "text.primary" }} />
+        <Typography
+          fontWeight={700}
+          fontSize={{ xs: 18, sm: 22 }}
+          color="text.primary"
+        >
+          Todo Tasks Calender
+        </Typography>
+      </Stack>
 
       {/* HEADER */}
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -154,7 +189,12 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
           <ChevronLeftIcon fontSize="small" />
         </IconButton>
 
-        <Typography fontWeight={700} fontSize={13} sx={{ letterSpacing: 1, textTransform: "uppercase", opacity: .9 }}>
+        <Typography
+          fontWeight={700}
+          fontSize={{ xs: 12, sm: 13 }}
+          sx={{ letterSpacing: 1, textTransform: "uppercase", opacity: .9 }}
+          color="text.primary"
+        >
           {monthLabel}
         </Typography>
 
@@ -166,13 +206,13 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
       {/* WEEKDAY */}
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7,minmax(0,1fr))", gap: "6px" }}>
         {weekday.map(w => (
-          <Typography key={w} sx={{ fontSize: 10, opacity: .5, textAlign: "center" }}>
+          <Typography key={w} color="text.primary" sx={{ fontSize: 10, opacity: .6, textAlign: "center" }}>
             {w}
           </Typography>
         ))}
       </Box>
 
-      {/* ===== PREMIUM SEAMLESS GRID (UI ONLY CHANGE) ===== */}
+      {/* CALENDAR GRID */}
       <Box
         sx={{
           display: "grid",
@@ -180,54 +220,59 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
           gap: 0,
           borderRadius: 1,
           overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.06)",
-          background:
-            "linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))",
-          boxShadow:
-            "inset 0 0 40px rgba(0,255,166,.05)"
+          border: `1px solid ${theme.palette.divider}`,
+          // background: theme.palette.background.paper
         }}
       >
         {cells.map((c, i) => {
 
           if (!c.day) {
-            return <Box key={i} sx={{ height: 86 }} />;
+            return <Box key={i} sx={{ height: { xs: 64, sm: 86 } }} />;
           }
 
           const dense = c.todos.length > 3;
           const visibleCount = dense ? 2 : 3;
-          const overdueHeat = Math.min(c.overdueCount * .12, .35);
+          const completedCount = c.todos.filter(
+            (t: Todo) => t.status === "completed"
+          ).length;
 
+          const pendingCount = c.todos.filter(
+            (t: Todo) => t.status !== "completed" && t.deadline && t.deadline >= todayISTString()
+          ).length;
+
+          const overdueCount = c.todos.filter(
+            (t: Todo) => t.status !== "completed" && t.deadline && t.deadline < todayISTString()
+          ).length;
+
+          let dayColor = theme.palette.primary.main;
+
+          if (overdueCount > 0) {
+            dayColor = theme.palette.error.main;
+          } else if (pendingCount > 0) {
+            dayColor = theme.palette.primary.main;
+          } else if (completedCount > 0) {
+            dayColor = theme.palette.success.main;
+          }
           return (
             <motion.div key={i} whileTap={{ scale: .96 }}>
               <Box
                 onClick={() => setOpenDay(c)}
                 sx={{
                   position: "relative",
-                  minHeight: 86,
+                  minHeight: { xs: 64, sm: 86 },
                   p: .7,
                   cursor: "pointer",
 
                   borderRight: (i + 1) % 7 !== 0
-                    ? "1px solid rgba(255,255,255,0.05)"
+                    ? `1px solid ${theme.palette.divider}`
                     : "none",
 
                   borderBottom:
                     i < cells.length - 7
-                      ? "1px solid rgba(255,255,255,0.05)"
+                      ? `1px solid ${theme.palette.divider}`
                       : "none",
 
-                  background: `
-                      linear-gradient(
-                        180deg,
-                        rgba(12,24,20,.55),
-                        rgba(4,10,8,.45)
-                      ),
-                      radial-gradient(
-                        circle at top,
-                        rgba(255,70,70,${overdueHeat}),
-                        transparent 65%
-                      )
-                      `,
+                  background: theme.palette.background.paper,
                 }}
               >
 
@@ -239,7 +284,7 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                     width: 4,
                     height: 4,
                     borderRadius: "50%",
-                    background: "#00ffa6"
+                    background: theme.palette.primary.main
                   }} />
                 )}
 
@@ -254,27 +299,18 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                     fontSize: 12,
                     fontWeight: 700,
                     backdropFilter: "blur(10px)",
+
                     background: c.isToday
-                      ? "linear-gradient(135deg,#00ffa6,#1affc6)"
+                      ? theme.palette.primary.main
                       : c.todos.length
-                        ? "linear-gradient(180deg,rgba(0,255,166,.18),rgba(0,255,166,.05))"
-                        : "linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015))",
-                    color:
-                      c.isToday
-                        ? "#002d22"
-                        : c.overdueCount > 0
-                          ? "#ff8a8a"
-                          : c.todos.length
-                            ? "#baffea"
-                            : "rgba(255,255,255,.55)",
-                    border: c.isToday
-                      ? "1px solid rgba(0,255,166,.7)"
-                      : "1px solid rgba(255,255,255,.08)",
-                    boxShadow: c.isToday
-                      ? "0 0 18px rgba(0,255,166,.65)"
-                      : c.todos.length
-                        ? "0 0 10px rgba(0,255,166,.25)"
-                        : "none",
+                        ? `${theme.palette.primary.main}22`
+                        : `${theme.palette.background.paper}`,
+
+                    color: c.isToday
+                      ? theme.palette.getContrastText(theme.palette.primary.main)
+                      : theme.palette.text.primary,
+
+                    border: `1px solid ${theme.palette.divider}`
                   }}
                 >
                   {c.day}
@@ -293,8 +329,27 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                         sx={{
                           height: 18,
                           fontSize: 10,
-                          background: priority.bg,
-                          backdropFilter: "blur(4px)"
+
+                          background:
+                            t.status === "completed"
+                              ? `${theme.palette.success.main}22`
+                              : t.deadline && t.deadline < todayISTString()
+                                ? `${theme.palette.error.main}22`
+                                : `${theme.palette.primary.main}22`,
+
+                          color:
+                            t.status === "completed"
+                              ? theme.palette.success.main
+                              : t.deadline && t.deadline < todayISTString()
+                                ? theme.palette.error.main
+                                : theme.palette.primary.main,
+
+                          border: `1px solid ${t.status === "completed"
+                            ? theme.palette.success.main
+                            : t.deadline && t.deadline < todayISTString()
+                              ? theme.palette.error.main
+                              : theme.palette.primary.main
+                            }33`
                         }}
                       />
                     )
@@ -312,7 +367,7 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
         })}
       </Box>
 
-      {/* ===== ORIGINAL MODAL FULLY RESTORED ===== */}
+      {/* MODAL */}
       <Modal open={!!openDay} onClose={() => setOpenDay(null)}>
         <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
           {openDay && (
@@ -320,29 +375,42 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
               p: 1.6,
               borderTopLeftRadius: 15,
               borderTopRightRadius: 15,
-              background:
-                "linear-gradient(180deg, rgba(0,255,170,0.10), rgba(0,0,0,0.7))",
-              borderTop: "1px solid rgba(255,255,255,0.08)"
+              background: theme.palette.background.paper,
+              borderTop: `1px solid ${theme.palette.divider}`
             }}>
 
-              <Typography fontWeight={700} fontSize={13}>
-                Task's on 📅 {openDay.dateStr}
-              </Typography>
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+              >
+                <Typography fontWeight={700} fontSize={13}>
+                  Tasks on 📅 {openDay.dateStr}
+                </Typography>
+
+                <IconButton
+                  size="small"
+                  onClick={onAddTodo}
+                  sx={{
+                    border: `1px solid ${theme.palette.primary.main}`,
+                    color: theme.palette.primary.main,
+                    width: 28,
+                    height: 28
+                  }}
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Stack>
 
               <Divider sx={{ my: 1, opacity: .2 }} />
 
-              <Box sx={{ height: 350, overflowY: "auto", pr: .4 }}>
+              <Box sx={{ height: { xs: 300, sm: 350 }, overflowY: "auto", pr: .4 }}>
                 {openDay.todos.length === 0 ? (
 
                   <Box sx={{
                     textAlign: "center",
                     py: 6,
-                    opacity: .75,
-                    animation: "fadeIn .35s ease",
-                    "@keyframes fadeIn": {
-                      from: { opacity: 0, transform: "translateY(8px)" },
-                      to: { opacity: 1, transform: "translateY(0)" }
-                    }
+                    opacity: .75
                   }}>
                     <Typography fontSize={34}>😌</Typography>
                     <Typography fontSize={12}>
@@ -353,50 +421,24 @@ export default function TodoMonthCalendar({ todos, groups }: { todos: Todo[], gr
                 ) : (
                   openDay.todos.map((t: Todo) => {
 
-                    const status = getStatusChip(t);
-
+                    const isDone = t.status === "completed";
                     return (
-                      <Paper key={t.id} sx={{
-                        p: .9,
-                        borderRadius: 1,
-                        background: "rgba(255,255,255,0.04)",
-                        border: status.label === "Overdue"
-                          ? "1px solid rgba(255,80,80,.5)"
-                          : "1px solid rgba(255,255,255,0.06)",
-                        mb: .6
-                      }}>
-                        <Typography fontSize={12}>
-                          {t.title}
-                        </Typography>
+                      <Box key={t.id} mb={1.5}>
+                        <PremiumTaskCard
+                          title={t.title}
+                          done={isDone}
+                          meta={isDone ? "Done" : t.deadline ?? undefined}
+                          groups={groups}
+                          groupIds={t.groupIds}
+                          isOverdue={Boolean(!isDone && t.deadline && t.deadline < todayISTString())}
+                          onToggle={() => onToggleTodo(t)}
+                          onEdit={() => onEditTodo(t)}
+                          routine={null}
+                          variant="calendar"
+                        />
+                      </Box>
 
-                        <Stack direction="row" spacing={0.4} mt={0.5} flexWrap="wrap">
-
-                          <Chip
-                            size="small"
-                            variant="outlined"
-                            label={status.label}
-                            sx={{
-                              border: `1px solid ${status.bg}`,
-                              color: status.bg,
-                              height: 18,
-                              fontSize: 10,
-                            }}
-                          />
-
-                          {t.groupIds?.map((g: string) => (
-                            <Chip
-                              key={g}
-                              size="small"
-                              label={groupMap[g] ?? "deleted group"}
-                              variant="filled"
-                              color={groupMap[g] ? "primary" : "error"}
-                              sx={{ height: 18, fontSize: 10 }}
-                            />
-                          ))}
-
-                        </Stack>
-                      </Paper>
-                    )
+                    );
                   })
                 )}
               </Box>

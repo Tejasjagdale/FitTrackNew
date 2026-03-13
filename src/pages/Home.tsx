@@ -46,18 +46,21 @@ export default function Home() {
     }
   }, [])
 
-  // Fetch motivational quote - one per day
   useEffect(() => {
-    // deterministic quote of the day
-    const today = new Date().toISOString().split('T')[0]
 
-    const hash = today
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const today = new Date()
 
-    const index = hash % QUOTES.length
+    const start = new Date(today.getFullYear(), 0, 0)
+    const diff = today.getTime() - start.getTime()
+
+    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    const seed = today.getFullYear()
+
+    const index = (dayOfYear * 17 + seed) % QUOTES.length
 
     setQuote(QUOTES[index])
+
   }, [])
 
   return (
@@ -106,7 +109,7 @@ export default function Home() {
 
       {/* Main Features Grid */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2.5, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <Typography variant="subtitle2" color="text.primary" sx={{ fontWeight: 'bold', mb: 2.5, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Features
         </Typography>
         <Grid container spacing={2}>

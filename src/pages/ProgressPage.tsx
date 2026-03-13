@@ -226,7 +226,7 @@ export default function ProgressDashboardPage() {
   if (loading) {
     return (
       <Container sx={{ py: 4 }}>
-        <Typography variant="h6">Loading progress data…</Typography>
+        <Typography variant="h6" color="text.primary" >Loading progress data…</Typography>
       </Container>
     )
   }

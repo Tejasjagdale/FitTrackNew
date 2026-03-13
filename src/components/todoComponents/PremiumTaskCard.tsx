@@ -6,19 +6,17 @@ import {
   Box,
   Chip,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   useTheme
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+
 import { useState } from "react";
+
+import { Routine } from "../../types/todoModels";
+import RoutineInsightDialog from "./RoutineInsightPanel";
 
 interface Props {
   title: string;
@@ -26,12 +24,18 @@ interface Props {
   meta?: string;
   onToggle: () => void;
   onEdit: () => void;
+
   groups?: any[];
   groupIds?: string[];
 
   isOverdue?: boolean;
   isUrgent?: boolean;
   streak?: number;
+
+  /* NEW */
+  routine?: Routine | null;
+  onRoutineHistoryChange?: (routineId: string, history: string[]) => void;
+  variant?: "default" | "calendar";
 }
 
 export default function PremiumTaskCard({
@@ -44,11 +48,19 @@ export default function PremiumTaskCard({
   groupIds = [],
   isOverdue = false,
   isUrgent = false,
-  streak
+  streak,
+  routine,
+  onRoutineHistoryChange,
+  variant = "default"
 }: Props) {
-
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const statusLabel = done
+    ? "Completed"
+    : isOverdue
+      ? "Overdue"
+      : "Pending";
   const theme = useTheme();
+
+  const [openRoutineDialog, setOpenRoutineDialog] = useState(false);
 
   const groupLabels = groups.filter((g: any) =>
     groupIds.includes(g.id)
@@ -56,14 +68,22 @@ export default function PremiumTaskCard({
 
   const isActive = (isOverdue || isUrgent) && !done;
 
+  const isRoutine = !!routine;
+
+  const handleMiddleClick = () => {
+
+    if (!isRoutine) return;
+
+    setOpenRoutineDialog(true);
+  };
+
   return (
     <>
       <Paper
         elevation={0}
         sx={{
-          px: { xs: 0.6, sm: 1 },
-          py: { xs: 1.1, sm: 1.2 },
-
+          px: variant === "calendar" ? 0.6 : { xs: 0.6, sm: 1 },
+          py: variant === "calendar" ? 0.8 : { xs: 1.1, sm: 1.2 },
           borderRadius: 1.8,
           position: "relative",
 
@@ -72,10 +92,11 @@ export default function PremiumTaskCard({
             : theme.palette.background.paper,
 
           backdropFilter: "blur(12px)",
+
           boxShadow:
-              theme.palette.mode === "light"
-                ? "0 8px 24px rgba(0,0,0,0.10)"
-                : "0 6px 16px rgba(0,0,0,0.01)",
+            theme.palette.mode === "light"
+              ? "0 8px 24px rgba(0,0,0,0.10)"
+              : "0 6px 16px rgba(0,0,0,0.01)",
 
           border: isActive
             ? `1px solid ${theme.palette.error.main}50`
@@ -109,20 +130,24 @@ export default function PremiumTaskCard({
 
         <Stack direction="row" alignItems="center" spacing={1.2}>
 
+          {/* CHECKBOX */}
           <Checkbox
             checked={done}
             onChange={onToggle}
             sx={{
               pr: 0.2,
               color: theme.palette.primary.main,
-
               "&.Mui-checked": {
                 color: theme.palette.primary.main
               }
             }}
           />
 
-          <Box sx={{ flex: 1 }}>
+          {/* CLICKABLE CENTER AREA */}
+          <Box
+            sx={{ flex: 1, cursor: isRoutine ? "pointer" : "default" }}
+            onClick={handleMiddleClick}
+          >
 
             <Typography
               sx={{
@@ -143,8 +168,31 @@ export default function PremiumTaskCard({
               flexWrap="wrap"
             >
 
-              {/* 🔥 STREAK CHIP */}
-              {typeof streak === "number" && (streak > 0) && (
+              {variant === "calendar" && (
+                <Chip
+                  size="small"
+                  label={statusLabel}
+                  sx={{
+                    height: 18,
+                    fontSize: 10,
+                    background:
+                      statusLabel === "Completed"
+                        ? `${theme.palette.success.main}22`
+                        : statusLabel === "Overdue"
+                          ? `${theme.palette.error.main}22`
+                          : `${theme.palette.info.main}22`,
+                    color:
+                      statusLabel === "Completed"
+                        ? theme.palette.success.main
+                        : statusLabel === "Overdue"
+                          ? theme.palette.error.main
+                          : theme.palette.info.main
+                  }}
+                />
+              )}
+
+              {/* STREAK CHIP */}
+              {typeof streak === "number" && streak > 0 && (
                 <Chip
                   size="small"
                   icon={<LocalFireDepartmentIcon sx={{ fontSize: 14 }} />}
@@ -160,7 +208,7 @@ export default function PremiumTaskCard({
               )}
 
               {/* TIME CHIP */}
-              {meta && (
+              {meta && variant !== "calendar" && (
                 <Chip
                   size="small"
                   icon={<AccessTimeIcon sx={{ fontSize: 14 }} />}
@@ -176,7 +224,7 @@ export default function PremiumTaskCard({
                 />
               )}
 
-
+              {/* GROUP CHIPS */}
               {groupLabels.map((g: any) => (
                 <Chip
                   key={g.id}
@@ -189,7 +237,6 @@ export default function PremiumTaskCard({
                     border: `1px solid ${theme.palette.secondary.main}55`,
                     color: theme.palette.secondary.main
                   }}
-
                 />
               ))}
 
@@ -210,9 +257,19 @@ export default function PremiumTaskCard({
             <EditIcon fontSize="small" />
           </IconButton>
 
-
         </Stack>
       </Paper>
+
+      {/* ROUTINE DIALOG */}
+      {routine && (
+        <RoutineInsightDialog
+          open={openRoutineDialog}
+          onClose={() => setOpenRoutineDialog(false)}
+          routine={routine}
+          onHistoryChange={onRoutineHistoryChange}
+        />
+      )}
+
     </>
   );
 }

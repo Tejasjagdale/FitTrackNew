@@ -151,7 +151,7 @@ export default function TodayWorkout() {
       <Container>
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress />
-          <Typography sx={{ mt: 2 }}>Loading today’s workout…</Typography>
+          <Typography sx={{ mt: 2 }} color="text.primary">Loading today’s workout…</Typography>
         </Box>
       </Container>
     )

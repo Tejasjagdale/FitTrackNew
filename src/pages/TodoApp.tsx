@@ -51,6 +51,8 @@ import DashboardView from "../components/todoComponents/DashboardView";
 import { rescheduleAllNotifications } from "../engine/notificationService";
 import GroupListView from "../components/todoComponents/GroupListView";
 import { nowIST } from "../utils/istTime";
+import TodoTabs from "../components/todoComponents/TodoTabs";
+import { calculateStreak } from "../utils/streakUtils";
 
 export default function TodoApp() {
   const theme = useTheme();
@@ -86,6 +88,22 @@ export default function TodoApp() {
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const updateRoutineHistory = (routineId: string, history: string[]) => {
+
+    const streak = calculateStreak(history);
+
+    const nextRoutines = routines.map(r =>
+      r.id === routineId
+        ? {
+          ...r,
+          history,
+          streak
+        }
+        : r
+    );
+
+    saveDb(nextRoutines, todos);
+  };
   /* ================= INITIAL SNAPSHOT ================= */
 
   useEffect(() => {
@@ -115,15 +133,6 @@ export default function TodoApp() {
   }, [routines, todos, groups]);
 
   /* ================= ANALYTICS ================= */
-
-  const analytics = useMemo(() => {
-    const routineDone = routines.filter(r => r.completedToday === todayStr).length;
-    const routineTotal = routines.length;
-    const todoDone = todos.filter(t => t.status === "completed").length;
-    const todoTotal = todos.length;
-
-    return { routineDone, routineTotal, todoDone, todoTotal };
-  }, [routines, todos, todayStr]);
 
   const filteredTodos = normalTodos.filter(t => {
     const groupMatch = groupFilter.length
@@ -382,19 +391,27 @@ export default function TodoApp() {
         meta={formatRoutineTime(r.completeByTime ?? "")}
         groups={groups}
         groupIds={r.groupIds}
+
         onToggle={() => toggleRoutine(r)}
+
         onEdit={() => {
           setEditorMode("routine");
           setEditingItem(r);
           setEditorOpen(true);
         }}
+
         isUrgent={(r as any).isUrgent}
-        isOverdue={overdue}   // ✅ NEW
+        isOverdue={overdue}
         streak={r.streak?.current}
+
+        routine={r}
+        onRoutineHistoryChange={updateRoutineHistory}
       />
     );
   };
+
   const TodoRow = (t: Todo) => {
+
     const isDone = t.status === "completed";
 
     return (
@@ -402,16 +419,23 @@ export default function TodoApp() {
         key={t.id}
         title={t.title}
         done={isDone}
-        meta={isDone ? "Done" : getTimeLeftLabel(t.deadline)}
+        meta={isDone ? "Completed" : getTimeLeftLabel(t.deadline)}
+
         groups={groups}
         groupIds={t.groupIds}
+
         isOverdue={!isDone && (t as any).isOverdue}
+
         onToggle={() => toggleTodo(t)}
+
         onEdit={() => {
           setEditorMode("todo");
           setEditingItem(t);
           setEditorOpen(true);
         }}
+
+        /* explicitly not a routine */
+        routine={null}
       />
     );
   };
@@ -440,7 +464,7 @@ export default function TodoApp() {
         mt: { xs: 1.5, sm: 2 },
         mb: { xs: 8, sm: 10 }
       }}
-    ><Typography>Loading...</Typography></Container>;
+    ><Typography color="text.primary">Loading...</Typography></Container>;
   }
 
   return (
@@ -455,7 +479,7 @@ export default function TodoApp() {
       <Box
         sx={{
           position: "fixed",
-          bottom: 50,
+          bottom: 40,
           right: 80,
           zIndex: 1200
         }}
@@ -552,151 +576,13 @@ export default function TodoApp() {
         }}
       >
 
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2
-          }}
-        >
-          {/* <Button
-            size="small"
-            onClick={() => setTab(prev => (prev - 1 + TAB_COUNT) % TAB_COUNT)}
-          >
-            ◀
-          </Button> */}
+        <TodoTabs
+          tab={tab}
+          handleTabChange={handleTabChange}
+          isMobile={isMobile}
+          theme={theme}
+        />
 
-          <Tabs
-            value={tab}
-            onChange={handleTabChange}
-            variant="standard"
-            sx={{
-              minHeight: 36,
-              px: 0.5,
-
-              borderRadius: 2,
-
-              background: theme.palette.background.paper,
-
-              backdropFilter: "blur(14px)",
-
-              border: `1px solid ${theme.palette.divider}`,
-
-              "& .MuiTabs-flexContainer": {
-                gap: { xs: "2px", sm: "6px" },
-                justifyContent: "space-between"
-              },
-
-              "& .MuiTabs-indicator": {
-                height: 2,
-                borderRadius: 2,
-                background: theme.palette.primary.main
-              }
-            }}
-          >
-            <Tab
-              disableRipple
-              icon={<HomeIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                minWidth: isMobile ? 40 : 64,
-                minHeight: 34,
-
-                borderRadius: 999,
-
-                "& .MuiTab-iconWrapper": {
-                  margin: 0
-                },
-
-                "&.Mui-selected": {
-                  color: theme.palette.primary.main
-                }
-              }}
-            />
-
-            <Tab
-              disableRipple
-              icon={<CheckIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                minWidth: isMobile ? 40 : 64,
-                minHeight: 34,
-
-                borderRadius: 999,
-
-                "& .MuiTab-iconWrapper": {
-                  margin: 0
-                },
-
-                "&.Mui-selected": {
-                  color: theme.palette.primary.main
-                }
-              }}
-            />
-
-            <Tab
-              disableRipple
-              icon={<RepeatIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                minWidth: isMobile ? 40 : 64,
-                minHeight: 34,
-
-                borderRadius: 999,
-
-                "& .MuiTab-iconWrapper": {
-                  margin: 0
-                },
-
-                "&.Mui-selected": {
-                  color: theme.palette.primary.main
-                }
-              }}
-            />
-
-            <Tab
-              disableRipple
-              icon={<DoneAllIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                minWidth: isMobile ? 40 : 64,
-                minHeight: 34,
-
-                borderRadius: 999,
-
-                "& .MuiTab-iconWrapper": {
-                  margin: 0
-                },
-
-                "&.Mui-selected": {
-                  color: theme.palette.primary.main
-                }
-              }}
-            />
-
-            <Tab
-              disableRipple
-              icon={<GroupsIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                minWidth: isMobile ? 40 : 64,
-                minHeight: 34,
-
-                borderRadius: 999,
-
-                "& .MuiTab-iconWrapper": {
-                  margin: 0
-                },
-
-                "&.Mui-selected": {
-                  color: theme.palette.primary.main
-                }
-              }}
-            />
-          </Tabs>
-          {/* <Button
-            size="small"
-            onClick={() => setTab(prev => (prev + 1) % TAB_COUNT)}
-          >
-            ▶
-          </Button> */}
-        </Box>
         {/* HOME */}
         {tab === 0 && (
           <Stack spacing={2} >
@@ -750,6 +636,17 @@ export default function TodoApp() {
               routines={routines}
               todos={todos}
               groups={groups}
+              onToggleTodo={toggleTodo}
+              onEditTodo={(t) => {
+                setEditorMode("todo")
+                setEditingItem(t)
+                setEditorOpen(true)
+              }}
+              onAddTodo={() => {
+                setEditorMode("todo"); // or routine
+                setEditingItem(null);
+                setEditorOpen(true);
+              }}
             />
           </Stack>
         )}
@@ -1299,16 +1196,6 @@ export default function TodoApp() {
             />
           </Paper>
         )}
-
-
-        {tab === 5 && (
-          <DashboardView
-            routines={routines}
-            todos={todos}
-            groups={groups}
-          />
-        )}
-
 
       </Container>
 

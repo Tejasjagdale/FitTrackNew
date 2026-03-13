@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, Tooltip } from "@mui/material";
+import { Box, Stack, Typography, Tooltip, useTheme } from "@mui/material";
 import { Routine } from "../../types/todoModels";
 import { useEffect, useRef } from "react";
 
@@ -56,14 +56,17 @@ function buildDailyCompletion(routines: Routine[]) {
 
     const done = doneMap[str] ?? 0;
     const percent = done / routineCount;
-
     let level = 0;
-    if (percent === 0) level = 0;
-    else if (percent < 0.25) level = 1;
-    else if (percent < 0.5) level = 2;
-    else if (percent < 0.8) level = 3;
-    else level = 4;
 
+    if (percent > 0 && percent < 0.3) {
+      level = 1;        // red (missed)
+    }
+    else if (percent > 0.3 && percent < 0.7) {
+      level = 2;        // blue (partial)
+    }
+    else if (percent >= 0.7) {
+      level = 3;        // green (good)
+    } 
     days.push({
       date: str,
       level,
@@ -78,14 +81,6 @@ function buildDailyCompletion(routines: Routine[]) {
 /* ======================================================
    GITHUB COLOR SCALE
    ====================================================== */
-
-const colors = [
-  "rgba(255,255,255,0.06)",
-  "#0e4429",
-  "#006d32",
-  "#26a641",
-  "#39ff88"
-];
 
 const months = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -103,6 +98,18 @@ export default function RoutineHeatmap({
 }: {
   routines: Routine[];
 }) {
+  const theme = useTheme();
+
+  const colors = [
+    theme.palette.mode === "dark"
+      ? "rgba(255,255,255,0.06)"
+      : "rgba(0,0,0,0.05)",
+
+    theme.palette.error.main,     // red
+    theme.palette.primary.main,   // blue
+    theme.palette.success.main    // green
+  ];
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -147,6 +154,7 @@ export default function RoutineHeatmap({
         ref={scrollRef}
         sx={{
           overflowX: "auto",
+          scrollSnapType: "x proximity",
           WebkitOverflowScrolling: "touch",
           "&::-webkit-scrollbar": { display: "none" },
           scrollbarWidth: "none",
@@ -161,7 +169,7 @@ export default function RoutineHeatmap({
               display: "flex",
               ml: "22px",
               mb: .3,
-              gap: { xs: "2px", sm: "3px" }
+              gap: { xs: "3px", sm: "4px" }
             }}
           >
             {weeks.map((_, wi) => {
@@ -206,13 +214,15 @@ export default function RoutineHeatmap({
                   >
                     <Box
                       sx={{
-                        width: { xs: 10, sm: 12 },
-                        height: { xs: 10, sm: 12 },
+                        width: { xs: 9, sm: 11, md: 13 },
+                        height: { xs: 9, sm: 11, md: 13 },
                         borderRadius: "2px",
                         background: colors[d.level],
                         transition: "all .15s ease",
                         "&:hover": {
-                          transform: "scale(1.15)"
+                          transform: "scale(1.25)",
+                          boxShadow: `0 0 6px ${theme.palette.primary.main}`,
+                          zIndex: 2
                         }
                       }}
                     />

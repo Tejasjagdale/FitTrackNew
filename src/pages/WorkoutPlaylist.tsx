@@ -147,7 +147,7 @@ export default function WorkoutPlaylist() {
     return (
       <Container>
         <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6">Loading workout data…</Typography>
+          <Typography variant="h6" color="text.primary">Loading workout data…</Typography>
         </Box>
       </Container>
     )
@@ -181,7 +181,7 @@ export default function WorkoutPlaylist() {
   // -----------------------------
   return (
     <Container>
-      <Box sx={{ textAlign: 'center', pt: 2 }}>
+      <Box sx={{ textAlign: 'center', pt: 10 }}>
 
         {!isWorkoutInProgress ? (
           <VariantCarousel

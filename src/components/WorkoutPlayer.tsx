@@ -378,7 +378,7 @@ export default function WorkoutPlayer({
                         <Box
                             sx={{
                                 mb: 2.5,
-                                p: 3,
+                                p: 2,
                                 borderRadius: 2,
                                 width: '100%',
                                 maxWidth: '300px',
