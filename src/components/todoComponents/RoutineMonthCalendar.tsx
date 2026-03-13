@@ -287,7 +287,7 @@ export default function RoutineMonthCalendar({
                     sx={{
                       position: "absolute",
                       right: 5,
-                      fontSize: 12,
+                      fontSize: 10,
                       animation: "flame 1.4s infinite"
                     }}
                   >
@@ -300,7 +300,7 @@ export default function RoutineMonthCalendar({
                     sx={{
                       position: "absolute",
                       left: 5,
-                      fontSize: 12
+                      fontSize: 10
                     }}
                   >
                     🏆

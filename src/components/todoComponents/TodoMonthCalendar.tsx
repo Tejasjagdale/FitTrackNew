@@ -78,17 +78,6 @@ function getStatusChip(todo: Todo) {
   return { label: "Pending", bg: "#ffaa00", color: "#2c1600" };
 }
 
-function getPriorityChip(priority: Priority) {
-
-  if (priority === "high")
-    return { bg: "rgba(255,80,80,.30)" };
-
-  if (priority === "medium")
-    return { bg: "rgba(255,170,0,.28)" };
-
-  return { bg: "rgba(60,170,255,.26)" };
-}
-
 /* =========================================================
    PREMIUM CALENDAR
 ========================================================= */
@@ -221,7 +210,7 @@ export default function TodoMonthCalendar({
           borderRadius: 1,
           overflow: "hidden",
           border: `1px solid ${theme.palette.divider}`,
-          // background: theme.palette.background.paper
+          background: theme.palette.background.paper
         }}
       >
         {cells.map((c, i) => {
@@ -230,8 +219,8 @@ export default function TodoMonthCalendar({
             return <Box key={i} sx={{ height: { xs: 64, sm: 86 } }} />;
           }
 
-          const dense = c.todos.length > 3;
-          const visibleCount = dense ? 2 : 3;
+          const dense = c.todos.length > 1;
+          const visibleCount = dense ? 1 : 1;
           const completedCount = c.todos.filter(
             (t: Todo) => t.status === "completed"
           ).length;
@@ -272,7 +261,7 @@ export default function TodoMonthCalendar({
                       ? `1px solid ${theme.palette.divider}`
                       : "none",
 
-                  background: theme.palette.background.paper,
+                  background: "theme.palette.background.paper",
                 }}
               >
 
@@ -319,8 +308,6 @@ export default function TodoMonthCalendar({
                 <Stack spacing={0.25} mt={0.4}>
                   {c.todos.slice(0, visibleCount).map((t: Todo) => {
 
-                    const priority = getPriorityChip(t.priority);
-
                     return (
                       <Chip
                         key={t.id}
@@ -355,7 +342,7 @@ export default function TodoMonthCalendar({
                     )
                   })}
                   {c.todos.length > visibleCount && (
-                    <Typography fontSize={10} sx={{ opacity: .6 }}>
+                    <Typography color={theme.palette.text.primary} fontSize={10} >
                       +{c.todos.length - visibleCount}
                     </Typography>
                   )}
