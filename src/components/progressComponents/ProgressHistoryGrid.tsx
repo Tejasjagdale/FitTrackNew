@@ -428,7 +428,7 @@ export default function ProgressHistoryGrid({
       <Grid container spacing={2}>
         {/* WEIGHT */}
         <Grid item xs={12} md={6}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+          <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600, mb: 1 }}>
             Daily Weight
           </Typography>
 
@@ -448,7 +448,7 @@ export default function ProgressHistoryGrid({
 
         {/* WORKOUTS */}
         <Grid item xs={12} md={6}>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+          <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600, mb: 1 }}>
             Workout Log
           </Typography>
 
@@ -475,8 +475,8 @@ export default function ProgressHistoryGrid({
       </Grid>
 
       {/* MEASUREMENTS */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+      <Box sx={{ mt: 2,mb:2 }}>
+        <Typography variant="h6" color="text.primary" sx={{ fontWeight: 600, mb: 1 }}>
           Measurements
         </Typography>
 
@@ -498,31 +498,6 @@ export default function ProgressHistoryGrid({
         />
       </Box>
 
-      {/* HEALTH */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-          Daily Health Status
-        </Typography>
-
-        <DataGrid
-          rows={healthRows.filter(r => r.date.includes(filter))}
-          columns={healthCols}
-          autoHeight
-          disableRowSelectionOnClick
-          pageSizeOptions={[7]}
-          initialState={{ pagination: { paginationModel: { pageSize: 7, page: 0 } } }}
-          processRowUpdate={row => {
-            const updated = {
-              condition: row.condition,
-              dietQuality: row.dietQuality,
-              mood: row.mood,
-              studied: Boolean(row.studied)
-            };
-            onUpdateHealth(row.id, updated);
-            return row;
-          }}
-        />
-      </Box>
     </Box>
   );
 }

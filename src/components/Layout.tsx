@@ -300,7 +300,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     })}
                 </Box>
             </SwipeableDrawer>
-            <Container sx={{ mt: 0, mb: 1 }}>{children}</Container>
+            <Container sx={{ mt: 0, mb: 1 , padding: 0 }}>{children}</Container>
 
             {/* PROFILE DIALOG */}
             <ProfileDialog

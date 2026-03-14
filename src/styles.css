@@ -21,7 +21,7 @@ body {
   transition:
     background 0.35s ease,
     color 0.25s ease;
-  /* padding-top: env(safe-area-inset-top); */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* ------------------------------

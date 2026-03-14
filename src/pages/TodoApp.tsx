@@ -474,7 +474,7 @@ export default function TodoApp() {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        px: { xs: 1, sm: 2 }
+        px: { xs: 1, sm: 1 }
       }}
     >
       <Box

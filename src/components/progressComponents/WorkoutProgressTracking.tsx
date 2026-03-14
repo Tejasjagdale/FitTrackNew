@@ -188,7 +188,7 @@ const WorkoutProgressTracking: React.FC<WorkoutProgressTrackingProps> = ({
 
   return (
     <Box sx={{ mt: 4 ,mb: 6 }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+      <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700, mb: 2 }}>
         Workout Progress & Volume
       </Typography>
 

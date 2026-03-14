@@ -6,7 +6,8 @@ import {
   Typography,
   Stack,
   Button,
-  Grid
+  Grid,
+  useTheme
 } from '@mui/material'
 
 import {
@@ -34,13 +35,14 @@ import {
 
 import { AddWeightDialog } from '../components/progressComponents/AddWeightDialog'
 import { AddMeasurementDialog } from '../components/progressComponents/AddMeasurementDialog'
-import AddDailyHealthDialog from '../components/progressComponents/AddDailyHealthDialog'
 import { MetricChartCard } from '../components/progressComponents/MetricChartCard'
 import { TrendStatsCards } from '../components/progressComponents/TrendStatsCards'
 import { GraphSelector } from '../components/progressComponents/GraphSelector'
 import WorkoutProgressTracking from '../components/progressComponents/WorkoutProgressTracking'
 import ProgressHistoryGrid from '../components/progressComponents/ProgressHistoryGrid'
-
+import Snackbar from "@mui/material/Snackbar"
+import Alert from "@mui/material/Alert"
+import isEqual from 'lodash.isequal'
 
 
 /* ---------------------------------------
@@ -51,6 +53,7 @@ function daysBetween(d1: Date, d2: Date) {
 }
 
 export default function ProgressDashboardPage() {
+  const theme = useTheme();
   const [profile, setProfile] = useState<ProfileData>({})
   const [dailyWeight, setDailyWeight] = useState<Record<string, number>>({})
   const [measurements, setMeasurements] =
@@ -66,8 +69,6 @@ export default function ProgressDashboardPage() {
   const [editingMeasurementDate, setEditingMeasurementDate] =
     useState<string | undefined>()
 
-  const [healthDialogOpen, setHealthDialogOpen] = useState(false)
-  const [editingHealthDate, setEditingHealthDate] = useState<string | undefined>()
 
   const [selectedGraph, setSelectedGraph] = useState('none')
   const [loading, setLoading] = useState(true)
@@ -83,6 +84,12 @@ export default function ProgressDashboardPage() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMessage, setSyncMessage] = useState<string | null>(null)
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [initialSnapshot, setInitialSnapshot] = useState<string>("")
+  const [isDirty, setIsDirty] = useState(false)
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMsg, setSnackbarMsg] = useState("")
+  const [snackbarType, setSnackbarType] = useState<"success" | "error">("success")
 
   const hasGitHubToken = isGitHubConfigured()
 
@@ -164,21 +171,6 @@ export default function ProgressDashboardPage() {
       }
     }
 
-    // -------------------------------
-    // STEP 3 — Daily Health popup (AFTER 9PM, once per load)
-    // -------------------------------
-    if (!healthPopupAttempted) {
-      const now = new Date()
-      const hour = now.getHours()
-      const hasHealthToday = dailyHealth[today] !== undefined
-
-      if (hour >= 21 && !hasHealthToday) {
-        setHealthDialogOpen(true)
-      }
-
-      setHealthPopupAttempted(true)
-    }
-
   }, [
     loading,
     dailyWeight,
@@ -190,7 +182,19 @@ export default function ProgressDashboardPage() {
   ])
 
 
+  useEffect(() => {
 
+    const current = JSON.stringify({
+      profile,
+      dailyWeight,
+      measurements,
+      workouts,
+      dailyHealth
+    })
+
+    setIsDirty(!isEqual(current, initialSnapshot))
+
+  }, [profile, dailyWeight, measurements, workouts, dailyHealth, initialSnapshot])
   /* ---------------------------------------
      DERIVED VALUES
   ---------------------------------------- */
@@ -261,7 +265,7 @@ export default function ProgressDashboardPage() {
         }}
       >
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+          <Typography variant="h4" color="text.primary" sx={{ fontWeight: 700, mb: 1 }}>
             Body Progress Dashboard
           </Typography>
 
@@ -279,30 +283,88 @@ export default function ProgressDashboardPage() {
             Add Measurements
           </Button>
 
-          <Button variant="outlined" onClick={() => setHealthDialogOpen(true)}>
-            Add Daily Health
-          </Button>
-
           {hasGitHubToken && (
             <Button
               variant="outlined"
               disabled={isSyncing}
+              sx={{
+                px: 2.4,
+                borderRadius: 999,
+                textTransform: "none",
+                fontWeight: 700,
+                letterSpacing: ".4px",
+                backdropFilter: "blur(12px)",
+                border: `1px solid ${theme.palette.divider}`,
+                background: theme.palette.background.paper,
+                color: theme.palette.text.primary,
+                transition: "all .2s ease",
+
+                ...(isDirty && !isSyncing && {
+                  background: theme.palette.error.main,
+                  color: theme.palette.getContrastText(theme.palette.error.main),
+                  animation: "dangerPulse 0.9s ease-in-out infinite",
+
+                  "@keyframes dangerPulse": {
+                    "0%": { boxShadow: `0 0 6px ${theme.palette.error.main}40` },
+                    "50%": { boxShadow: `0 0 20px ${theme.palette.error.main}` },
+                    "100%": { boxShadow: `0 0 6px ${theme.palette.error.main}40` }
+                  }
+                }),
+
+                ...(isSyncing && {
+                  background: theme.palette.success.main,
+                  color: theme.palette.getContrastText(theme.palette.success.main)
+                }),
+
+                "&:hover": {
+                  transform: "translateY(-1px)"
+                }
+              }}
               onClick={() => {
+
+                if (!isDirty || isSyncing) return
+
                 setIsSyncing(true)
-                setProgressData({
+
+                const payload = {
                   profile,
                   dailyWeight,
                   measurements,
                   workouts,
                   dailyHealth
-                })
-                syncProgressToGitHub(`Update progress - ${new Date().toLocaleString('en-IN')}`)
-                  .then(() => setSyncMessage('Synced!'))
-                  .catch(err => setSyncError(err.message))
+                }
+
+                setProgressData(payload)
+
+                syncProgressToGitHub(
+                  `Update progress - ${new Date().toLocaleString("en-IN")}`
+                )
+                  .then(() => {
+
+                    setSnackbarMsg("Progress synced successfully")
+                    setSnackbarType("success")
+                    setSnackbarOpen(true)
+
+                    const snapshot = JSON.stringify(payload)
+                    setInitialSnapshot(snapshot)
+
+                  })
+                  .catch(err => {
+
+                    setSnackbarMsg(err.message || "Sync failed")
+                    setSnackbarType("error")
+                    setSnackbarOpen(true)
+
+                  })
                   .finally(() => setIsSyncing(false))
+
               }}
             >
-              {isSyncing ? 'Syncing…' : 'Sync'}
+              {isSyncing
+                ? "Syncing..."
+                : isDirty
+                  ? "Save Changes"
+                  : "Up to date"}
             </Button>
           )}
         </Stack>
@@ -377,17 +439,6 @@ export default function ProgressDashboardPage() {
             )}
         </Box>
       )}
-
-
-      {/* SYNC MESSAGE */}
-      {(syncMessage || syncError) && (
-        <Box sx={{ mb: 2 }}>
-          {syncMessage && <Typography color="success.main">{syncMessage}</Typography>}
-          {syncError && <Typography color="error.main">{syncError}</Typography>}
-        </Box>
-      )}
-
-
 
       {/* WORKOUT TRACKING */}
       <WorkoutProgressTracking workouts={workouts} />
@@ -467,22 +518,20 @@ export default function ProgressDashboardPage() {
         profile={profile}
         latestWeight={latestDaily?.weight}
       />
-
-      <AddDailyHealthDialog
-        open={healthDialogOpen}
-        date={editingHealthDate}
-        initial={editingHealthDate ? dailyHealth[editingHealthDate] : undefined}
-        onClose={() => {
-          setHealthDialogOpen(false)
-          setEditingHealthDate(undefined)
-        }}
-        onSave={(date, data) => {
-          setDailyHealth(prev => ({ ...prev, [date]: data }))
-          setHealthDialogOpen(false)
-          setEditingHealthDate(undefined)
-        }}
-      />
-
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3500}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Alert
+          severity={snackbarType}
+          variant="filled"
+          onClose={() => setSnackbarOpen(false)}
+        >
+          {snackbarMsg}
+        </Alert>
+      </Snackbar>
     </Container>
   )
 }
