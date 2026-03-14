@@ -8,12 +8,28 @@ import {
     IconButton,
     Tooltip,
     Box,
-    useTheme
+    useTheme,
+    Stack
 } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import Brightness4Icon from '@mui/icons-material/Brightness4'
 import Brightness7Icon from '@mui/icons-material/Brightness7'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import Drawer from "@mui/material/Drawer";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+
+import SwipeableDrawer from "@mui/material/SwipeableDrawer";
+import Avatar from "@mui/material/Avatar";
+import Divider from "@mui/material/Divider";
+import { useLocation } from "react-router-dom";
+import MenuIcon from "@mui/icons-material/Menu";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import TodayIcon from "@mui/icons-material/Today";
 
 import { ProfileDialog } from './progressComponents/ProfileDialog'
 
@@ -32,6 +48,16 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const location = useLocation();
+
+    const menuItems = [
+        { label: "Home", icon: <HomeRoundedIcon />, path: "/home" },
+        { label: "Tasks", icon: <ChecklistIcon />, path: "/todo" },
+        { label: "Variants", icon: <FitnessCenterIcon />, path: "/variant" },
+        { label: "Playlists", icon: <TodayIcon />, path: "/workout-playlist" },
+        { label: "Progress", icon: <ShowChartIcon />, path: "/progress" }
+    ];
     const navigate = useNavigate();
     const [profileDialogOpen, setProfileDialogOpen] = useState(false)
     const [profile, setProfile] = useState<ProfileData>({})
@@ -88,35 +114,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
     return (
         <>
-            <Fab
-                size="small"
-                onClick={() => navigate("/")}
-                sx={{
-                    position: "fixed",
-                    bottom: { xs: 30, sm: 40 },
-                    right: { xs: 24, sm: 32 },
-                    zIndex: 2000,
-
-                    background: `linear-gradient(
-      135deg,
-      ${theme.palette.primary.light},
-      ${theme.palette.primary.dark}
-    )`,
-
-                    color: theme.palette.getContrastText(theme.palette.primary.main),
-
-                    boxShadow: `0 8px 25px ${theme.palette.primary.main}45`,
-
-                    transition: "all 0.25s ease",
-
-                    "&:hover": {
-                        transform: "translateY(-2px)",
-                        boxShadow: `0 12px 30px ${theme.palette.primary.main}70`
-                    }
-                }}
-            >
-                <HomeRoundedIcon fontSize="small" />
-            </Fab>
             <AppBar
                 position="sticky"
                 sx={{
@@ -140,47 +137,41 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     }}
                 >
                     {/* LOGO + TITLE */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 1 }}>
-                        <RouterLink
-                            to="/"
+                    <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1, gap: 1 }}>
+
+                        <Box
                             style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                textDecoration: 'none',
-                                color: 'inherit'
+                                display: "flex",
+                                alignItems: "center",
+                                textDecoration: "none",
+                                color: "inherit"
                             }}
                         >
                             <img
                                 src="/favicon.png"
                                 alt="logo"
-                                style={{ width: 28, height: 28, display: 'block' }}
+                                onClick={() => setMenuOpen(true)}
+                                style={{ width: 28, height: 28, display: "block" }}
                             />
+
                             <Typography
                                 variant="h6"
                                 component="div"
                                 color="primary"
                                 sx={{
                                     fontWeight: 700,
-
-                                    fontSize: {
-                                        xs: "1rem",
-                                        sm: "1.15rem"
-                                    },
-
+                                    fontSize: { xs: "1rem", sm: "1.15rem" },
                                     letterSpacing: "-0.2px",
-
-                                    transition: "opacity 200ms",
-
-                                    "&:hover": { opacity: 0.85 },
-
-                                    ml: 1
+                                    ml: 1,
+                                    cursor: "pointer",
                                 }}
+                                onClick={() => navigate("/home")}
                             >
                                 FitTrack
                             </Typography>
-                        </RouterLink>
-                    </Box>
+                        </Box>
 
+                    </Box>
                     {/* PROFILE BUTTON */}
                     <Tooltip title="Edit Profile">
                         <IconButton
@@ -206,7 +197,109 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
                 </Toolbar>
             </AppBar>
+            <SwipeableDrawer
+                anchor="left"
+                open={menuOpen}
+                onOpen={() => setMenuOpen(true)}
+                onClose={() => setMenuOpen(false)}
+                disableBackdropTransition={false}
+                PaperProps={{
+                    sx: {
+                        width: 260,
+                        background: theme.palette.background.paper,
+                        borderRight: `1px solid ${theme.palette.divider}`,
+                        backdropFilter: "blur(18px)"
+                    }
+                }}
+            >
+                {/* HEADER */}
+                <Box
+                    sx={{
+                        p: 2,
+                        pb: 3,
+                        background: `linear-gradient(135deg,
+        ${theme.palette.primary.light}22,
+        ${theme.palette.primary.dark}22)`,
+                        borderBottom: `1px solid ${theme.palette.divider}`
+                    }}
+                >
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Avatar
+                            sx={{
+                                bgcolor: theme.palette.primary.main,
+                                width: 36,
+                                height: 36,
+                                fontWeight: 700
+                            }}
+                        >
+                            F
+                        </Avatar>
 
+                        <Box>
+                            <Typography fontWeight={700}>FitTrack</Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                Fitness Progress Tracker
+                            </Typography>
+                        </Box>
+                    </Stack>
+                </Box>
+
+                <Divider />
+
+                {/* MENU */}
+                <Box sx={{ p: 1.2 }}>
+                    {menuItems.map((item) => {
+                        const active = location.pathname === item.path;
+
+                        return (
+                            <Box
+                                key={item.label}
+                                onClick={() => {
+                                    navigate(item.path);
+                                    setMenuOpen(false);
+                                }}
+                                sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1.5,
+                                    px: 1.6,
+                                    py: 1.2,
+                                    mb: 0.4,
+                                    borderRadius: 2,
+                                    cursor: "pointer",
+                                    transition: "all .2s",
+
+                                    background: active
+                                        ? `${theme.palette.primary.main}18`
+                                        : "transparent",
+
+                                    color: active
+                                        ? theme.palette.primary.main
+                                        : theme.palette.text.primary,
+
+                                    "&:hover": {
+                                        background: theme.palette.action.hover,
+                                        transform: "translateX(4px)"
+                                    }
+                                }}
+                            >
+                                <Box sx={{ color: theme.palette.primary.main }}>
+                                    {item.icon}
+                                </Box>
+
+                                <Typography
+                                    sx={{
+                                        fontWeight: active ? 600 : 500,
+                                        fontSize: 14
+                                    }}
+                                >
+                                    {item.label}
+                                </Typography>
+                            </Box>
+                        );
+                    })}
+                </Box>
+            </SwipeableDrawer>
             <Container sx={{ mt: 0, mb: 1 }}>{children}</Container>
 
             {/* PROFILE DIALOG */}

@@ -17,13 +17,14 @@ export default function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<TodoApp />} />
+        <Route path="/todo" element={<TodoApp />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/variant" element={<VariantPage />} />
         <Route path="/today" element={<TodayWorkout />} />
         <Route path="/workout-playlist" element={<WorkoutPlaylist />} />
         <Route path="/progress" element={<ProgressPage />} />
         <Route path="/exercise-database" element={<ExerciseDatabasePage />} />
-        <Route path="/todo" element={<TodoApp />} />
       </Routes>
     </Layout>
   )
