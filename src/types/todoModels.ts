@@ -64,3 +64,17 @@ export const premiumSurface = (theme:any) => ({
   background: theme.palette.background.paper,
   border: `1px solid ${theme.palette.divider}`
 });
+
+export type Meal = {
+  name: string;
+  detail: string;
+};
+
+export type ApiResult = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  protein_goal_met: boolean;
+  summary: string;
+};

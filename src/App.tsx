@@ -11,6 +11,7 @@ import TodayWorkout from './pages/TodayWorkout'
 import ExerciseDatabasePage from './pages/ExerciseDatabasePage'
 import TodoApp from './pages/TodoApp'
 import CrazyProfileUI from './components/CrazyProfileUI'
+import NutritionTracker from './pages/NutritionTracker'
 
 export default function App() {
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/today" element={<TodayWorkout />} />
         <Route path="/workout-playlist" element={<WorkoutPlaylist />} />
         <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/diet" element={<NutritionTracker />} />
         <Route path="/exercise-database" element={<ExerciseDatabasePage />} />
       </Routes>
     </Layout>

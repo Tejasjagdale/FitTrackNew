@@ -30,7 +30,7 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import TodayIcon from "@mui/icons-material/Today";
-
+import FastfoodIcon from '@mui/icons-material/Fastfood';
 import { ProfileDialog } from './progressComponents/ProfileDialog'
 
 import {
@@ -56,7 +56,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         { label: "Tasks", icon: <ChecklistIcon />, path: "/todo" },
         { label: "Variants", icon: <FitnessCenterIcon />, path: "/variant" },
         { label: "Playlists", icon: <TodayIcon />, path: "/workout-playlist" },
-        { label: "Progress", icon: <ShowChartIcon />, path: "/progress" }
+        { label: "Progress", icon: <ShowChartIcon />, path: "/progress" },
+        { label: "Diet", icon: <FastfoodIcon />, path: "/diet" }
     ];
     const navigate = useNavigate();
     const [profileDialogOpen, setProfileDialogOpen] = useState(false)

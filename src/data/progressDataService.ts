@@ -18,7 +18,8 @@ import { getGitHubService } from './githubService'
  *     "targetBMI": 22
  *   },
  *   "dailyWeight": {},
- *   "measurements": {}
+ *   "measurements": {},
+ *   "meals":[{name:" meal name", detail:"meal detail string"}],
  * }
  */
 

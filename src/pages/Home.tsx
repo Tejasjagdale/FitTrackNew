@@ -113,63 +113,47 @@ export default function Home() {
           Features
         </Typography>
         <Grid container spacing={2}>
-          {/* Exercise Database */}
+
           <Grid item xs={12} sm={6} md={3}>
             <Card
               sx={{
                 cursor: 'pointer',
                 height: '100%',
                 transition: 'all 0.3s',
-                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 169, 244, 0.1) 100%)',
-                border: '1px solid rgba(33, 150, 243, 0.2)',
+                background:
+                  'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 87, 34, 0.1) 100%)',
+                border: '1px solid rgba(255, 152, 0, 0.2)',
                 '&:hover': {
                   transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 24px rgba(33, 150, 243, 0.15)',
-                  borderColor: 'rgba(33, 150, 243, 0.4)'
-                }
+                  boxShadow: '0 12px 24px rgba(255, 152, 0, 0.15)',
+                  borderColor: 'rgba(255, 152, 0, 0.4)',
+                },
               }}
-              onClick={() => navigate('/todo')}
+              onClick={() => navigate('/diet')}
             >
               <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <ChecklistIcon sx={{ fontSize: 40, mb: 1.5, color: '#2196f3' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                  Manage Tasks
+                <LocalFireDepartmentIcon
+                  sx={{
+                    fontSize: 40,
+                    mb: 1.5,
+                    color: '#ff9800',
+                  }}
+                />
+
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 'bold', mb: 0.5 }}
+                >
+                  Diet & Nutrition
                 </Typography>
+
                 <Typography variant="caption" color="textSecondary">
-                  Check off your to-dos
+                  Track calories & macros
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Workout Variants */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                cursor: 'pointer',
-                height: '100%',
-                transition: 'all 0.3s',
-                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                border: '1px solid rgba(102, 126, 234, 0.2)',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 12px 24px rgba(102, 126, 234, 0.15)',
-                  borderColor: 'rgba(102, 126, 234, 0.4)'
-                }
-              }}
-              onClick={() => navigate('/variant')}
-            >
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <FitnessCenterIcon sx={{ fontSize: 40, mb: 1.5, color: '#667eea' }} />
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                  Workout Variants
-                </Typography>
-                <Typography variant="caption" color="textSecondary">
-                  Create & customize exercises
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
 
 
 
@@ -231,7 +215,64 @@ export default function Home() {
             </Card>
           </Grid>
 
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(3, 169, 244, 0.1) 100%)',
+                border: '1px solid rgba(33, 150, 243, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(33, 150, 243, 0.15)',
+                  borderColor: 'rgba(33, 150, 243, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/todo')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <ChecklistIcon sx={{ fontSize: 40, mb: 1.5, color: '#2196f3' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Manage Tasks
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Check off your to-dos
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
+
+
+          {/* Workout Variants */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              sx={{
+                cursor: 'pointer',
+                height: '100%',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                border: '1px solid rgba(102, 126, 234, 0.2)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 12px 24px rgba(102, 126, 234, 0.15)',
+                  borderColor: 'rgba(102, 126, 234, 0.4)'
+                }
+              }}
+              onClick={() => navigate('/variant')}
+            >
+              <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                <FitnessCenterIcon sx={{ fontSize: 40, mb: 1.5, color: '#667eea' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  Workout Variants
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  Create & customize exercises
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
 
         </Grid>
       </Box>
