@@ -194,15 +194,15 @@ export default function RoutineCalendarGrid({
               {/* DATE BADGE */}
               <Box
                 sx={{
-                  width: 26,
-                  height: 26,
+                  width: 24,
+                  height: 24,
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 11,
                   fontWeight: 700,
-                  background: `${color}22`,
+                  background: `${color}66`,
                   // color: color,
                   border: `1px solid ${color}55`,
 
@@ -213,25 +213,16 @@ export default function RoutineCalendarGrid({
 
               {/* COUNT */}
               {c.count > 0 && (
-                <Chip
-                  label={`Tasks ${c.count}`}
-                  size="small"
+                <Typography
+                  fontSize={11}
                   sx={{
-                    height: 18,
-                    fontSize: 10,
-                    backgroundColor: `${color}66`,
+                    alignSelf: "flex-end",
+                    fontWeight: 600,
+                    opacity: 0.85
                   }}
-                />
-                // <Typography
-                //   fontSize={11}
-                //   sx={{
-                //     alignSelf: "flex-end",
-                //     fontWeight: 600,
-                //     opacity: 0.85
-                //   }}
-                // >
-                //  Tasks {c.count}
-                // </Typography>
+                >
+                 {c.count}
+                </Typography>
               )}
             </Box>
           );
