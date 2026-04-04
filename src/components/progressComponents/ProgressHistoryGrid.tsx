@@ -18,22 +18,15 @@ import {
 import {
   MeasurementsEntry,
   WorkoutLogEntry,
-  DailyHealthStatus
 } from "../../data/progressTypes";
-import { GridSingleSelectColDef } from "@mui/x-data-grid";
-
-type Col = GridColDef | GridSingleSelectColDef<any>;
 
 type Props = {
   dailyWeight: Record<string, number>;
   measurements: Record<string, MeasurementsEntry>;
   workouts: WorkoutLogEntry[];
-  dailyHealth: Record<string, DailyHealthStatus>;
-
   onUpdateWeight: (date: string, weight: number) => void;
   onUpdateMeasurement: (date: string, updated: MeasurementsEntry) => void;
   onUpdateWorkout: (index: number, updated: WorkoutLogEntry) => void;
-  onUpdateHealth: (date: string, updated: DailyHealthStatus) => void;
 };
 
 function formatTime(ts?: string): string {
@@ -190,11 +183,9 @@ export default function ProgressHistoryGrid({
   dailyWeight,
   measurements,
   workouts,
-  dailyHealth,
   onUpdateWeight,
   onUpdateMeasurement,
-  onUpdateWorkout,
-  onUpdateHealth
+  onUpdateWorkout
 }: Props) {
   const [filter, setFilter] = useState("");
 
@@ -334,82 +325,6 @@ export default function ProgressHistoryGrid({
       )
     }
 
-  ];
-
-  /* ------------------------ DAILY HEALTH GRID ------------------------ */
-  const healthRows = sortDesc(Object.keys(dailyHealth)).map(date => ({
-    id: date,
-    date,
-    ...dailyHealth[date]
-  }));
-
-  const healthCols: Col[] = [
-    { field: "date", headerName: "Date", width: 120 },
-
-    {
-      field: "condition",
-      headerName: "Condition",
-      width: 150,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: ["healthy", "stomachIssue", "bodyPain", "coldOrFever"],
-      renderEditCell: SelectEditCell,
-      renderCell: params => {
-        const v = params.value;
-        const color = v === "healthy" ? "#66BA6A66" : "#F4433666";
-        return <Box sx={applyCellStyle(color)}>{v}</Box>;
-      }
-    },
-
-    {
-      field: "dietQuality",
-      headerName: "Diet",
-      width: 150,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: ["veryLow", "low", "normal", "high", "veryHigh"],
-      renderEditCell: SelectEditCell,
-      renderCell: params => {
-        const v = params.value;
-        const green = ["normal", "high", "veryHigh"];
-        const color = green.includes(v) ? "#66BA6A66" : "#F4433666";
-        return <Box sx={applyCellStyle(color)}>{v}</Box>;
-      }
-    },
-
-    {
-      field: "mood",
-      headerName: "Mood",
-      width: 140,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: ["verySad", "sad", "neutral", "happy", "veryHappy"],
-      renderEditCell: SelectEditCell,
-      renderCell: params => {
-        const v = params.value;
-        const green = ["neutral", "happy", "veryHappy"];
-        const color = green.includes(v) ? "#66BA6A66" : "#F4433666";
-        return <Box sx={applyCellStyle(color)}>{v}</Box>;
-      }
-    },
-
-    {
-      field: "studied",
-      headerName: "Studied",
-      width: 130,
-      editable: true,
-      type: "singleSelect",
-      valueOptions: [
-        { value: true, label: "Yes" },
-        { value: false, label: "No" }
-      ],
-      renderEditCell: SelectEditCell,
-      renderCell: params => {
-        const v = Boolean(params.value);
-        const color = v ? "#66BA6A66" : "#F4433666";
-        return <Box sx={applyCellStyle(color)}>{v ? "Yes" : "No"}</Box>;
-      }
-    }
   ];
 
   /* -------------------------------------------------------

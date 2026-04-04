@@ -36,7 +36,7 @@ Return ONLY JSON:
 `;
 }
 
-export async function analyzeMeals(meals: string[]): Promise<NutritionResult> {
+export async function analyzeMeals(meals: string[], targets: any): Promise<NutritionResult> {
   const prompt = buildPrompt(meals);
 
   const result = await callAI(prompt);

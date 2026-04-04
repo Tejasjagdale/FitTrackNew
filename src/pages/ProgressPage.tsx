@@ -24,7 +24,6 @@ import {
   ProgressDataFile,
   DailyPoint,
   WorkoutLogEntry,
-  DailyHealthStatus
 } from '../data/progressTypes'
 
 import {
@@ -56,12 +55,11 @@ export default function ProgressDashboardPage() {
   const theme = useTheme();
   const [profile, setProfile] = useState<ProfileData>({})
   const [dailyWeight, setDailyWeight] = useState<Record<string, number>>({})
+  const [meals, setMeals] = useState<any>()
   const [measurements, setMeasurements] =
     useState<Record<string, MeasurementsEntry>>({})
   const [workouts, setWorkouts] = useState<WorkoutLogEntry[]>([])
-  const [dailyHealth, setDailyHealth] =
-    useState<Record<string, DailyHealthStatus>>({})
-
+  const [nutritionTracker, setNutritionTracker] = useState<any>()
   const [weightDialogOpen, setWeightDialogOpen] = useState(false)
   const [editingWeightDate, setEditingWeightDate] = useState<string | undefined>()
 
@@ -111,7 +109,8 @@ export default function ProgressDashboardPage() {
         setDailyWeight(data.dailyWeight || {})
         setMeasurements(data.measurements || {})
         setWorkouts(data.workouts || [])
-        setDailyHealth(data.dailyHealth || {})
+        setNutritionTracker(data.nutritionTracker || {})
+        setMeals(data.meals || [])
       } catch (err) {
         if (!cancelled) {
           setLoadError(err instanceof Error ? err.message : 'Failed to load progress data.')
@@ -175,7 +174,6 @@ export default function ProgressDashboardPage() {
     loading,
     dailyWeight,
     measurements,
-    dailyHealth,
     weightPopupShown,
     measurementPopupShown,
     healthPopupAttempted
@@ -189,12 +187,11 @@ export default function ProgressDashboardPage() {
       dailyWeight,
       measurements,
       workouts,
-      dailyHealth
     })
 
     setIsDirty(!isEqual(current, initialSnapshot))
 
-  }, [profile, dailyWeight, measurements, workouts, dailyHealth, initialSnapshot])
+  }, [profile, dailyWeight, measurements, workouts, initialSnapshot])
   /* ---------------------------------------
      DERIVED VALUES
   ---------------------------------------- */
@@ -331,7 +328,8 @@ export default function ProgressDashboardPage() {
                   dailyWeight,
                   measurements,
                   workouts,
-                  dailyHealth
+                  nutritionTracker,
+                  meals,
                 }
 
                 setProgressData(payload)
@@ -460,13 +458,11 @@ export default function ProgressDashboardPage() {
         }}
       />
 
-
       {/* EDITABLE GRID */}
       <ProgressHistoryGrid
         dailyWeight={dailyWeight}
         measurements={measurements}
         workouts={workouts}
-        dailyHealth={dailyHealth}
         onUpdateWeight={(date, weight) => {
           setDailyWeight(prev => ({ ...prev, [date]: weight }))
         }}
@@ -479,9 +475,6 @@ export default function ProgressDashboardPage() {
             arr[index] = updated
             return arr
           })
-        }}
-        onUpdateHealth={(date, updated) => {
-          setDailyHealth(prev => ({ ...prev, [date]: updated }))
         }}
       />
 

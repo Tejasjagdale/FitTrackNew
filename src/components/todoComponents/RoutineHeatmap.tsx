@@ -1,10 +1,17 @@
-import { Box, Stack, Typography, Tooltip, useTheme } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Typography,
+  IconButton,
+  useTheme,
+  Chip
+} from "@mui/material";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { useMemo, useState } from "react";
 import { Routine } from "../../types/todoModels";
-import { useEffect, useRef } from "react";
 
-/* ======================================================
-   IST SAFE DATE FORMATTERS
-   ====================================================== */
+/* ========================= */
 
 const toDateStr = (d: Date) => {
   const y = d.getFullYear();
@@ -13,259 +20,223 @@ const toDateStr = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
-const toPretty = (str: string) => {
-  const d = new Date(str);
-  return d.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
-};
-
-/* ======================================================
-   BUILD DAILY COMPLETION MAP
-   ====================================================== */
-
-function buildDailyCompletion(routines: Routine[]) {
-
-  const doneMap: Record<string, number> = {};
+function buildData(routines: Routine[], year: number, month: number) {
+  const map: Record<string, number> = {};
 
   routines.forEach(r => {
     (r.history ?? []).forEach(date => {
-      doneMap[date] = (doneMap[date] ?? 0) + 1;
+      map[date] = (map[date] ?? 0) + 1;
     });
   });
 
-  const routineCount = routines.length || 1;
+  const total = routines.length || 1;
 
-  const today = new Date();
+  const firstDay = new Date(year, month, 1);
+  const start = firstDay.getDay();
+  const days = new Date(year, month + 1, 0).getDate();
 
-  const days: {
-    date: string;
-    level: number;
-    count: number;
-    month: number;
-  }[] = [];
+  const cells: any[] = [];
 
-  for (let i = 364; i >= 0; i--) {
+  for (let i = 0; i < start; i++) cells.push({});
 
-    const d = new Date();
-    d.setDate(today.getDate() - i);
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(year, month, d);
+    const str = toDateStr(date);
 
-    const str = toDateStr(d);
+    const count = map[str] ?? 0;
+    const percent = count / total;
 
-    const done = doneMap[str] ?? 0;
-    const percent = done / routineCount;
     let level = 0;
+    if (percent === 0) level = 0;
+    else if (percent < 0.33) level = 1;
+    else if (percent < 0.66) level = 2;
+    else level = 3;
 
-    if (percent > 0 && percent < 0.3) {
-      level = 1;        // red (missed)
-    }
-    else if (percent > 0.3 && percent < 0.7) {
-      level = 2;        // blue (partial)
-    }
-    else if (percent >= 0.7) {
-      level = 3;        // green (good)
-    } 
-    days.push({
-      date: str,
-      level,
-      count: done,
-      month: d.getMonth()
-    });
+    cells.push({ day: d, count, level });
   }
 
-  return days;
+  while (cells.length % 7 !== 0) cells.push({});
+  return cells;
 }
 
-/* ======================================================
-   GITHUB COLOR SCALE
-   ====================================================== */
+/* ========================= */
 
-const months = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-];
-
-
-
-/* ======================================================
-   COMPONENT
-   ====================================================== */
-
-export default function RoutineHeatmap({
+export default function RoutineCalendarGrid({
   routines
 }: {
   routines: Routine[];
 }) {
   const theme = useTheme();
+  const now = new Date();
 
-  const colors = [
-    theme.palette.mode === "dark"
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(0,0,0,0.05)",
-
-    theme.palette.error.main,     // red
-    theme.palette.primary.main,   // blue
-    theme.palette.success.main    // green
-  ];
-
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
-    }
-  }, []);
-  const days = buildDailyCompletion(routines);
-
-  /* ===== WEEK COLUMNS ===== */
-
-  const weeks: typeof days[] = [];
-  for (let i = 0; i < days.length; i += 7) {
-    weeks.push(days.slice(i, i + 7));
-  }
-
-  /* ===== MONTH LABELS ===== */
-
-  let lastMonth = -1;
-  const monthLabels: { label: string; index: number }[] = [];
-
-  weeks.forEach((week, i) => {
-    const m = week[0]?.month;
-    if (m !== undefined && m !== lastMonth) {
-      monthLabels.push({ label: months[m], index: i });
-      lastMonth = m;
-    }
+  const [cursor, setCursor] = useState({
+    year: now.getFullYear(),
+    month: now.getMonth()
   });
 
-  /* ======================================================
-     UI
-     ====================================================== */
+  const cells = useMemo(
+    () => buildData(routines, cursor.year, cursor.month),
+    [routines, cursor]
+  );
+
+  const monthLabel = new Date(cursor.year, cursor.month).toLocaleString(
+    "en-IN",
+    { month: "long", year: "numeric" }
+  );
+
+  const goPrev = () => {
+    setCursor(p => {
+      const m = p.month - 1;
+      if (m < 0) return { year: p.year - 1, month: 11 };
+      return { year: p.year, month: m };
+    });
+  };
+
+  const goNext = () => {
+    setCursor(p => {
+      const m = p.month + 1;
+      if (m > 11) return { year: p.year + 1, month: 0 };
+      return { year: p.year, month: m };
+    });
+  };
+
+  /* 🔥 color only on badge */
+  const getBadgeColor = (level: number) => {
+    if (level === 0) return theme.palette.grey[700];
+    if (level === 1) return theme.palette.error.main;
+    if (level === 2) return theme.palette.primary.main;
+    return theme.palette.success.main;
+  };
+
+  const weekday = ["S", "M", "T", "W", "T", "F", "S"];
 
   return (
-    <Stack spacing={0.5} sx={{ overflow: "hidden" }}>
+    <Stack spacing={1.2}>
 
-      <Typography fontSize={13} sx={{ opacity: .8 }}>
-        Routine Activity — Last 12 Months
-      </Typography>
+      {/* HEADER */}
+      <Stack direction="row" justifyContent="space-between">
+        <IconButton size="small" onClick={goPrev}>
+          <ChevronLeftIcon />
+        </IconButton>
 
-      <Box
-        ref={scrollRef}
-        sx={{
-          overflowX: "auto",
-          scrollSnapType: "x proximity",
-          WebkitOverflowScrolling: "touch",
-          "&::-webkit-scrollbar": { display: "none" },
-          scrollbarWidth: "none",
-          msOverflowStyle: "none"
-        }}
-      >
-        <Box sx={{ width: "max-content" }}>
-
-          {/* MONTH LABEL ROW */}
-          <Box
-            sx={{
-              display: "flex",
-              ml: "22px",
-              mb: .3,
-              gap: { xs: "1px", sm: "2px" , md: "4px" }
-            }}
-          >
-            {weeks.map((_, wi) => {
-              const label = monthLabels.find(m => m.index === wi);
-              return (
-                <Box key={wi} sx={{ width: { xs: 10, sm: 12 }, height: 14 }}>
-                  {label && (
-                    <Typography
-                      sx={{
-                        fontSize: 10,
-                        opacity: .6
-                      }}
-                    >
-                      {label.label}
-                    </Typography>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-
-          <Stack direction="row" spacing={{ xs: "2px", sm: "3px" }}>
-
-            {/* WEEKDAY LABELS */}
-            <Stack spacing={{ xs: "2px", sm: "3px" }} sx={{ mr: .4 }}>
-              {["Sun", "", "Tue", "", "Thu", "", "Sat"].map((d, i) => (
-                <Typography key={i} sx={{ fontSize: 10, opacity: .5, height: 10 }}>
-                  {d}
-                </Typography>
-              ))}
-            </Stack>
-
-            {/* GRID */}
-            {weeks.map((week, wi) => (
-              <Stack key={wi} spacing={{ xs: "2px", sm: "3px" }}>
-                {week.map((d, di) => (
-
-                  <Tooltip
-                    key={di}
-                    arrow
-                    title={`${d.count} routines completed on ${toPretty(d.date)}`}
-                  >
-                    <Box
-                      sx={{
-                        width: { xs: 9, sm: 11, md: 13 },
-                        height: { xs: 9, sm: 11, md: 13 },
-                        borderRadius: "2px",
-                        background: colors[d.level],
-                        transition: "all .15s ease",
-                        "&:hover": {
-                          transform: "scale(1.25)",
-                          boxShadow: `0 0 6px ${theme.palette.primary.main}`,
-                          zIndex: 2
-                        }
-                      }}
-                    />
-                  </Tooltip>
-
-                ))}
-              </Stack>
-            ))}
-
-          </Stack>
-
-        </Box>
-      </Box>
-
-      {/* LEGEND */}
-      <Stack
-        direction="row"
-        spacing={0.6}
-        alignItems="center"
-        justifyContent="flex-end"
-        sx={{ mt: .2 }}
-      >
-        <Typography fontSize={11} sx={{ opacity: .6 }}>
-          Less Tasks
+        <Typography fontWeight={700} fontSize={13}>
+          {monthLabel}
         </Typography>
 
-        {colors.map((c, i) => (
-          <Box
-            key={i}
-            sx={{
-              width: 12,
-              height: 12,
-              borderRadius: 1,
-              background: c
-            }}
-          />
-        ))}
-
-        <Typography fontSize={11} sx={{ opacity: .6 }}>
-          More Tasks
-        </Typography>
+        <IconButton size="small" onClick={goNext}>
+          <ChevronRightIcon />
+        </IconButton>
       </Stack>
 
+      {/* WEEK */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7,1fr)",
+          gap: 4
+        }}
+      >
+        {weekday.map(w => (
+          <Typography
+            key={w}
+            sx={{ fontSize: 10, opacity: 0.5, textAlign: "center" }}
+          >
+            {w}
+          </Typography>
+        ))}
+      </Box>
+
+      {/* GRID */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7,1fr)",
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
+          overflow: "hidden"
+        }}
+      >
+        {cells.map((c, i) => {
+          if (!c.day) {
+            return (
+              <Box
+                key={i}
+                sx={{
+                  height: 70,
+                  borderRight: "1px solid rgba(255,255,255,0.05)",
+                  borderBottom: "1px solid rgba(255,255,255,0.05)"
+                }}
+              />
+            );
+          }
+
+          const color = getBadgeColor(c.level);
+
+          return (
+            <Box
+              key={i}
+              sx={{
+                height: 70,
+                p: 0.8,
+                borderRight: (i + 1) % 7 !== 0
+                  ? `1px solid ${theme.palette.divider}`
+                  : "none",
+                borderBottom:
+                  i < cells.length - 7
+                    ? `1px solid ${theme.palette.divider}`
+                    : "none",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                backgroundColor: `${color}22`
+              }}
+            >
+              {/* DATE BADGE */}
+              <Box
+                sx={{
+                  width: 26,
+                  height: 26,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  background: `${color}22`,
+                  // color: color,
+                  border: `1px solid ${color}55`,
+
+                }}
+              >
+                {c.day}
+              </Box>
+
+              {/* COUNT */}
+              {c.count > 0 && (
+                <Chip
+                  label={`Tasks ${c.count}`}
+                  size="small"
+                  sx={{
+                    height: 18,
+                    fontSize: 10,
+                    backgroundColor: `${color}66`,
+                  }}
+                />
+                // <Typography
+                //   fontSize={11}
+                //   sx={{
+                //     alignSelf: "flex-end",
+                //     fontWeight: 600,
+                //     opacity: 0.85
+                //   }}
+                // >
+                //  Tasks {c.count}
+                // </Typography>
+              )}
+            </Box>
+          );
+        })}
+      </Box>
     </Stack>
   );
 }

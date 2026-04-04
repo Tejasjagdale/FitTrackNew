@@ -31,7 +31,8 @@ export interface ProgressDataFile {
   dailyWeight: Record<string, number>
   measurements: Record<string, MeasurementsEntry>
   workouts: WorkoutLogEntry[],
-  dailyHealth?: Record<string, DailyHealthStatus>   // NEW
+  meals: any[]   // NEW
+  nutritionTracker: any  // NEW
 }
 
 export interface DailyPoint {
@@ -52,11 +53,4 @@ export interface WorkoutLogEntry {
   completed: boolean,
   startTime:string,
   endTime:string
-}
-
-export interface DailyHealthStatus {
-  condition: 'stomachIssue' | 'bodyPain' | 'coldOrFever' | 'healthy'
-  dietQuality: 'insufficient' | 'adequate' | 'excess'
-  mood: 'sad' | 'neutral' | 'happy'
-  studied: boolean
 }

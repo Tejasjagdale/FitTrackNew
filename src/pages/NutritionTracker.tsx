@@ -26,6 +26,7 @@ import {
 } from "../data/progressDataService";
 
 import { analyzeMeals, NutritionResult } from "../utils/nutritionAnalyzer";
+import NutritionHistoryDialog from "../components/NutritionHistoryDialog";
 
 type Meal = {
   name: string;
@@ -64,13 +65,31 @@ function calculateTargets(weight: number, goalWeight: number) {
   };
 }
 
+function getTodayKeyIST() {
+  const now = new Date();
+
+  const istOffset = 5.5 * 60; // minutes
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const istTime = new Date(utc + istOffset * 60000);
+
+  const y = istTime.getFullYear();
+  const m = String(istTime.getMonth() + 1).padStart(2, "0");
+  const d = String(istTime.getDate()).padStart(2, "0");
+
+  return `${y}-${m}-${d}`;
+}
+
 // ---------- COMPONENT ----------
 
 export default function NutritionPage() {
-  const [savedMeals, setSavedMeals] = useState<Meal[]>([]);
   const theme = useTheme();
+
+  const [savedMeals, setSavedMeals] = useState<Meal[]>([]);
   const [meals, setMeals] = useState<string[]>([""]);
+
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const [result, setResult] = useState<NutritionResult | null>(null);
   const [targets, setTargets] = useState<any>(null);
 
@@ -79,6 +98,24 @@ export default function NutritionPage() {
   const [mealName, setMealName] = useState("");
   const [mealDetail, setMealDetail] = useState("");
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
+
+function prepareHistory() {
+  const raw = getProgressData().nutritionTracker || {};
+
+  return Object.entries(raw).map(([date, value]: any) => ({
+    date,
+    calories: value.calories,
+    protein: value.protein,
+    carbs: value.carbs,
+    fats: value.fats,
+    meals: value.meals || [],
+    summary: value.summary,
+    targets: value.targets || {}
+  }));
+}
+
   useEffect(() => {
     const init = async () => {
       await loadProgressData();
@@ -86,7 +123,6 @@ export default function NutritionPage() {
 
       setSavedMeals(data.meals || []);
 
-      // 🔥 calculate targets
       const weight = getLatestWeight(data.dailyWeight);
       const t = calculateTargets(weight, data.profile.goalWeight);
       setTargets(t);
@@ -157,13 +193,49 @@ export default function NutritionPage() {
     setResult(null);
 
     try {
-      const res = await analyzeMeals(meals);
+      const res = await analyzeMeals(meals, targets);
       setResult(res);
     } catch (err) {
       console.error(err);
     }
 
     setLoading(false);
+  };
+
+  // ---------- SAVE FIX ----------
+
+  const handleSaveNutrition = async () => {
+    if (!result) return;
+
+    setSaving(true);
+
+    try {
+      const data = getProgressData();
+
+      if (
+        !data.nutritionTracker ||
+        Array.isArray(data.nutritionTracker)
+      ) {
+        data.nutritionTracker = {};
+      }
+
+      const today = getTodayKeyIST();
+
+      data.nutritionTracker[today] = {
+        ...result,
+        targets,
+        meals,
+        timestamp: new Date().toISOString(),
+      };
+
+      setProgressData(data);
+      await syncProgressToGitHub("Save nutrition log");
+
+    } catch (err) {
+      console.error("Save failed:", err);
+    }
+
+    setSaving(false);
   };
 
   return (
@@ -226,17 +298,27 @@ export default function NutritionPage() {
           {loading ? <CircularProgress size={24} /> : "Calculate"}
         </Button>
 
+        <Button
+          variant="outlined"
+          fullWidth
+          sx={{ mt: 2 }}
+          onClick={() => {
+            setHistoryData(prepareHistory());
+            setHistoryOpen(true);
+          }}
+        >
+          View History
+        </Button>
+
         {/* ---------- RESULT ---------- */}
         {result && targets && (
           <Card sx={{ mt: 3 }}>
             <CardContent>
 
-              {/* Header */}
               <Typography fontWeight={600} mb={2}>
                 Daily Summary
               </Typography>
 
-              {/* Grid */}
               <Box
                 sx={{
                   display: "grid",
@@ -246,54 +328,34 @@ export default function NutritionPage() {
                   alignItems: "center",
                 }}
               >
-                {/* Labels */}
-                <Typography color="text.secondary"></Typography>
+                <Typography></Typography>
                 <Typography fontWeight={500}>Target</Typography>
                 <Typography fontWeight={500}>Actual</Typography>
 
-                {/* Calories */}
                 <Typography>Calories</Typography>
                 <Typography>{targets.targetCalories}</Typography>
-                <Typography
-                  color={
-                    result.calories > targets.targetCalories
-                      ? "error.main"
-                      : "success.main"
-                  }
-                >
+                <Typography color={result.calories > targets.targetCalories ? "error.main" : "success.main"}>
                   {result.calories}
                 </Typography>
 
-                {/* Protein */}
                 <Typography>Protein</Typography>
                 <Typography>{targets.proteinTarget}g</Typography>
-                <Typography
-                  color={
-                    result.protein < targets.proteinTarget
-                      ? "error.main"
-                      : "success.main"
-                  }
-                >
+                <Typography color={result.protein < targets.proteinTarget ? "error.main" : "success.main"}>
                   {result.protein}g
                 </Typography>
 
-                {/* Carbs */}
                 <Typography>Carbs</Typography>
                 <Typography>{targets.carbTarget}g</Typography>
                 <Typography>{result.carbs}g</Typography>
 
-                {/* Fats */}
                 <Typography>Fats</Typography>
                 <Typography>{targets.fatTarget}g</Typography>
                 <Typography>{result.fats}g</Typography>
               </Box>
 
-              {/* Status */}
               <Box mt={3}>
                 <Typography
-                  color={
-                    result.protein_goal_met ? "success.main" : "error.main"
-                  }
+                  color={result.protein_goal_met ? "success.main" : "error.main"}
                   fontWeight={500}
                 >
                   {result.protein_goal_met
@@ -302,14 +364,29 @@ export default function NutritionPage() {
                 </Typography>
               </Box>
 
-              {/* Summary */}
               <Typography mt={1} color="text.secondary">
                 {result.summary}
               </Typography>
+
+              {/* SAVE BUTTON */}
+              <Box mt={3}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={handleSaveNutrition}
+                  disabled={saving}
+                  sx={{ borderRadius: 3, textTransform: "none" }}
+                >
+                  {saving ? <CircularProgress size={20} /> : "Save Today’s Log"}
+                </Button>
+              </Box>
+
             </CardContent>
           </Card>
         )}
-        {/* ---------- SAVED MEALS ---------- */}
+
+
+        {/* SAVED MEALS (RESTORED) */}
         <Box mt={5}>
           <Typography variant="h6" color={theme.palette.text.primary}>Saved Meals</Typography>
 
@@ -318,17 +395,15 @@ export default function NutritionPage() {
               <CardContent sx={{ display: "flex" }}>
                 <Box sx={{ flexGrow: 2 }}>
                   <Typography fontWeight={600}>{meal.name}</Typography>
-                  <Typography variant="body2">
-                    {meal.detail}
-                  </Typography>
+                  <Typography variant="body2">{meal.detail}</Typography>
                 </Box>
 
                 <Box>
-                  <IconButton onClick={() => openEditDialog(index)} size="small">
-                    <EditIcon fontSize="small" />
+                  <IconButton onClick={() => openEditDialog(index)}>
+                    <EditIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleDeleteMeal(index)} size="small">
-                    <DeleteIcon fontSize="small" />
+                  <IconButton onClick={() => handleDeleteMeal(index)}>
+                    <DeleteIcon />
                   </IconButton>
                 </Box>
               </CardContent>
@@ -340,7 +415,7 @@ export default function NutritionPage() {
           </Button>
         </Box>
 
-        {/* ---------- DIALOG ---------- */}
+        {/* DIALOG */}
         <Dialog open={open} onClose={() => setOpen(false)}>
           <DialogTitle>
             {editingIndex !== null ? "Edit Meal" : "Add Meal"}
@@ -368,6 +443,12 @@ export default function NutritionPage() {
             <Button onClick={handleSaveMeal}>Save</Button>
           </DialogActions>
         </Dialog>
+
+        <NutritionHistoryDialog
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          data={historyData}
+        />
 
       </Box>
     </Box>
