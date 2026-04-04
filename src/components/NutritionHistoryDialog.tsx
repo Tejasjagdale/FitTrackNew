@@ -6,7 +6,8 @@ import {
   Stack,
   useTheme,
   Drawer,
-  Divider
+  Divider,
+  Button
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -15,15 +16,33 @@ import { useMemo, useState } from "react";
 
 /* ========================= */
 
+function getISTDate(date = new Date()) {
+  const istOffset = 5.5 * 60;
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  return new Date(utc + istOffset * 60000);
+}
+
+function getISTDateParts(date = new Date()) {
+  const d = getISTDate(date);
+
+  return {
+    year: d.getFullYear(),
+    month: d.getMonth(),
+    day: d.getDate(),
+    iso: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+  };
+}
+
+
 function buildCalendar(data: any[], year: number, month: number) {
   const map: Record<string, any> = {};
   data.forEach(d => {
     map[d.date] = d;
   });
 
-  const first = new Date(year, month, 1);
+  const first = getISTDate(new Date(Date.UTC(year, month, 1)));
   const start = first.getDay();
-  const total = new Date(year, month + 1, 0).getDate();
+  const total = getISTDate(new Date(Date.UTC(year, month + 1, 0))).getDate();
 
   const cells: any[] = [];
 
@@ -53,9 +72,9 @@ function buildCalendar(data: any[], year: number, month: number) {
 /* ========================= */
 
 export default function NutritionHistoryDialog({
-  open,
-  onClose,
-  data
+  data,
+  onDateClick,
+  onEditDay
 }: any) {
   const theme = useTheme();
   const now = new Date();
@@ -72,10 +91,12 @@ export default function NutritionHistoryDialog({
     [data, cursor]
   );
 
-  const monthLabel = new Date(cursor.year, cursor.month).toLocaleString(
-    "en-IN",
-    { month: "long", year: "numeric" }
-  );
+  const monthLabel = getISTDate(
+    new Date(Date.UTC(cursor.year, cursor.month))
+  ).toLocaleString("en-IN", {
+    month: "long",
+    year: "numeric"
+  });
 
   const goPrev = () => {
     setCursor(p => {
@@ -103,210 +124,84 @@ export default function NutritionHistoryDialog({
   return (
     <>
       {/* MAIN POPUP */}
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <Box p={2}>
+      <Box p={2}>
 
-          {/* HEADER */}
-          <Stack direction="row" justifyContent="space-between">
-            <Typography fontWeight={600}>
-              Nutrition Intelligence
-            </Typography>
+        {/* MONTH NAV */}
+        <Stack direction="row" justifyContent="space-between" mt={1} mb={2}>
+          <IconButton size="small" onClick={goPrev}>
+            <ChevronLeftIcon />
+          </IconButton>
 
-            <IconButton size="small" onClick={onClose}>
-              <CloseIcon />
-            </IconButton>
-          </Stack>
+          <Typography fontSize={12} color={theme.palette.text.secondary} >
+            {monthLabel}
+          </Typography>
 
-          {/* MONTH NAV */}
-          <Stack direction="row" justifyContent="space-between" mt={1} mb={2}>
-            <IconButton size="small" onClick={goPrev}>
-              <ChevronLeftIcon />
-            </IconButton>
+          <IconButton size="small" onClick={goNext}>
+            <ChevronRightIcon />
+          </IconButton>
+        </Stack>
 
-            <Typography fontSize={12} sx={{ opacity: 0.7 }}>
-              {monthLabel}
-            </Typography>
+        {/* GRID */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7,1fr)",
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 3,
+            overflow: "hidden"
+          }}
+        >
+          {cells.map((c, i) => {
+            if (!c.day) {
+              return <Box key={i} sx={{ height: 72 }} />;
+            }
 
-            <IconButton size="small" onClick={goNext}>
-              <ChevronRightIcon />
-            </IconButton>
-          </Stack>
-
-          {/* GRID */}
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7,1fr)",
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 3,
-              overflow: "hidden"
-            }}
-          >
-            {cells.map((c, i) => {
-              if (!c.day) {
-                return <Box key={i} sx={{ height: 72 }} />;
-              }
-
-              return (
-                <Box
-                  key={i}
-                  onClick={() => c.entry && setSelectedDay(c)}
-                  sx={{
-                    height: 72,
-                    p: 0.8,
-                    cursor: c.entry ? "pointer" : "default",
-                    borderRight: (i + 1) % 7 !== 0
+            return (
+              <Box
+                key={i}
+                onClick={() => {
+                  if (c.day) onDateClick(c);
+                }}
+                sx={{
+                  height: 72,
+                  p: 0.8,
+                  cursor: c.entry ? "pointer" : "default",
+                  borderRight: (i + 1) % 7 !== 0
+                    ? `1px solid ${theme.palette.divider}`
+                    : "none",
+                  borderBottom:
+                    i < cells.length - 7
                       ? `1px solid ${theme.palette.divider}`
                       : "none",
-                    borderBottom:
-                      i < cells.length - 7
-                        ? `1px solid ${theme.palette.divider}`
-                        : "none",
-                    background: getColor(c.level),
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between"
-                  }}
-                >
-                  {/* DATE */}
-                  <Typography fontSize={10} fontWeight={700}>
-                    {c.day}
-                  </Typography>
-
-                  {/* SUMMARY ONLY */}
-                  {c.entry && (
-                    <Box>
-                      <Typography fontSize={11} fontWeight={700}>
-                        <b style={{ fontSize:12 }}>{c.entry.calories}</b> Kcal
-                      </Typography>
-
-                      <Typography fontSize={9} sx={{ opacity: 0.7 }}>
-                        P{c.entry.protein}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
-              );
-            })}
-          </Box>
-        </Box>
-      </Dialog>
-
-      {/* 🔥 DETAIL POPUP */}
-      <Dialog
-        open={!!selectedDay}
-        onClose={() => setSelectedDay(null)}
-        maxWidth="xs"
-        fullWidth
-      >
-        {selectedDay && (
-          <Box p={2}>
-
-            {/* HEADER */}
-            <Stack direction="row" justifyContent="space-between">
-              <Typography fontWeight={600}>
-                {selectedDay.dateStr}
-              </Typography>
-
-              <IconButton size="small" onClick={() => setSelectedDay(null)}>
-                <CloseIcon />
-              </IconButton>
-            </Stack>
-
-            {/* CALORIES BIG */}
-            <Typography variant="h6" fontWeight={700} mt={1}>
-              {selectedDay.entry.calories} kcal
-            </Typography>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* 🔥 COMPARISON GRID */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "1fr auto auto",
-                rowGap: 1.5,
-                columnGap: 2,
-                alignItems: "center"
-              }}
-            >
-              {/* HEADER */}
-              <Typography></Typography>
-              <Typography fontSize={12} sx={{ opacity: 0.6 }}>
-                Actual
-              </Typography>
-              <Typography fontSize={12} sx={{ opacity: 0.6 }}>
-                Target
-              </Typography>
-
-              {/* CALORIES */}
-              <Typography fontWeight={600}>Calories</Typography>
-              <Typography
-                color={
-                  selectedDay.entry.calories >=
-                    selectedDay.entry.targets?.targetCalories * 0.9
-                    ? "success.main"
-                    : "error.main"
-                }
+                  background: getColor(c.level),
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between"
+                }}
               >
-                {selectedDay.entry.calories}
-              </Typography>
-              <Typography>
-                {selectedDay.entry.targets?.targetCalories ?? "-"}
-              </Typography>
-
-              {/* PROTEIN */}
-              <Typography fontWeight={600}>Protein</Typography>
-              <Typography
-                color={
-                  selectedDay.entry.protein >=
-                    selectedDay.entry.targets?.proteinTarget
-                    ? "success.main"
-                    : "error.main"
-                }
-              >
-                {selectedDay.entry.protein}g
-              </Typography>
-              <Typography>
-                {selectedDay.entry.targets?.proteinTarget ?? "-"}g
-              </Typography>
-
-              {/* CARBS */}
-              <Typography fontWeight={600}>Carbs</Typography>
-              <Typography>{selectedDay.entry.carbs}g</Typography>
-              <Typography>
-                {selectedDay.entry.targets?.carbTarget ?? "-"}g
-              </Typography>
-
-              {/* FATS */}
-              <Typography fontWeight={600}>Fats</Typography>
-              <Typography>{selectedDay.entry.fats}g</Typography>
-              <Typography>
-                {selectedDay.entry.targets?.fatTarget ?? "-"}g
-              </Typography>
-            </Box>
-
-            <Divider sx={{ my: 2 }} />
-
-            {/* MEALS */}
-            <Typography fontWeight={600}>Meals</Typography>
-
-            <Box sx={{ maxHeight: 140, overflowY: "auto", mt: 1 }}>
-              {selectedDay.entry?.meals?.length > 0 ? (
-                selectedDay.entry.meals.map((m: string, i: number) => (
-                  <Typography key={i} fontSize={13} sx={{ opacity: 0.8, mb: 0.5 }}>
-                    • {m}
-                  </Typography>
-                ))
-              ) : (
-                <Typography fontSize={13} sx={{ opacity: 0.5 }}>
-                  No meals logged
+                {/* DATE */}
+                <Typography fontSize={10} color={theme.palette.text.secondary} fontWeight={700}>
+                  {c.day}
                 </Typography>
-              )}
-            </Box>
-          </Box>
-        )}
-      </Dialog>
+
+                {/* SUMMARY ONLY */}
+                {c.entry && (
+                  <Box color={theme.palette.text.primary}>
+                    <Typography fontSize={11} fontWeight={700}>
+                      <b style={{ fontSize: 12 }}>{c.entry.calories}</b> Kcal
+                    </Typography>
+
+                    <Typography fontSize={9} sx={{ opacity: 0.7 }}>
+                      P-{c.entry.protein}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+
     </>
   );
 }
